@@ -22,11 +22,11 @@ export const getMenuElements = (t) => {
             text: changeCase.upperCase( t('pay') ),
             path: '/pay',
         },
-        // 'pigs': {
-        //     icon: <HowToVote />,
-        //     text: changeCase.upperCase(t('piggies')),
-        //     path: '/pigs',
-        // },
+        'pigs': {
+            icon: <HowToVote />,
+            text: changeCase.upperCase(t('piggies')),
+            path: '/pigs',
+        },
         'coins': { //coin balance view
             //icon: {font: 'material', name: 'payment'},
             icon: <Payment/>,

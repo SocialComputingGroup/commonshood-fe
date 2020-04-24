@@ -25,6 +25,9 @@ const BottomMenuBar = (props) => {
     const { t } = useTranslation('Common');
 
     let bottomNavigationActions = Object.values(getMenuElements(t)).map( (elem) => {
+        if(index === 1){ //TODO temporarely removing crowdsale menu from sight
+            return (<> </>); 
+        }
         return (
             <BottomNavigationAction
                 className={classes.buttonStyle}
