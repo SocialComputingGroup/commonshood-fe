@@ -1,6 +1,6 @@
 # Commonshood Frontend
 
-This repo is the alpha and currently in-development version of the dapp of Commonshood.
+This repo is the **alpha** and currently **in-development** version of the dapp of Commonshood.
 
 The project was built using:
 - React (create-react-app)
