@@ -1,0 +1,11 @@
+{
+  "showMyQrCode": "Show my QR code",
+  "showQrCodeReader": "Show QR codes reader",
+  "scanInstructions": "Scan the QR code of another CommonsHooder to make a transaction",
+  "userQrCodeText": "The QR code for your dao",
+  "daoQrCodeText": "Your QR code",
+  "cantSendCoinToYourself": "You can't send coins to yourself",
+  "hwNotSupported": "It was not possible to gain access to your cam",
+  "userNotFound": "This qr code is invalid: user not found",
+  "daoNotFound": "This qr code is invalid: dao not found"
+}

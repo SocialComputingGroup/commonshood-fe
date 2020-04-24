@@ -1,0 +1,5 @@
+{
+  "initialSupplyForCoin": "Deve essere un intero POSITIVO o un numero decimale con '.' come separatore e al più 2 decimali",
+  "initialSupplyForCoupon": "Deve essere un intero POSITIVO e non cominciare con zero"
+
+}

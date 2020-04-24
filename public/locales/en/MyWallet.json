@@ -1,0 +1,12 @@
+{
+  "searchFieldPlaceholder": "Search...",
+  "modalTitleDetails": "Details",
+  "noCoinsTitle": "You don't have any coin",
+  "noCouponsTitle": "You don't have any coupon",
+  "createQuestion": "Do you want to create one?",
+  "createNewCoin": "Create new coin",
+  "createNewCoupon": "Create new coupon",
+  "waitCoinLoad": "Loading...",
+  "coins": "Coins",
+  "goods": "Coupons"
+}

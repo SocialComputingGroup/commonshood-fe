@@ -1,0 +1,85 @@
+{
+  "name": "ccfrontend-mui-cra",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@date-io/date-fns": "^1.1.0",
+    "@fortawesome/fontawesome-svg-core": "^1.2.25",
+    "@fortawesome/free-brands-svg-icons": "^5.11.2",
+    "@fortawesome/free-regular-svg-icons": "^5.11.2",
+    "@fortawesome/free-solid-svg-icons": "^5.11.2",
+    "@fortawesome/react-fontawesome": "^0.1.7",
+    "@material-ui/core": "^4.7.0",
+    "@material-ui/icons": "^3.0.2",
+    "@material-ui/lab": "^4.0.0-alpha.39",
+    "@types/openlayers": "^4.6.16",
+    "axios": "^0.18.1",
+    "change-case": "^3.1.0",
+    "date-fns": "^2.0.0-alpha.25",
+    "formik": "^1.5.1",
+    "formik-material-ui": "0.0.16",
+    "i18next": "^17.0.0",
+    "i18next-browser-languagedetector": "^3.0.1",
+    "i18next-xhr-backend": "^2.0.1",
+    "lodash": "^4.17.15",
+    "material-ui-pickers": "^2.2.1",
+    "md5": "^2.2.1",
+    "mdi-material-ui": "^5.9.0",
+    "moment": "^2.24.0",
+    "multihashes": "^0.4.19",
+    "notistack": "^0.5.1",
+    "ol": "^5.3.2",
+    "qrcode.react": "^1.0.0",
+    "react": "^16.8.3",
+    "react-country-flag": "^1.0.2",
+    "react-dom": "^16.8.3",
+    "react-geolocated": "^2.4.1",
+    "react-i18next": "^10.7.0",
+    "react-infinite-scroll-component": "^4.5.2",
+    "react-qr-reader": "^2.2.1",
+    "react-redux": "^6.0.1",
+    "react-router-dom": "^4.3.1",
+    "react-scripts": "^3.0.0",
+    "react-sizes": "^1.0.4",
+    "react-swipeable-views": "^0.13.1",
+    "react-swipeable-views-utils": "^0.13.1",
+    "redux": "^4.0.1",
+    "redux-thunk": "^2.3.0",
+    "socket.io-client": "^2.2.0",
+    "source-map-explorer": "^1.7.0",
+    "web3": "^1.2.4",
+    "webfontloader": "^1.6.28",
+    "winston": "^3.2.1",
+    "winston-transport-browserconsole": "^1.0.1",
+    "yup": "^0.26.10"
+  },
+  "scripts": {
+    "analyze": "source-map-explorer build/static/js/main.* > sourcemap.html",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "size-limit": "size-limit --why"
+  },
+  "size-limit": [
+    {
+      "path": "build/index.html",
+      "limit": "9 KB"
+    }
+  ],
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ],
+  "devDependencies": {
+    "faker": "^4.1.0",
+    "lorem-ipsum": "^1.0.6",
+    "react-test-renderer": "^16.8.6",
+    "size-limit": "^1.1.2"
+  }
+}

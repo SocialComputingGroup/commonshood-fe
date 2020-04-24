@@ -1,0 +1,10 @@
+{
+  "balance": "Bilancio",
+  "createdBy": "Creato da",
+  "manifestDownload": "Scarica il manifesto",
+  "transactionsHistory": "Storico delle transazioni",
+  "owned": "Creata da Me",
+  "cap": "Totale in circolazione",
+  "coinMint": "Coniane di nuovi",
+  "coinMintUndo": "Annulla"
+}

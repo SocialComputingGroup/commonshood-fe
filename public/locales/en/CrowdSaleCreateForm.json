@@ -1,0 +1,35 @@
+{
+  "describeCrowdSaleTitle": "Describe your CrowdSale",
+  "createButton": "Create Crowfunding",
+  "summaryPlaceholder": "Title",
+  "detailsPlaceholder": "Detailed description",
+  "acceptedCoinLabel": "Accepted Coin",
+  "emittedCoinLabel": "Emitted Coupon",
+  "minThresholdLabel": "Minimum amount to enter",
+  "maxThresholdLabel": "Maximum amount to gather",
+  "baseUnitLabel": "Base pledge unit",
+  "startDateLabel": "Start date",
+  "endDateLabel": "End Date",
+  "contractPlaceholder": "Upload terms and conditions (.pdf)",
+  "mainImageTitle": "Select main image",
+  "loadingWait": "Loading, please wait",
+
+  "noCoins": "You have no coins",
+  "askCreate": "To create a Crowdsale you need both a coin and a coupon created by yourself",
+  "askCreateCouponToEmit": "To create a Crowdsale you need a coupon created by yourself",
+  "askCreateCoinToAccept": "To create a Crowdsale you need a coin created by yourself",
+
+  "creationModalTitle": "Crowdsale Creation",
+  "errorModalTitle": "Error creating Crowdsale",
+  "errorDetails": "It was not possible to create a Crowdsale, retry later. Error: ",
+  "creationSuccessful": "Crowdsale creation request sent. You'll receive a confirmation notification",
+  "help": "Guida",
+
+  "capLabel": "I want to get",
+  "acceptCoinRatioLabel": "I want to get",
+  "emittedCoinRatioLabel": "I want to give",
+  "totalEmittedCoinLabel": "I want to give",
+  "forEachEmittedCoinLabel": "For each ",
+  "totalAcceptedCoinLabel": "I'll gather a total of",
+  "addressSuggestPLaceholder": "Add a location"
+}

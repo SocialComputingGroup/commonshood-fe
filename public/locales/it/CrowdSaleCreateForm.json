@@ -1,0 +1,36 @@
+{
+  "describeCrowdSaleTitle": "Definisci la tua CrowdSale",
+  "createButton": "Crea il Crowfunding",
+
+  "summaryPlaceholder": "Titolo",
+  "detailsPlaceholder": "Descrizione dettagliata",
+  "acceptedCoinLabel": "Coin accettata",
+  "emittedCoinLabel": "Coin emessa",
+  "minThresholdLabel": "Quantità minima accettata",
+  "maxThresholdLabel": "Quantità massima da raccogliere",
+  "baseUnitLabel": "Unità base",
+  "startDateLabel": "Data di inizio",
+  "endDateLabel": "Data di termine",
+  "contractPlaceholder": "Carica termini e condizioni (.pdf)",
+  "mainImageTitle": "Seleziona l'immagine principale",
+  "loadingWait": "Caricamento in corso",
+
+  "noCoins": "Non hai coin",
+  "askCreate": "Per creare una crowdsale devi avere una coin e un coupon creati da te",
+  "askCreateCouponToEmit": "Per creare una crowdsale devi avere un coupon creato da te",
+  "askCreateCoinToAccept": "Per creare una crowdsale devi avere una coin creata da te",
+
+  "creationModalTitle": "Creazione Crowdsale",
+  "errorModalTitle": "Errore nella creazione della Crowdsale",
+  "errorDetails": "Non è stato possibile creare la Crowdsale, riprova più avanti. Errore: ",
+  "creationSuccessful": "Richiesta di creazione Crowdsale inviata con successo. Attendi la notifica di conferma",
+  "help": "Guida",
+
+  "capLabel": "Voglio reccogliere",
+  "acceptCoinRatioLabel": "Voglio reccogliere",
+  "emittedCoinRatioLabel": "Voglio distribuire",
+  "totalEmittedCoinLabel": "Voglio distribuire",
+  "forEachEmittedCoinLabel": "Per ogni",
+  "totalAcceptedCoinLabel": "Raccoglierò un totale di",
+  "addressSuggestPLaceholder": "Inserisci l'indirizzo"
+}

@@ -1,0 +1,17 @@
+{
+  "waitCoinToLoad": "Please wait for your coins to load...",
+  "paymentSent": "Your Payment has been Sent!",
+  "paymentError": "There has been an error: ",
+  "noCoinTitle": "You Have No Coins",
+  "doYouWantToCreateCoin": "Do you want to create one?",
+  "createNewCoin": "Create New Coin",
+  "balanceTooHigh": "Amount cannot be higher than Balance",
+  "waitForCoinSend": "Wait for payment...",
+  "checkForCoin": "This must be a POSITIVE integer OR number with '.' as separator and 2 decimals max",
+  "checkForCoupon": "This must be a positive integer and should not start with zero",
+
+  "splashScreenMiningTitle": "Mining Transaction...",
+  "splashScreenMiningInfo": "Transaction is being mined, metamask will send you a notification when completed.",
+  "splashScreenMiningInfo2": "You can wait or",
+  "splashScreenMiningButton": "Go Back"
+}

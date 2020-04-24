@@ -1,0 +1,17 @@
+{
+  "waitCoinToLoad": "Attendi il caricamento delle tue coin...",
+  "paymentSent": "Il tuo pagamento è stato inviato!",
+  "paymentError": "É stato riscontrato un errore: ",
+  "noCoinTitle": "Non hai coin",
+  "doYouWantToCreateCoin": "Vuoi creare una coin?",
+  "createNewCoin": "Crea una nuova Coin",
+  "balanceTooHigh": "La cifra non può essere maggiore del Saldo",
+  "waitForCoinSend": "Attendi il pagamento...",
+  "checkForCoin": "Deve essere un intero POSITIVO o un numero decimale con '.' come separatore e al più 2 decimali",
+  "checkForCoupon": "Deve essere un intero POSITIVO e non cominciare con zero",
+  
+  "splashScreenMiningTitle": "La blockchain sta minando la transazione...",
+  "splashScreenMiningInfo": "La transazione è sul punto di essere minata, metamask invierà una notifica a transazione avvenuta",
+  "splashScreenMiningInfo2": "Puoi aspettare o",
+  "splashScreenMiningButton": "Tornare Indietro"
+}

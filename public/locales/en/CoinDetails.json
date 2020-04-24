@@ -1,0 +1,10 @@
+{
+  "balance": "Balance",
+  "createdBy": "Created by",
+  "manifestDownload": "Download the manifest",
+  "transactionsHistory": "Transactions History",
+  "owned": "Created by Myself",
+  "cap": "Total supply",
+  "coinMint": "Mint some more",
+  "coinMintUndo": "Cancel Mint"
+}

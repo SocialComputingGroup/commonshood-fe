@@ -1,0 +1,9 @@
+{
+  "home": "Home",
+  "createCoin": "Create New Asset",
+  "createCrowdsale": "Create CrowdSale",
+  "logout": "Log Out",
+  "messages": "Notifications",
+  "qrcode": "QR Code",
+  "about" : "About"
+}

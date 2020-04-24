@@ -1,0 +1,11 @@
+{
+  "baseTitle": "Crowdsale Confirmation",
+  "joinFailedTitle": "Join Failed",
+  "joinFailedAlert": "Something went wrong, you didn't join this crowdsale. Try Later",
+  "joinedSuccessfullyTitle": "Joined Successfully",
+  "joinedSuccessfullyAlert": "Your request to join the crowdsale with {{params.value}} {{params.ticker}} was successfull",
+  "refundFailedTitle": "Refund Failed",
+  "refundFailedAlert": "Your refund was refused. Try Later",
+  "refundedSuccessfullyTitle": "Refunded Successfully",
+  "refundedSuccessfullyAlert": "Your request to get a refund of {{params.value}} {{params.ticker}} from this crowdsale was successfull"
+}

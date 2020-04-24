@@ -1,0 +1,10 @@
+{
+  "pledge": "Partecipa",
+  "minPledge": "Minimo richiesto",
+  "acceptingFor": "Accetta versamenti da",
+  "returningFor": "Restituendo per ogni versamento",
+  "acceptedCoinInWallet": "Nel tuo portafoglio hai ancora",
+  "currentPledge": "Questo è quanto hai già versato sin ora",
+  "addingPledge": "Stai aggiungendo {{params.pledgeDifference}} {{params.acceptedCoin}}",
+  "refundingPledge": "Stai richiedendo un rimborso di {{params.pledgeDifference}} {{params.acceptedCoin}}"
+}

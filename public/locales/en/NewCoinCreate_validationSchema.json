@@ -1,0 +1,5 @@
+{
+  "initialSupplyForCoin": "This must be a POSITIVE integer OR number with '.' as separator and 2 decimals max",
+  "initialSupplyForCoupon": "This must be a positive integer and should not start with zero"
+
+}

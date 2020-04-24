@@ -1,0 +1,12 @@
+{
+  "searchFieldPlaceholder": "Cerca...",
+  "modalTitleDetails": "Dettagli",
+  "noCoinsTitle": "Non possiedi nessuna coin",
+  "noCouponsTitle": "Non possiedi nessun coupon",
+  "createQuestion": "Vuoi crearne?",
+  "createNewCoin": "Crea una nuova coin",
+  "createNewCoupon": "Crea un nuovo coupon",
+  "waitCoinLoad": "Caricamento in corso...",
+  "coins": "Coin",
+  "goods": "Coupon"
+}

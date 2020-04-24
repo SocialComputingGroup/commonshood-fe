@@ -1,0 +1,9 @@
+{
+    "lessThanADayStart": "Meno di un giorno all'avvio",
+    "lessThanADayEnd": "Meno di un giorno al termine",
+    "startingIn": "Sarà avviata in {{params.days}} giorni",
+    "endingIn": "Termina in {{params.days}} giorni",
+    "currentlyRaised": "Sono stati già raccolti {{params.raised}} di {{params.cap}} {{params.ticker}}",
+    "crowdsaleOver": "Questa crowdsale è terminata",
+    "crowdsaleReachedCap": "Obiettivo già raggiunto"
+}

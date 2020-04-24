@@ -1,0 +1,11 @@
+{
+  "baseTitle": "Conferma azione su Crowdsale",
+  "joinFailedTitle": "Richiesta di partecipazione rifiutata",
+  "joinFailedAlert": "Qualcosa è andato storto, richiesta di partecipazione rifiutata. Riprova più avanti",
+  "joinedSuccessfullyTitle": "Richiesta di partecipazione confermata",
+  "joinedSuccessfullyAlert": "La tua richiesta di partecipare alla crowdsale con {{params.value}} {{params.ticker}} è andata a buon fine",
+  "refundFailedTitle": "Richiesta di rimborso fallita",
+  "refundFailedAlert": "La tua richiesta di rimborso è stata rifiutata, riprova più avanti.",
+  "refundedSuccessfullyTitle": "Richiesta di rimborso confermata",
+  "refundedSuccessfullyAlert": "La tua richiesta di rimborso di {{params.value}} {{params.ticker}} da questa crowdsale è andata a buon fine"
+}

@@ -1,0 +1,57 @@
+{
+  "coinCreated": "Your coin {{params.ticker}} was successfully created",
+  "coinCreatedFail": "Your coin {{params.ticker}} was not created successfully. Try later",
+
+  "coinSent": "You sent {{params.amount}} {{params.ticker}} to {{params.receiver.fullname}}",
+  "coinSentFail": "Your transaction to {{params.receiver.fullname}} was denied. Try later",
+
+  "coinReceivedByUser": "You received {{params.amount}} {{params.ticker}} from {{params.sender.fullname}}",
+  "coinReceivedByUserFail": "{{params.sender.fullname}} tried to send you some {{params.ticker}} but we could not complete the transaction.",
+
+  "coinReceivedByDao": "Your dao '{{params.receiver.fullname}}' has received {{params.amount}} {{params.ticker}} from {{params.sender.fullname}}",
+  "coinReceivedByDaoFail": "{{params.sender.fullname}} tried to send you some {{params.ticker}} to your dao Your dao '{{params.receiver.fullname}}' but we could not complete the transaction.",
+
+  "coinMinted": "You minted {{params.amount}} {{params.ticker}}",
+  "coinMintedFail": "Your minting of {{params.ticker}} failed. Try later",
+
+  "daoCreated": "Your DAO {{params.name}} was created",
+  "daoCreatedFail": "Your DAO {{params.name}} was NOT created. Try later",
+
+  "daoCoinCreated": "Your DAO '{{params.owner.fullname}}' has created the coin {{params.ticker}}",
+  "daoCoinCreatedFail": "Your DAO '{{params.owner.fullname}}' creation of {{params.ticker}} failed. Try later",
+
+  "daoCoinSent": "You just sent {{params.amount}} {{params.ticker}} to {{params.receiver.fullname}} from the DAO '{{params.sender.fullname}}'",
+  "daoCoinSentFail": "We couldn't send {{params.amount}} {{params.ticker}} to {{params.receiver.fullname}} from your DAO '{{params.sender.fullname}}. Try later'",
+
+  "daoCoinMinted": "You minted {{params.amount}} {{params.ticker}} for your DAO {{params.fullname}}",
+  "daoCoinMintedFailed": "Your DAO {{params.fullname}} request to mint {{params.amount}} {{params.ticker}} failed. Try Later",
+
+  "daoAdminAdded": "You added {{params.new_admin}} as a new admin of the DAO",
+
+  "daoMemberJoined": "{{params.new_member}} has joined the DAO",
+
+  "daoMemberKicked": "{{params.member_kicked}} was kicked out from the DAO",
+
+  "daoMemberDemoted": "{{params.member_demoted}} was demoted to the role {{params.role}} in the DAO",
+
+  "daoMemberPromoted": "{{params.member_promoted}} was promoted to the role {{params.role}} in the DAO",
+
+  "walletReady": "Your Wallet is ready",
+
+  "daoCrowdsaleCreated": "The crowdsale {{params.title}} was created by the DAO",
+  "daoCrowdsaleCreatedFail": "We could not complete the creation of the crowdsale {{params.title}} of your DAO. Try later",
+
+  "crowdsaleCreated": "You just created the Crowdsale {{params.title}}",
+  "crowdsaleCreatedFail": "We could not complete the creation of the crowdsale {{params.title}}. Try later",
+
+  "crowdsaleUnlocked": "Your crowdsale {{params.title}} is now unlocked",
+  "crowdsaleUnlockedFail": "Your crowdsale {{params.title}} has not correctly unlocked. Contact Support",
+
+  "crowdsaleJoined": "You joined the Crowdsale '{{params.title}}' with {{params.amount}} {{params.ticker}}",
+  "crowdsaleJoinedFail": "You could not join the Crowdsale '{{params.title}}'. Try Later",
+
+  "crowdsaleRefunded": "You got a refund of {{params.amount}} {{params.ticker}} from the Crowdsale '{{params.title}}'",
+  "crowdsaleRefundedFail": "We could not complete the refund request from the Crowdsale '{{params.title}}'. Try Later",
+
+  "crowdsaleStopped": "The crowdsale {{params.title}} has been stopped, participants got refunded"
+}

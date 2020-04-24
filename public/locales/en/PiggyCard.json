@@ -1,0 +1,10 @@
+{
+    "lessThanADayStart": "Less than a day to start",
+    "lessThanADayEnd": "Less than a day to end",
+    "startingIn": "Starting in {{params.days}} days",
+    "endingIn": "Ending in {{params.days}} days",
+    "currentlyRaised": "Already reached {{params.raised}} of {{params.cap}} {{params.ticker}}",
+    "crowdsaleOver": "This crowdsale is over",
+    "crowdsaleReachedCap": "Goal already reached"
+    
+}

@@ -1,0 +1,5 @@
+{
+  "placeCategory": "ORGANIZZAZIONE AUTONOMA",
+  "userCategory": "PERSONA",
+  "isDistant": "dista {{params.distanceText}} dalla tua posizione"
+}

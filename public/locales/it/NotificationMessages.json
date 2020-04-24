@@ -1,0 +1,57 @@
+{
+  "coinCreated": "La tua coin {{params.ticker}} è stata creata con successo",
+  "coinCreatedFail": "La tua coin {{params.ticker}} non è stata creata. Riprova più tardi",
+
+  "coinSent": "Hai inviato {{params.amount}} {{params.ticker}} a {{params.receiver.fullname}}",
+  "coinSentFail": "Non abbiamo potuto inviare {{params.amount}} {{params.ticker}} a {{params.receiver.fullname}}. Riprova più tardi",
+
+  "coinReceivedByUser": "Hai ricevuto {{params.amount}} {{params.ticker}} da {{params.sender.fullname}}",
+  "coinReceivedByUserFail": "{{params.sender.fullname}} ha cercato di inviarti {{params.ticker}} senza successo.",
+
+  "coinReceivedByDao": "La tua dao '{{params.receiver.fullname}}' ha ricevuto {{params.amount}} {{params.ticker}} da {{params.sender.fullname}}",
+  "coinReceivedByDaoFail": "{{params.sender.fullname}} ha cercato di inviare {{params.ticker}} alla tua dao '{{params.receiver.fullname}}' senza successo",
+
+  "coinMinted": "Hai coniato {{params.amount}} {{params.ticker}}",
+  "coinMintedFail": "Non è stato possibile coniare nuovi {{params.ticker}}. Riprova più tardi",
+
+  "daoCreated": "La tua DAO {{params.name}} è stata creata",
+  "daoCreatedFail": "La tua DAO {{params.name}} NON è stata creata. Riprova più tardi",
+
+  "daoCoinCreated": "La tua DAO '{{params.owner.fullname}}' ha creato la coin {{params.ticker}}",
+  "daoCoinCreatedFail": "La creazione della coin {{params.ticker}} da parte della tua DAO '{{params.owner.fullname}}' è fallita. Riprova più tardi",
+
+  "daoCoinSent": "Hai inviato {{params.amount}} {{params.ticker}} a {{params.receiver.fullname}} tramite la DAO '{{params.sender.fullname}}'",
+  "daoCoinSentFail": "Hai cercato di inviare dei {{params.ticker}} a {{params.receiver.fullname}} tramite la DAO '{{params.sender.fullname}}' senza successo. Riprova più tardi",
+
+  "daoCoinMinted": "Sono stati coniati {{params.amount}} {{params.ticker}} per la tua DAO {{params.fullname}}",
+  "daoCoinMintedFail": "Non è stato possibile coniare {{params.ticker}} dalla tua DAO {{params.fullname}}. Riprova più tardi",
+
+  "daoAdminAdded": "Hai aggiunto {{params.new_admin}} come admin della DAO",
+
+  "daoMemberJoined": "{{params.new_member}} si è unito alla DAO",
+
+  "daoMemberKicked": "{{params.member_kicked}} è stato espulso dalla DAO",
+
+  "daoMemberDemoted": "{{params.member_demoted}} è stato declassato al ruolo {{params.role}} nella DAO",
+
+  "daoMemberPromoted": "{{params.member_promoted}} è stato promosso al ruolo {{params.role}} nella DAO",
+
+  "walletReady": "Il tuo wallet è pronto",
+
+  "daoCrowdsaleCreated": "È stata creata la Crowdsale {{params.title}} tramite questa DAO",
+  "daoCrowdsaleCreatedFail": "Non è stato possibile creare la Crowdsale {{params.title}} tramite questa DAO",
+
+  "crowdsaleCreated": "Hai creato la Crowdsale {{params.title}}",
+  "crowdsaleCreatedFail": "Non è stato possibile completare la creazione della crowdsale {{params.title}}. Riprova più tardi",
+
+  "crowdsaleUnlocked": "La tua crowdsale {{params.title}} è ora aperta",
+  "crowdsaleUnlockedFail": "La tua crowdsale {{params.title}} non è stata aperta correttamente. Contatta il supporto",
+
+  "crowdsaleJoined": "Ti sei unito alla Crowdsale '{{params.title}}' con {{params.amount}} {{params.ticker}}",
+  "crowdsaleJoinedFail": "Non è stato possibile unirti alla Crowdsale '{{params.title}}'. Riprova più avanti",
+
+  "crowdsaleRefunded": "Hai ricevuto un rimborso di {{params.amount}} {{params.ticker}} dalla Crowdsale '{{params.title}}'",
+  "crowdsaleRefundedFail": "La tua richiesta di rimborso dalla Crowdsale '{{params.title}}' non è stata completata con successo. Riprova più avanti",
+
+  "crowdsaleStopped": "La crowdsale {{params.title}} è stata stoppata, i fondi sono stati restituiti"
+}

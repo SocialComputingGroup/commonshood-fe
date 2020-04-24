@@ -1,0 +1,10 @@
+{
+  "pledge": "Pledge",
+  "minPledge": "Minimum Pledge",
+  "acceptingFor": "Accepting units of",
+  "returningFor": "Giving back for each deposit",
+  "acceptedCoinInWallet": "In your wallet you have still",
+  "currentPledge": "This is your current pledge",
+  "addingPledge": "You are adding {{params.pledgeDifference}} {{params.acceptedCoin}}",
+  "refundingPledge": "You are getting a refund of {{params.pledgeDifference}} {{params.acceptedCoin}}"
+}
