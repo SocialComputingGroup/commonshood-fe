@@ -1,8 +1,8 @@
 import axios from '../../utilities/backend/axios-strongloop'
 import axiosFl from '../../utilities/backend/axios-firstlife'
 import {assetDecimalRepresentationToInteger, assetIntegerToDecimalRepresentation} from '../../utilities/decimalsHandler/decimalsHandler';
-
 import {userAddCrowdsaleToWaitingTransactionConfirmation} from './user';
+import config from '../../config';
 
 import * as actionTypes from './actionTypes';
 
@@ -290,58 +290,71 @@ const saveCrowdSaleData = (crowdsaleData, address, firsLifePointId, dispatch, ge
 export const crowdsaleCreate = (crowdsaleData) => {
     logger.info('[CROWDSALE CREATE] called', crowdsaleData);
 
-    return ( (dispatch, getState) => {
+    return ( async (dispatch, getState) => {
         dispatch(crowdsaleCreateStart());
 
-        let lat = null, lon= null, address = null;
-        //obtain point coordinates from here api
-        if(crowdsaleData.locationSelectedId != null) {
-            fetch("https://geocoder.ls.hereapi.com/6.2/geocode.json?apikey=VvXjx14bJOpsdA5WMO_PTLd5Hgia1wYAlb5vO7Oa8kk&locationid="+crowdsaleData.locationSelectedId)
-                .then(result => {
-                        if(result.ok) {
-                            return result.json()
-                        }
-                        else {
-                            throw new Error("HERE API BROKEN...")
-                        }
-                    })
-                    .then(data => {
-                        address = data.Response.View[0].Result[0].Location.Address.Label;
-                        lat = data.Response.View[0].Result[0].Location.DisplayPosition.Latitude;
-                        lon = data.Response.View[0].Result[0].Location.DisplayPosition.Longitude;
-                        const payload = {
-                            type: "Feature",
-                            properties: {
-                                address,
-                                valid_from: "1900-12-4T09:01:30.516Z",
-                                user: localStorage.getItem('member_id'),
-                                name: crowdsaleData.bigTitle,
-                                entity_type: "CC_CROWDFUNDING",
-                                type: "CC_CROWDFUNDING",
-                                domain_id: 35,
-                                zoom_level: 18,
-                                categories: []
-                            },
-                            geometry: {
-                                type: "Point",
-                                coordinates: [lon,lat]
-                            }
-                        }
-                        const flCreateHeader = {
-                            headers: {
-                                'Authorization' : 'Bearer '+localStorage.getItem("token")
-                            }
-                        };
+        const data;
+        if(crowdsaleData.locationSelectedId != null) { // the user gave this crowdsale an exact geolocation
+            try{
+                const result = await fetch(`https://geocoder.ls.hereapi.com/6.2/geocode.json?apikey=VvXjx14bJOpsdA5WMO_PTLd5Hgia1wYAlb5vO7Oa8kk&locationid=${crowdsaleData.locationSelectedId}`);
+                if(result.ok){
+                    data = result.json();
+                }else{
+                    throw new Error("HERE api failure");
+                }
+            
+                const locationData = data.Response.View[0].Result[0].Location;
+                const geoLocationAddress = locationData.Address.Label;
+                const lat = locationData.DisplayPosition.Latitude;
+                const lon = locationData.DisplayPosition.Longitude;
+
+                const payload = {
+                    type: "Feature",
+                    properties: {
+                        address: geoLocationAddress,
+                        valid_from: "1900-12-4T09:01:30.516Z",
+                        user: localStorage.getItem('member_id'),
+                        name: crowdsaleData.bigTitle,
+                        entity_type: "CC_CROWDFUNDING",
+                        type: "CC_CROWDFUNDING",
+                        domain_id: 35,
+                        zoom_level: 18,
+                        categories: []
+                    },
+                    geometry: {
+                        type: "Point",
+                        coordinates: [lon,lat]
+                    }
+                }
+                const flCreateHeader = {
+                    headers: {
+                        'Authorization' : 'Bearer '+localStorage.getItem("token")
+                    }
+                };
+            
+                axiosFl.post('Things',payload, flCreateHeader).then(response => {
+                    logger.info("[crowdsale.js - crowdsaleCreate]", response.data);
+                    saveCrowdSaleData(
+                        crowdsaleData, 
+                        geoLocationAddress, 
+                        response.data.id,
+                        dispatch,
+                        getState
+                    );
+                });
+            }catch(error){
+                dispatch(crowdsaleCreateFail(error));
+            }
                     
-                        axiosFl.post('Things',payload, flCreateHeader).then(response => {
-                            logger.info("RESPONSE",response.data)
-                            saveCrowdSaleData(crowdsaleData, address, response.data.id,dispatch,getState)
-                        })
-                    })
-                    .catch(error => {dispatch(crowdsaleCreateFail(error));})
         }
         else {
-            saveCrowdSaleData(crowdsaleData, address,null,null,getState)
+            saveCrowdSaleData(
+                crowdsaleData, 
+                geoLocationAddress,
+                null,
+                dispatch,
+                getState
+            );
         }
     });
 };
@@ -354,67 +367,84 @@ export const crowdsaleGetAll = () =>{
         dispatch(crowdsaleGetAllReset());
         dispatch(crowdsaleGetAllStart());
 
-        let response = await axios.get(
-            '/Crowdsales', 
-            { 
-                params: {
-                    filter: 
-                        {
-                            where: {state: "confirmed" } //get only crowdsales already in blockchain and not still pending
-                        },
-                }
-            }
-        );
-        logger.debug('[CROWDSALEGETALL response] ', response);
-        let crowdsales = response.data;
-        if(crowdsales.length === 0){
-            //no crowdsales found
-            dispatch(crowdsaleGetAllSuccess([]));
-        }else{
-            //now we have to get the image of each crowdsale
-            const crowdsaleIconCache = getState().crowdsale.iconsCache;
-            let url = '/Resources/get/';
-            const params = {};
+        const web3 = getState().web3.web3Instance;
+        try{
+            const accountAddress = getState().web3.currentAccount;
+            const CrowdsaleFactoryInstance = new web3.eth.Contract(
+                config.smartContracts.CRWDSL_FCTRY_ABI,
+                config.smartContracts.CRWDSL_FCTRY_ADDR,
+            );
 
-            try{
-                crowdsales.forEach( async (crowdsale) =>{
-                    //converting maxCap, acceptRatio and giveRatio based on decimals of related coins
-                    crowdsale.maxCap = assetIntegerToDecimalRepresentation(crowdsale.maxCap, crowdsale.acceptedCoinDecimals);
-                    crowdsale.acceptRatio = assetIntegerToDecimalRepresentation(crowdsale.acceptRatio, crowdsale.acceptedCoinDecimals);
-                    crowdsale.giveRatio = assetIntegerToDecimalRepresentation(crowdsale.giveRatio, crowdsale.coinToGiveDecimals);
-                    
-                    //photo contains the hash, replace it with the image
-                    if(crowdsaleIconCache.has(crowdsale.photo)){ //icon already in cache
-                        logger.info(`icon for crowdsale ${crowdsale.title} in cache`);
-                        crowdsale.photo = crowdsaleIconCache.get(crowdsale.photo)
-                    }else{ //get icon from API
-                        logger.info(`icon for crowdsale ${crowdsale.title} NOT in cache`);
-                        const img = await axios.get(url+crowdsale.photo, params);
-                        //save in cache
-                        dispatch(crowdsaleAddIconToCache(crowdsale.photo, img.data));
-                        crowdsale.photo = img.data;
-                    }
-
-                    let promises = [];
-                    crowdsales.forEach((crowdsale) => {
-                        //photo contains the hash
-                        promises.push(axios.get(`/Crowdsales/${crowdsale.crowdsaleID}/getReservations`, params));
-                    });
-
-                    Promise.all(promises).then((resultReservations) => {
-                        crowdsales.forEach( (crowdsale, index) => {
-                            crowdsale.totalReservations = assetIntegerToDecimalRepresentation(resultReservations[index].data.totalReservations, crowdsale.acceptedCoinDecimals);
-                        });
-                        logger.info('[CROWDSALEGETALL after get reservations]', crowdsales);
-                        dispatch(crowdsaleGetAllSuccess(crowdsales));
-                    });
-                    
-                });
-            }catch(error){
-                logger.error('[CROWDSALEGETALL error] ', error);
-                dispatch(crowdsaleGetAllFail(error));
-            }
+            let crowdsaleAddresses = [];
+            crowdsaleAddresses = await CrowdsaleFactoryInstance.methods.getAllCrowdsalesAddresses()
+                .call({from: accountAddress, gasPrice: "0"});
+                logger.debug("CWD ADDR", crowdsaleAddresses);
+        }catch(error){
+            //TODO do something
+            logger.debug("Error");
         }
+
+        // let response = await axios.get(
+        //     '/Crowdsales', 
+        //     { 
+        //         params: {
+        //             filter: 
+        //                 {
+        //                     where: {state: "confirmed" } //get only crowdsales already in blockchain and not still pending
+        //                 },
+        //         }
+        //     }
+        // );
+        // logger.debug('[CROWDSALEGETALL response] ', response);
+        // let crowdsales = response.data;
+        // if(crowdsales.length === 0){
+        //     //no crowdsales found
+        //     dispatch(crowdsaleGetAllSuccess([]));
+        // }else{
+        //     //now we have to get the image of each crowdsale
+        //     const crowdsaleIconCache = getState().crowdsale.iconsCache;
+        //     let url = '/Resources/get/';
+        //     const params = {};
+
+        //     try{
+        //         crowdsales.forEach( async (crowdsale) =>{
+        //             //converting maxCap, acceptRatio and giveRatio based on decimals of related coins
+        //             crowdsale.maxCap = assetIntegerToDecimalRepresentation(crowdsale.maxCap, crowdsale.acceptedCoinDecimals);
+        //             crowdsale.acceptRatio = assetIntegerToDecimalRepresentation(crowdsale.acceptRatio, crowdsale.acceptedCoinDecimals);
+        //             crowdsale.giveRatio = assetIntegerToDecimalRepresentation(crowdsale.giveRatio, crowdsale.coinToGiveDecimals);
+                    
+        //             //photo contains the hash, replace it with the image
+        //             if(crowdsaleIconCache.has(crowdsale.photo)){ //icon already in cache
+        //                 logger.info(`icon for crowdsale ${crowdsale.title} in cache`);
+        //                 crowdsale.photo = crowdsaleIconCache.get(crowdsale.photo)
+        //             }else{ //get icon from API
+        //                 logger.info(`icon for crowdsale ${crowdsale.title} NOT in cache`);
+        //                 const img = await axios.get(url+crowdsale.photo, params);
+        //                 //save in cache
+        //                 dispatch(crowdsaleAddIconToCache(crowdsale.photo, img.data));
+        //                 crowdsale.photo = img.data;
+        //             }
+
+        //             let promises = [];
+        //             crowdsales.forEach((crowdsale) => {
+        //                 //photo contains the hash
+        //                 promises.push(axios.get(`/Crowdsales/${crowdsale.crowdsaleID}/getReservations`, params));
+        //             });
+
+        //             Promise.all(promises).then((resultReservations) => {
+        //                 crowdsales.forEach( (crowdsale, index) => {
+        //                     crowdsale.totalReservations = assetIntegerToDecimalRepresentation(resultReservations[index].data.totalReservations, crowdsale.acceptedCoinDecimals);
+        //                 });
+        //                 logger.info('[CROWDSALEGETALL after get reservations]', crowdsales);
+        //                 dispatch(crowdsaleGetAllSuccess(crowdsales));
+        //             });
+                    
+        //         });
+        //     }catch(error){
+        //         logger.error('[CROWDSALEGETALL error] ', error);
+        //         dispatch(crowdsaleGetAllFail(error));
+        //     }
+        // }
     }
 };
 
