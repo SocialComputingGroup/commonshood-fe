@@ -18,7 +18,7 @@ import {TextField} from "formik-material-ui";
 import CoinList from '../../../../../components/Coin/CoinList/CoinList';
 import Loading from '../../../../../components/UI/Loading/Loading';
 
-import changeCase from 'change-case';
+import {capitalCase} from 'change-case';
 
 //i18n
 import {withTranslation} from "react-i18next";
@@ -149,7 +149,7 @@ class SelectForm extends Component {
 
                         <Field
                             name="amount"
-                            placeholder={changeCase.upperCaseFirst(t('Common:amount'))}
+                            placeholder={capitalCase(t('Common:amount'))}
                             type="string"
                             onChange={handleChange}
                             onBlur={handleBlur}
@@ -167,7 +167,7 @@ class SelectForm extends Component {
                                 className={classes.buttons} variant="contained"
                                 onClick={submitForm}
                                 disabled={this.props.coinLoading}>
-                            {changeCase.upperCaseFirst(t('Common:send'))}
+                            {capitalCase(t('Common:send'))}
                         </Button>
                     </div>
                     {/*<div>{JSON.stringify(this.props.values)}</div>*/}

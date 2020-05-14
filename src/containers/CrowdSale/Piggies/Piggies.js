@@ -15,7 +15,7 @@ import Typography from '@material-ui/core/Typography'
 import {geolocated} from 'react-geolocated';
 import {fromLonLat} from 'ol/proj.js';
 
-import changeCase from 'change-case';
+import {capitalCase} from 'change-case';
 
 
 
@@ -174,7 +174,7 @@ class Piggies extends Component {
             <>
                  <Grid container>
                     <Grid item xs={12}  align="right">
-                        <Typography>{changeCase.upperCaseFirst(t('openMap'))}
+                        <Typography>{capitalCase(t('openMap'))}
                         <IconButton 
                                 color="primary" 
                                 size="small" 

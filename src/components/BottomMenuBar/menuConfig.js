@@ -1,7 +1,7 @@
 import React from 'react';
 import asyncComponent from '../../hoc/AsyncComponent/AsyncComponent';
 
-import changeCase from 'change-case';
+import {constantCase} from 'change-case';
 
 
 //Menu Icons
@@ -19,18 +19,18 @@ export const getMenuElements = (t) => {
         'pay': { //payment view
             //icon: {font: 'material', name: 'place'},
             icon: <Place/>,
-            text: changeCase.upperCase( t('pay') ),
+            text: constantCase( t('pay'), {delimiter: " "} ),
             path: '/pay',
         },
         'pigs': {
             icon: <HowToVote />,
-            text: changeCase.upperCase(t('piggies')),
+            text: constantCase(t('piggies'), {delimiter: " "} ),
             path: '/pigs',
         },
         'coins': { //coin balance view
             //icon: {font: 'material', name: 'payment'},
             icon: <Payment/>,
-            text: changeCase.upperCase( t('myWallet') ),
+            text: constantCase( t('myWallet'), {delimiter: " "} ),
             path: '/coins',
         },
 

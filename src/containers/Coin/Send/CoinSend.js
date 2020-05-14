@@ -39,7 +39,7 @@ import {
 import place_placeholder from "../../../assets/img/home-green.png";
 import {Typography} from "@material-ui/core";
 
-import changeCase from 'change-case';
+import {capitalCase} from 'change-case';
 
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
@@ -428,7 +428,7 @@ class CoinSend extends Component {
                 <SlideModal
                     open={sendFormOpened}
                     handleClose={this.sendFormClose}
-                    title={changeCase.upperCaseFirst( (t('pay')) ) + " " + preselectedContact.name}
+                    title={capitalCase( (t('pay')) ) + " " + preselectedContact.name}
                     icon={preselectedContact.icon}
                 >
 
@@ -445,7 +445,7 @@ class CoinSend extends Component {
                 <SlideModal
                     open={sendFormOpened}
                     handleClose={this.sendFormClose}
-                    title={changeCase.upperCaseFirst( (t('pay')) ) + " " + selectedContact.name}
+                    title={capitalCase( (t('pay')) ) + " " + selectedContact.name}
                     icon={selectedContact.icon}
                 >
 
@@ -466,7 +466,7 @@ class CoinSend extends Component {
                     {/* <Grid item xs={10} sm={11}> */}
                     <Grid item xs={12} >
                         <SearchField
-                            placeholder={changeCase.titleCase( t('searchContacts') )}
+                            placeholder={capitalCase( t('searchContacts') )}
                             searchHandler={(event)=>this.updateSearchInput(event.target.value)}
                             value={searchInput}
                         />
