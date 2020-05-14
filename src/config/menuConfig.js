@@ -36,13 +36,13 @@ const menuConfig = (t) => {
                     path: '/coinCreate',
                     concurrent: true,
                 },
-                // 'create_crowdsale': {
-                //     //icon: {font: 'mdi', name:'pig'},
-                //     icon: <HowToVote />,//<Pig/>,
-                //     text: t('Menu:createCrowdsale'),
-                //     path: '/crowdSaleCreate',
-                //     concurrent: true,
-                // },
+                'create_crowdsale': {
+                    //icon: {font: 'mdi', name:'pig'},
+                    icon: <HowToVote />,//<Pig/>,
+                    text: t('Menu:createCrowdsale'),
+                    path: '/crowdSaleCreate',
+                    concurrent: true,
+                },
                 // 'messages': {
                 //     icon: <Notifications />,
                 //     text: t('Menu:messages'),
