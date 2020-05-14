@@ -291,10 +291,10 @@ export const crowdsaleCreate = (crowdsaleData) => {
     logger.info('[CROWDSALE CREATE] called', crowdsaleData);
 
     return ( async (dispatch, getState) => {
+        let geoLocationAddress;
         dispatch(crowdsaleCreateStart());
-
-        const data;
         if(crowdsaleData.locationSelectedId != null) { // the user gave this crowdsale an exact geolocation
+            let data;
             try{
                 const result = await fetch(`https://geocoder.ls.hereapi.com/6.2/geocode.json?apikey=VvXjx14bJOpsdA5WMO_PTLd5Hgia1wYAlb5vO7Oa8kk&locationid=${crowdsaleData.locationSelectedId}`);
                 if(result.ok){
@@ -304,7 +304,7 @@ export const crowdsaleCreate = (crowdsaleData) => {
                 }
             
                 const locationData = data.Response.View[0].Result[0].Location;
-                const geoLocationAddress = locationData.Address.Label;
+                geoLocationAddress = locationData.Address.Label;
                 const lat = locationData.DisplayPosition.Latitude;
                 const lon = locationData.DisplayPosition.Longitude;
 
