@@ -7,6 +7,10 @@ import { useTranslation } from "react-i18next";
 import { logger } from '../../../utilities/winstonLogging/winstonInit';
 import { connect } from 'react-redux';
 
+import FeaturedCard from '../../../components/UI/Card/FeaturedCard/FeaturedCard';
+import Typography from '@material-ui/core/Typography';
+import Grid from "@material-ui/core/Grid";
+
 import { useFormik, Formik, Field, ErrorMessage } from 'formik';
 import { formFieldsNames, formFieldsTypes} from './configForm';
 
@@ -31,7 +35,7 @@ const FormStep1 = (props) => {
 }
 
 const CrowdSaleCreateForm = (props) => {
-    const t = useTranslation('CrowdSaleCreateForm');
+    const {t} = useTranslation('CrowdSaleCreateForm');
 
     const [step, setStep] = useState(0); //this represents the form "parts"
 
@@ -46,12 +50,16 @@ const CrowdSaleCreateForm = (props) => {
 
     return (
         <form onSubmit={formik.handleSubmit}>
-            {
+            <FeaturedCard title={t('describeCrowdSaleTitle')}>
+                <Grid container justify='center' alignItems='flex-end'>
                 {
-                    0: <FormStep0 formik={formik} setStep={setStep} />,
-                    1: <FormStep1 formik={formik} setStep={setStep} />
-                }[step] || <div />
-            }
+                    {
+                        0: <FormStep0 formik={formik} setStep={setStep} />,
+                        1: <FormStep1 formik={formik} setStep={setStep} />
+                    }[step] || <div />
+                }
+                </Grid>
+            </FeaturedCard>
         </form>
     );
 };
