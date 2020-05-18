@@ -17,7 +17,7 @@ export const formFieldsNames = Object.freeze({
     addressSuggest: 'addressSuggest'
 });
 
-export const formFieldTypes = Object.freeze({
+export const formFieldsTypes = Object.freeze({
     imageInput: "imageInput",
     text: "text",
     select: "select",
@@ -34,7 +34,7 @@ const formSchema = (t) => {
     return [
         {
             name: formFieldsNames.mainImage,
-            type: formFieldTypes.imageInput,
+            type: formFieldsTypes.imageInput,
             initialValue: null,
             customProps: {
                 title: t('mainImageTitle')
@@ -42,7 +42,7 @@ const formSchema = (t) => {
         },
         {
             name: formFieldsNames.bigTitle,
-            type: formFieldTypes.text,
+            type: formFieldsTypes.text,
             initialValue: undefined,
             customProps: {
                 multiline: true,
@@ -51,7 +51,7 @@ const formSchema = (t) => {
         },
         {
             name: formFieldsNames.details,
-            type: formFieldTypes.text,
+            type: formFieldsTypes.text,
             initialValue: undefined,
             customProps: {
                 multiline: true,
@@ -60,7 +60,7 @@ const formSchema = (t) => {
         },
         {
             name: formFieldsNames.totalEmittedCoin,
-            type: formFieldTypes.naturalLanguageTextField,
+            type: formFieldsTypes.naturalLanguageTextField,
             initialValue: 1,
             customProps:{
                 externalLabel: t('totalEmittedCoinLabel'),
@@ -70,7 +70,7 @@ const formSchema = (t) => {
         },
         {
             name: formFieldsNames.emittedCoin,
-            type: formFieldTypes.select,
+            type: formFieldsTypes.select,
             //label: t('emittedCoinLabel'),
             initialValue: 0,
             customProps: {},
@@ -84,7 +84,7 @@ const formSchema = (t) => {
         },
         {
             name: formFieldsNames.forEachEmittedCoin,
-            type: formFieldTypes.naturalLanguageTextField,
+            type: formFieldsTypes.naturalLanguageTextField,
             customProps:{
                 externalLabel: t('forEachEmittedCoinLabel'),
                 disabled: true,
@@ -92,7 +92,7 @@ const formSchema = (t) => {
         },
         {
             name: formFieldsNames.acceptedCoinRatio,
-            type: formFieldTypes.naturalLanguageTextField,
+            type: formFieldsTypes.naturalLanguageTextField,
             customProps: {
                 stepped: false,
                 externalLabel: t('acceptCoinRatioLabel'),
@@ -101,7 +101,7 @@ const formSchema = (t) => {
         },
         {
             name: formFieldsNames.acceptedCoin,
-            type: formFieldTypes.select,
+            type: formFieldsTypes.select,
             //label: t('acceptedCoinLabel'),
             initialValue: 0,
             customProps: {},
@@ -115,7 +115,7 @@ const formSchema = (t) => {
         },
         {
             name: formFieldsNames.totalAcceptedCoin,
-            type: formFieldTypes.naturalLanguageTextField,
+            type: formFieldsTypes.naturalLanguageTextField,
             customProps:{
                 externalLabel: t('totalAcceptedCoinLabel'),
                 disabled: true,
@@ -123,7 +123,7 @@ const formSchema = (t) => {
         },
         {
             name: formFieldsNames.coinsCouponsErrors,
-            type: formFieldTypes.typography,
+            type: formFieldsTypes.typography,
             observedFieldNames: [formFieldsNames.totalEmittedCoin, formFieldsNames.acceptedCoinRatio],
             customProps:{
                 //disabled: true,
@@ -133,7 +133,7 @@ const formSchema = (t) => {
         },
         // {
         //     name: formFieldsNames.cap,
-        //     type: formFieldTypes.naturalLanguageTextField,
+        //     type: formFieldsTypes.naturalLanguageTextField,
         //     customProps: {
         //         externalLabel: t('capLabel'),
         //         fieldMaxLength: 7,
@@ -142,7 +142,7 @@ const formSchema = (t) => {
         // },
         {
             name: formFieldsNames.startDate,
-            type: formFieldTypes.datepicker,
+            type: formFieldsTypes.datepicker,
             initialValue: new Date(),
             customProps: {
                 label: t('startDateLabel'),
@@ -154,7 +154,7 @@ const formSchema = (t) => {
         },
         {
             name: formFieldsNames.endDate,
-            type: formFieldTypes.datepicker,
+            type: formFieldsTypes.datepicker,
             today: new Date(),
             initialValue: ( () => {
                 const today = new Date();
@@ -172,7 +172,7 @@ const formSchema = (t) => {
         },
         {
             name: formFieldsNames.contract,
-            type: formFieldTypes.fileInput,
+            type: formFieldsTypes.fileInput,
             initialValue: undefined,
             inputProps: {
                 placeholder: t('contractPlaceholder'),
@@ -183,7 +183,7 @@ const formSchema = (t) => {
         },
         {
             name: formFieldsNames.addressSuggest,
-            type: formFieldTypes.addressSuggest,
+            type: formFieldsTypes.addressSuggest,
             initialValue: ""
         }
     ];
