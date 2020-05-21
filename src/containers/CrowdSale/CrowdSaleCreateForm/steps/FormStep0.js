@@ -5,6 +5,7 @@ import { logger } from '../../../../utilities/winstonLogging/winstonInit';
 
 import { makeStyles, createStyles } from '@material-ui/core/styles';
 import Button from "@material-ui/core/Button";
+import TextField from "@material-ui/core/TextField";
 import Grid from "@material-ui/core/Grid";
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 
@@ -23,6 +24,9 @@ const useStyles = makeStyles( (theme) => {
             maxHeight: "300px",
             maxWidth: "300px",
             margin: "auto",
+        },
+        textFields: {
+            margin: "10px 5px 10px 5px",
         }
     });
 });
@@ -75,10 +79,39 @@ const FormStep0 = (props) => {
                     className={classes.imgPreview}
                     /> 
             </Grid>
+            <Grid item xs={12} container justify="center">
+                <TextField 
+                    id={formFieldsNames.bigTitle}
+                    name={formFieldsNames.bigTitle}
+                    label={t('summaryPlaceholder')}
+                    fullWidth
+                    size="medium"
+                    className={classes.textFields}
+                    type="text"
+                    onChange={(event) => {
+                        formik.setFieldValue(formFieldsNames.bigTitle, event.target.value);
+                    }}
+                />
+            </Grid>
+            <Grid item xs={12} container justify="center">
+                <TextField 
+                    id={formFieldsNames.details}
+                    name={formFieldsNames.details}
+                    label={t('detailsPlaceholder')}
+                    fullWidth
+                    size="medium"
+                    className={classes.textFields}
+                    type="text"
+                    onChange={(event) => {
+                        formik.setFieldValue(formFieldsNames.details, event.target.value);
+                    }}
+                />
+            </Grid>
             <Grid item xs={12}>
                 <Button 
                     variant='contained'
                     color='primary'
+                    style={{marginTop: "10px"}}
                     onClick={ () => setStep(1)}
                     >
                     GO NEXT

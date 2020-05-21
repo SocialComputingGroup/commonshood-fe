@@ -42,6 +42,8 @@ const CrowdSaleCreateForm = (props) => {
     const formik = useFormik({
         initialValues: {
             [formFieldsNames.mainImage]: null,
+            [formFieldsNames.bigTitle]: "",
+            [formFieldsNames.details]: "",
         },
         onSubmit: (values) => {
             logger.info("CrowdsaleCreateForm form values: ", values);
