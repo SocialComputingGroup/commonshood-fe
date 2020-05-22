@@ -41,16 +41,20 @@ const FormStep0 = (props) => {
     const { t } = useTranslation('CrowdSaleCreateForm');
 
     const [mainImageBlob, setMainImageBlob] = useState(null);
+    const [mainImageName, setMainImageName] = useState(null);
     const mainImageInputRef = React.createRef(); //this is necessary for how react manages inputs of type "file"
     
     useEffect( () => {
         if(formik.values[formFieldsNames.mainImage] != null){ //formik already contains an image precedently selected by the user
             setMainImageBlob(formik.values[formFieldsNames.mainImage]);
+            setMainImageName(formik.values[formFieldsNames.mainImage].name);
         }
     });
 
     logger.info("CrowdsaleCreateForm form values: ", formik.values);
 
+
+    const imageInputFieldLabel = mainImageName === null ? t('mainImageTitle') : mainImageName;
     return (
         <Grid container justify='center' alignItems='flex-start' item xs={12}>
             <Grid item xs={12} style={{marginTop: "10px", marginBottom: "15px"}}>
@@ -70,7 +74,7 @@ const FormStep0 = (props) => {
                         accept="image/*"
                         ref={mainImageInputRef}
                     />
-                    {t('mainImageTitle')} <CloudUploadIcon color="primary" fontSize="large" style={{verticalAlign: "middle"}}/>
+                    {imageInputFieldLabel} <CloudUploadIcon color="primary" fontSize="large" style={{verticalAlign: "middle"}}/>
                 </label>
             </Grid>
             <Grid item xs={12}>
