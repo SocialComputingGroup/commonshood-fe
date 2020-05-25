@@ -1,11 +1,13 @@
 
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 
 import * as actions from "../../../store/actions";
 import { useTranslation } from "react-i18next";
 //import { withRouter } from 'react-router-dom';
 import { logger } from '../../../utilities/winstonLogging/winstonInit';
 import { connect } from 'react-redux';
+
+import {assetsType} from '../../../config/assets';
 
 import FeaturedCard from '../../../components/UI/Card/FeaturedCard/FeaturedCard';
 import Typography from '@material-ui/core/Typography';
@@ -15,29 +17,24 @@ import { useFormik, Formik, Field, ErrorMessage } from 'formik';
 import { formFieldsNames, formFieldsTypes} from './configForm';
 
 import FormStep0 from './steps/FormStep0';
+import FormStep1 from './steps/FormStep1';
 //import CustomImageInput from '../../../components/UI/Form/Upload/CustomImageInput/CustomImageInput';
 
 const validationSchema = {
 
 };
 
-
-const FormStep1 = (props) => {
-    const {
-        formik,
-        setStep
-    } = props;
-
-    logger.info("CrowdsaleCreateForm form values: ", formik.values);
-    return (
-        <button onClick={ () => setStep(0)}>GO PREV</button>
-    );
-}
-
 const CrowdSaleCreateForm = (props) => {
+    const {
+        onCoinGetAll,
+        coinList,
+        userWallet
+    } = props;
     const {t} = useTranslation('CrowdSaleCreateForm');
 
     const [step, setStep] = useState(0); //this represents the form "parts"
+    const [ownedCoupons, setOwnedCoupons] = useState([]);
+    const [allTokens, setAllTokens] = useState([]);
 
     const formik = useFormik({
         initialValues: {
@@ -49,6 +46,24 @@ const CrowdSaleCreateForm = (props) => {
             logger.info("CrowdsaleCreateForm form values: ", values);
         }
     });
+
+    useEffect( () => {
+        onCoinGetAll();
+    }, []);
+
+    useEffect( () => {
+        if(coinList != null && coinList.length !== 0){
+            setAllTokens( coinList.filter( coin => coin.type === assetsType.token.name ) );
+            setOwnedCoupons( 
+                coinList
+                    .filter( coin => coin.type === assetsType.goods.name )
+                    .filter( coupon => coupon.addressOfOwner === userWallet )
+            );
+        }
+    }, [coinList]);
+
+    logger.info('alltokens => ', allTokens);
+    logger.info('ownedCoupons =>', ownedCoupons);
 
     return (
         <form onSubmit={formik.handleSubmit}>
@@ -73,20 +88,21 @@ const mapStateToProps = state => {
         // fileList: state.file.fileList,
         // loading: state.coin.loading,
         // coinError: state.coin.error,
-        // coinList: state.coin.coinList,
+        coinList: state.coin.coinListForPiggies,
         // fileData: state.file.fileData,
         // fileError: state.file.error,
         // profile: state.user.currentProfile,
         // creationSuccess: state.crowdsale.crowdSaleCreated,
         // creationFailureError: state.crowdsale.error,
         // crowdsaleLoading: state.crowdsale.loading,
+        userWallet: state.web3.currentAccount
     }
 };
 
 const mapDispatchToProps = dispatch => {
     return {
         onCoinGetListReset: () => dispatch(actions.coinGetListReset()),
-        onCoinGetAllOwned: () => dispatch (actions.coinGetList(null, true, true, true)),
+        onCoinGetAll: () => dispatch(actions.coinGetList(null, false, false, true, null)),
         onFileGetList: (hashArray) => dispatch(actions.fileGetList(hashArray)),
         onFileGetListReset: () => dispatch(actions.fileGetListReset()),
         onFileUpload: (file) => dispatch(actions.fileUpload(file)),
