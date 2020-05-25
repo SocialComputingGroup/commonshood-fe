@@ -4,9 +4,7 @@ import { formFieldsNames } from '../configForm';
 import { logger } from '../../../../utilities/winstonLogging/winstonInit';
 
 import { makeStyles, createStyles } from '@material-ui/core/styles';
-import Button from "@material-ui/core/Button";
-import TextField from "@material-ui/core/TextField";
-import Grid from "@material-ui/core/Grid";
+import { Button, TextField, Grid} from "@material-ui/core";
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 
 const useStyles = makeStyles( (theme) => {
@@ -50,9 +48,6 @@ const FormStep0 = (props) => {
             setMainImageName(formik.values[formFieldsNames.mainImage].name);
         }
     });
-
-    logger.info("CrowdsaleCreateForm form values: ", formik.values);
-
 
     const imageInputFieldLabel = mainImageName === null ? t('mainImageTitle') : mainImageName;
     return (

@@ -41,6 +41,8 @@ const CrowdSaleCreateForm = (props) => {
             [formFieldsNames.mainImage]: null,
             [formFieldsNames.bigTitle]: "",
             [formFieldsNames.details]: "",
+            [formFieldsNames.totalEmittedCoin]: 1,
+            [formFieldsNames.emittedCoin]: null,
         },
         onSubmit: (values) => {
             logger.info("CrowdsaleCreateForm form values: ", values);
@@ -64,6 +66,8 @@ const CrowdSaleCreateForm = (props) => {
 
     logger.info('alltokens => ', allTokens);
     logger.info('ownedCoupons =>', ownedCoupons);
+    logger.info("CrowdsaleCreateForm form values: ", formik.values);
+
 
     return (
         <form onSubmit={formik.handleSubmit}>
@@ -72,7 +76,7 @@ const CrowdSaleCreateForm = (props) => {
                 {
                     {
                         0: <FormStep0 formik={formik} setStep={setStep} />,
-                        1: <FormStep1 formik={formik} setStep={setStep} />
+                        1: <FormStep1 formik={formik} setStep={setStep} ownedCoupons={ownedCoupons} />
                     }[step] || <div />
                 }
                 </Grid>
