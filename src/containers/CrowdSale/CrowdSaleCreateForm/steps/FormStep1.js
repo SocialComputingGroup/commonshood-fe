@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from "react-i18next";
 import { formFieldsNames } from '../configForm';
 import { logger } from '../../../../utilities/winstonLogging/winstonInit';
@@ -29,12 +29,15 @@ const FormStep1 = (props) => {
     const classes = useStyles();
     const { t } = useTranslation('CrowdSaleCreateForm');
 
-    const [selectedEmittedCoin, setSelectedEmittedCoin] = useState(
-        0 // <CoinMenuItem  coin={ownedCoupons[0]} value={0} />
-    );
+    const [selectedEmittedCoin, setSelectedEmittedCoin] = useState(0); 
+    useEffect( () => {
+        if(formik.values[formFieldsNames.emittedCoin].address != ownedCoupons[selectedEmittedCoin].address ){
+            formik.setFieldValue(formFieldsNames.emittedCoin, ownedCoupons[selectedEmittedCoin]); //initialize correctly
+        }
+    }, [ownedCoupons, formik]);
 
     const handleEmittedCoinSelect = (event) => {
-        formik.setFieldValue(formFieldsNames.emittedCoin, ownedCoupons[event.target.value].address);
+        formik.setFieldValue(formFieldsNames.emittedCoin, ownedCoupons[event.target.value]);
         setSelectedEmittedCoin(
             event.target.value//<CoinMenuItem  coin={ownedCoupons[event.target.value]} value={event.target.value} />
         )

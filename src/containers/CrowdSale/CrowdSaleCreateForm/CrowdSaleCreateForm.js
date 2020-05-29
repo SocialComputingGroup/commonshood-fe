@@ -20,7 +20,7 @@ import Loading from '../../../components/UI/Loading/Loading.js'
 
 import FormStep0 from './steps/FormStep0';
 import FormStep1 from './steps/FormStep1';
-//import CustomImageInput from '../../../components/UI/Form/Upload/CustomImageInput/CustomImageInput';
+import FormStep2 from './steps/FormStep2';
 
 const validationSchema = {
 
@@ -44,7 +44,7 @@ const CrowdSaleCreateForm = (props) => {
             [formFieldsNames.bigTitle]: "",
             [formFieldsNames.details]: "",
             [formFieldsNames.totalEmittedCoin]: 1,
-            [formFieldsNames.emittedCoin]: 0,
+            [formFieldsNames.emittedCoin]: {},
         },
         onSubmit: (values) => {
             logger.info("CrowdsaleCreateForm form values: ", values);
@@ -83,7 +83,8 @@ const CrowdSaleCreateForm = (props) => {
                 {
                     {
                         0: <FormStep0 formik={formik} setStep={setStep} />,
-                        1: <FormStep1 formik={formik} setStep={setStep} ownedCoupons={ownedCoupons} />
+                        1: <FormStep1 formik={formik} setStep={setStep} ownedCoupons={ownedCoupons} />,
+                        2: <FormStep2 formik={formik} setStep={setStep} allTokens={allTokens} />
                     }[step] || <div />
                 }
                 </Grid>
