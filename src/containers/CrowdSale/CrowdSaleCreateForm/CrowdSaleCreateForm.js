@@ -16,6 +16,8 @@ import Grid from "@material-ui/core/Grid";
 import { useFormik, Formik, Field, ErrorMessage } from 'formik';
 import { formFieldsNames, formFieldsTypes} from './configForm';
 
+import Loading from '../../../components/UI/Loading/Loading.js'
+
 import FormStep0 from './steps/FormStep0';
 import FormStep1 from './steps/FormStep1';
 //import CustomImageInput from '../../../components/UI/Form/Upload/CustomImageInput/CustomImageInput';
@@ -42,7 +44,7 @@ const CrowdSaleCreateForm = (props) => {
             [formFieldsNames.bigTitle]: "",
             [formFieldsNames.details]: "",
             [formFieldsNames.totalEmittedCoin]: 1,
-            [formFieldsNames.emittedCoin]: null,
+            [formFieldsNames.emittedCoin]: 0,
         },
         onSubmit: (values) => {
             logger.info("CrowdsaleCreateForm form values: ", values);
@@ -68,6 +70,11 @@ const CrowdSaleCreateForm = (props) => {
     logger.info('ownedCoupons =>', ownedCoupons);
     logger.info("CrowdsaleCreateForm form values: ", formik.values);
 
+    if(coinList === null || coinList.length === 0){
+        return (
+            <Loading withLoader={true} />
+        )
+    }
 
     return (
         <form onSubmit={formik.handleSubmit}>

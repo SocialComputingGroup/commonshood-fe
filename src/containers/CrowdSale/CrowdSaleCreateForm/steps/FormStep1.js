@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from "react-i18next";
 import { formFieldsNames } from '../configForm';
 import { logger } from '../../../../utilities/winstonLogging/winstonInit';
@@ -6,22 +6,9 @@ import { logger } from '../../../../utilities/winstonLogging/winstonInit';
 import { makeStyles, createStyles } from '@material-ui/core/styles';
 import {Grid, Button, Typography, TextField, MenuItem, Avatar} from "@material-ui/core";
 
+
 const useStyles = makeStyles( (theme) => {
     return createStyles({
-        imageLabel: {
-            borderColor: theme.palette.primary.main,
-            borderStyle: "solid",
-            borderSize: "1px",
-            padding: "10px",
-        },
-        imgPreview: {
-            display: "block",
-            height: "100%",
-            width: "100%",
-            maxHeight: "300px",
-            maxWidth: "300px",
-            margin: "auto",
-        },
         textFields: {
             margin: "10px 5px 10px 5px",
         },
@@ -41,6 +28,17 @@ const FormStep1 = (props) => {
 
     const classes = useStyles();
     const { t } = useTranslation('CrowdSaleCreateForm');
+
+    const [selectedEmittedCoin, setSelectedEmittedCoin] = useState(
+        0 // <CoinMenuItem  coin={ownedCoupons[0]} value={0} />
+    );
+
+    const handleEmittedCoinSelect = (event) => {
+        formik.setFieldValue(formFieldsNames.emittedCoin, ownedCoupons[event.target.value].address);
+        setSelectedEmittedCoin(
+            event.target.value//<CoinMenuItem  coin={ownedCoupons[event.target.value]} value={event.target.value} />
+        )
+    };
 
     return (
         <Grid 
@@ -77,19 +75,25 @@ const FormStep1 = (props) => {
                         name={formFieldsNames.emittedCoin}
                         size="medium"
                         className={classes.select}
-                        onChange={(event) => {
-                            formik.setFieldValue(formFieldsNames.emittedCoin, event.target.value);
-                        }}
+                        value={selectedEmittedCoin}
+                        onChange={(event) => handleEmittedCoinSelect(event)}
                         label="The coupon to distribute"
                     >
-                        {ownedCoupons.map( (coupon) => {
+                        {ownedCoupons.map( (coupon, index) => {
                             return (
-                                <MenuItem key={coupon.symbol} value={coupon.address}>
-                                   <Avatar
-                                        alt={coupon.symbol}
-                                        src={coupon.logoFile}
-                                        style={{marginRight: "5px"}}
-                                    /> - {coupon.symbol}
+                                <MenuItem key={coupon.symbol} value={index} key={index}>
+                                    <Grid container justify="space-around" alignItems="center">
+                                        <Grid item xs={6}>
+                                            <Avatar
+                                                alt={coupon.symbol}
+                                                src={coupon.logoFile}
+                                                style={{marginRight: "5px"}}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={6}>
+                                            {coupon.symbol}
+                                        </Grid>
+                                    </Grid>
                                 </MenuItem>
                             )
                         })}
