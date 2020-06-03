@@ -29,7 +29,10 @@ const FormStep1 = (props) => {
     const classes = useStyles();
     const { t } = useTranslation('CrowdSaleCreateForm');
 
-    const [selectedEmittedCoin, setSelectedEmittedCoin] = useState(0); 
+    const [selectedEmittedCoin, setSelectedEmittedCoin] = useState(formik.values[formFieldsNames.indexEmittedCoin]); 
+    const minimumTotalEmittedCoin = 1;
+    const [totalEmittedCoin, setTotalEmittedCoin] = useState(formik.values[formFieldsNames.totalEmittedCoin]);
+
     useEffect( () => {
         if(formik.values[formFieldsNames.emittedCoin].address != ownedCoupons[selectedEmittedCoin].address ){
             formik.setFieldValue(formFieldsNames.emittedCoin, ownedCoupons[selectedEmittedCoin]); //initialize correctly
@@ -38,9 +41,8 @@ const FormStep1 = (props) => {
 
     const handleEmittedCoinSelect = (event) => {
         formik.setFieldValue(formFieldsNames.emittedCoin, ownedCoupons[event.target.value]);
-        setSelectedEmittedCoin(
-            event.target.value//<CoinMenuItem  coin={ownedCoupons[event.target.value]} value={event.target.value} />
-        )
+        formik.setFieldValue(formFieldsNames.indexEmittedCoin, event.target.value);
+        setSelectedEmittedCoin(event.target.value);
     };
 
     return (
@@ -52,26 +54,28 @@ const FormStep1 = (props) => {
             style={{marginTop: "20px"}}
             >
             <Grid container justify="center" alignItems="center" item xs={12}>
-                <Grid item md={1} xs={6}>
+                <Grid item lg={1} xs={6}>
                     <Typography style={{paddingTop: "20px"}}>{t('totalEmittedCoinLabel')}</Typography>
                 </Grid>
-                <Grid item md={1} xs={6}>
+                <Grid item lg={1} xs={6}>
                     <TextField 
                         id={formFieldsNames.totalEmittedCoin}
                         name={formFieldsNames.totalEmittedCoin}
                         size="medium"
                         className={classes.textFields}
                         type="number"
-                        inputProps= {{ min: 1, step: 1}}
+                        inputProps= {{ min: minimumTotalEmittedCoin, step: 1}}
+                        value={totalEmittedCoin}
                         //max={} //TODO put here 
                         onChange={(event) => {
                             formik.setFieldValue(formFieldsNames.totalEmittedCoin, event.target.value);
+                            setTotalEmittedCoin(event.target.value);
                         }}
                         label="Quantity"
                     />
                 </Grid>
 
-                <Grid item md={2} xs={12}>
+                <Grid item lg={2} xs={12}>
                     <TextField 
                         select
                         id={formFieldsNames.emittedCoin}

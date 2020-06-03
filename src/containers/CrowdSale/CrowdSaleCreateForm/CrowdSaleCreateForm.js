@@ -44,7 +44,12 @@ const CrowdSaleCreateForm = (props) => {
             [formFieldsNames.bigTitle]: "",
             [formFieldsNames.details]: "",
             [formFieldsNames.totalEmittedCoin]: 1,
+            [formFieldsNames.indexEmittedCoin]: 0,
             [formFieldsNames.emittedCoin]: {},
+            [formFieldsNames.forEachEmittedCoin]: 1, //fixed
+            [formFieldsNames.acceptedCoinRatio]: 0.01,
+            [formFieldsNames.indexAcceptedCoin]: 0,
+            [formFieldsNames.acceptedCoin]: {},
         },
         onSubmit: (values) => {
             logger.info("CrowdsaleCreateForm form values: ", values);
@@ -57,11 +62,16 @@ const CrowdSaleCreateForm = (props) => {
 
     useEffect( () => {
         if(coinList != null && coinList.length !== 0){
-            setAllTokens( coinList.filter( coin => coin.type === assetsType.token.name ) );
+            setAllTokens( 
+                coinList
+                    .filter( coin => coin.type === assetsType.token.name ) 
+                    .sort( (a,b) => a.symbol.localeCompare(b.symbol))
+                ); 
             setOwnedCoupons( 
                 coinList
                     .filter( coin => coin.type === assetsType.goods.name )
                     .filter( coupon => coupon.addressOfOwner === userWallet )
+                    .sort( (a,b) => a.symbol.localeCompare(b.symbol))
             );
         }
     }, [coinList]);
