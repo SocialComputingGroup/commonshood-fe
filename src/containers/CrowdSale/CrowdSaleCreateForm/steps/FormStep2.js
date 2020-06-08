@@ -7,18 +7,28 @@ import { makeStyles, createStyles } from '@material-ui/core/styles';
 
 const useStyles = makeStyles( (theme) => {
     return createStyles({
-        textFields: {
-            margin: "10px 5px 10px 5px",
+        field: {
+            margin: "0 5px 0 5px",
         },
         select:{
-            margin: "10px 5px 10px 5px",
             minWidth: "200px",
+            margin: "0 5px 0 5px",
+            [theme.breakpoints.only('xs')]: {
+                margin: "20px 5px 20px 5px",
+            },
+
         },
         avatar: { 
             display: "inline-block", 
             marginLeft: "10px", 
             marginRight: "5px"
         },
+        formRow: {
+            margin: "25px 0 25px 0",
+            [theme.breakpoints.only('xs')]: {
+                margin: "15px 0 15px 0",
+            },
+        }
     });
 });
 
@@ -37,11 +47,19 @@ const FormStep2 = (props) => {
 
     const [selectedAcceptedCoin, setSelectedAcceptedCoin] = useState(formik.values[formFieldsNames.indexAcceptedCoin]);
 
-    useEffect( () => {
+    useEffect( function initializeAcceptedCoin() {
         if(formik.values[formFieldsNames.acceptedCoin].address != allTokens[selectedAcceptedCoin].address ){
             formik.setFieldValue(formFieldsNames.acceptedCoin, allTokens[selectedAcceptedCoin]); //initialize correctly
         }
     }, [allTokens, formik]);
+
+    useEffect( function updateTotalAcceptedCoin(){
+        let newTotalAcceptedCoin = formik.values[formFieldsNames.totalEmittedCoin] * formik.values[formFieldsNames.acceptedCoinRatio];
+        newTotalAcceptedCoin = Number(newTotalAcceptedCoin.toFixed(2)); //format to have two decimals
+        if(formik.values[formFieldsNames.totalAcceptedCoin] !== newTotalAcceptedCoin){
+            formik.setFieldValue(formFieldsNames.totalAcceptedCoin, newTotalAcceptedCoin);
+        }
+    }, [formik]);
 
     const handleAcceptedCoinSelect = (event) => {
         formik.setFieldValue(formFieldsNames.acceptedCoin, allTokens[event.target.value]);
@@ -58,7 +76,7 @@ const FormStep2 = (props) => {
             style={{marginTop: "20px"}}
             >
             <Grid container justify="center" alignItems="center" item xs={12}>
-                <Grid item xs={12}>
+                <Grid item xs={12} className={classes.formRow}>
                     <Typography style={{display: "inline-block", paddingTop: "20px"}}>{t('forEachEmittedCoinLabel')} {formik.values[formFieldsNames.forEachEmittedCoin]}</Typography>
                     <Avatar
                         alt={emittedCoupon.symbol}
@@ -68,7 +86,7 @@ const FormStep2 = (props) => {
                     <Typography style={{display: "inline-block"}}>{emittedCoupon.symbol}</Typography>
                 </Grid>
 
-                <Grid container justify="center" alignItems="center" item xs={12}>
+                <Grid container justify="center" alignItems="flex-end" item xs={12} className={classes.formRow}>
                     <Grid item lg={1} xs={6}>
                         <Typography style={{display: "inline-block", paddingTop: "20px"}}>{t('acceptCoinRatioLabel')}</Typography>
                     </Grid>
@@ -77,7 +95,7 @@ const FormStep2 = (props) => {
                             id={formFieldsNames.acceptedCoinRatio}
                             name={formFieldsNames.acceptedCoinRatio}
                             size="medium"
-                            className={classes.textFields}
+                            className={classes.field}
                             type="number"
                             inputProps= {{ min: 0.01, step: 0.10}}//max={} //TODO put here 
                             value={acceptedCoinRatio}
@@ -120,7 +138,20 @@ const FormStep2 = (props) => {
                         </TextField>
                     </Grid>
                 </Grid>
+
+                <Grid item lg={12} xs={12} className={classes.formRow}>
+                    <Typography style={{display: "inline-block", paddingTop: "20px"}}>
+                        {t("totalAcceptedCoinLabel")} {formik.values[formFieldsNames.totalAcceptedCoin]}
+                    </Typography>
+                    <Avatar
+                        style={{display: "inline-block", marginLeft: "10px"}}
+                        alt={formik.values[formFieldsNames.acceptedCoin].symbol}
+                        src={formik.values[formFieldsNames.acceptedCoin].logoFile}
+                        className={formik.values[formFieldsNames.acceptedCoin].avatar}
+                    />
+                </Grid>
             </Grid>
+
             <Grid item md={6} xs={12}>
                 <Button 
                     variant='contained'

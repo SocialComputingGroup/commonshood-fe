@@ -9,12 +9,15 @@ import {Grid, Button, Typography, TextField, MenuItem, Avatar} from "@material-u
 
 const useStyles = makeStyles( (theme) => {
     return createStyles({
-        textFields: {
-            margin: "10px 5px 10px 5px",
+        field: {
+            margin: "0 5px 0 5px",
         },
         select:{
-            margin: "10px 5px 10px 5px",
+            margin: "0 5px 0 5px",
             minWidth: "200px",
+            [theme.breakpoints.only('xs')]: {
+                margin: "20px 5px 20px 5px",
+            },
         }
     });
 });
@@ -53,7 +56,7 @@ const FormStep1 = (props) => {
             item xs={12}
             style={{marginTop: "20px"}}
             >
-            <Grid container justify="center" alignItems="center" item xs={12}>
+            <Grid container justify="center" alignItems="flex-end" item xs={12}>
                 <Grid item lg={1} xs={6}>
                     <Typography style={{paddingTop: "20px"}}>{t('totalEmittedCoinLabel')}</Typography>
                 </Grid>
@@ -62,7 +65,7 @@ const FormStep1 = (props) => {
                         id={formFieldsNames.totalEmittedCoin}
                         name={formFieldsNames.totalEmittedCoin}
                         size="medium"
-                        className={classes.textFields}
+                        className={classes.field}
                         type="number"
                         inputProps= {{ min: minimumTotalEmittedCoin, step: 1}}
                         value={totalEmittedCoin}

@@ -50,6 +50,7 @@ const CrowdSaleCreateForm = (props) => {
             [formFieldsNames.acceptedCoinRatio]: 0.01,
             [formFieldsNames.indexAcceptedCoin]: 0,
             [formFieldsNames.acceptedCoin]: {},
+            [formFieldsNames.totalAcceptedCoin]: 0.01,
         },
         onSubmit: (values) => {
             logger.info("CrowdsaleCreateForm form values: ", values);
