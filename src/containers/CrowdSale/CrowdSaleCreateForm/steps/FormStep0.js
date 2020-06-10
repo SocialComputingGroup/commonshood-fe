@@ -13,7 +13,7 @@ const useStyles = makeStyles( (theme) => {
             borderColor: theme.palette.primary.main,
             borderStyle: "solid",
             borderSize: "1px",
-            padding: "10px",
+            padding: "10px 35px 10px 35px",
         },
         imgPreview: {
             display: "block",
@@ -87,6 +87,7 @@ const FormStep0 = (props) => {
                     size="medium"
                     className={classes.textFields}
                     type="text"
+                    value={formik.values[formFieldsNames.bigTitle]}
                     onChange={(event) => {
                         formik.setFieldValue(formFieldsNames.bigTitle, event.target.value);
                     }}
@@ -96,11 +97,13 @@ const FormStep0 = (props) => {
                 <TextField 
                     id={formFieldsNames.details}
                     name={formFieldsNames.details}
+                    multiline
                     label={t('detailsPlaceholder')}
                     fullWidth
                     size="medium"
                     className={classes.textFields}
                     type="text"
+                    value={formik.values[formFieldsNames.details]}
                     onChange={(event) => {
                         formik.setFieldValue(formFieldsNames.details, event.target.value);
                     }}

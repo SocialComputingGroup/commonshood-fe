@@ -21,6 +21,7 @@ import Loading from '../../../components/UI/Loading/Loading.js'
 import FormStep0 from './steps/FormStep0';
 import FormStep1 from './steps/FormStep1';
 import FormStep2 from './steps/FormStep2';
+import FormStep3 from './steps/FormStep3';
 
 const validationSchema = {
 
@@ -38,6 +39,11 @@ const CrowdSaleCreateForm = (props) => {
     const [ownedCoupons, setOwnedCoupons] = useState([]);
     const [allTokens, setAllTokens] = useState([]);
 
+    const today = new Date().toISOString().substring(0,10);
+    let tomorrow = new Date();
+    tomorrow.setDate( ( new Date() ).getDate() +1);
+    tomorrow = tomorrow.toISOString().substring(0,10);
+
     const formik = useFormik({
         initialValues: {
             [formFieldsNames.mainImage]: null,
@@ -51,6 +57,9 @@ const CrowdSaleCreateForm = (props) => {
             [formFieldsNames.indexAcceptedCoin]: 0,
             [formFieldsNames.acceptedCoin]: {},
             [formFieldsNames.totalAcceptedCoin]: 0.01,
+            [formFieldsNames.startDate]: today,
+            [formFieldsNames.endDate]: tomorrow,
+            [formFieldsNames.contract]: null
         },
         onSubmit: (values) => {
             logger.info("CrowdsaleCreateForm form values: ", values);
@@ -95,7 +104,8 @@ const CrowdSaleCreateForm = (props) => {
                     {
                         0: <FormStep0 formik={formik} setStep={setStep} />,
                         1: <FormStep1 formik={formik} setStep={setStep} ownedCoupons={ownedCoupons} />,
-                        2: <FormStep2 formik={formik} setStep={setStep} allTokens={allTokens} />
+                        2: <FormStep2 formik={formik} setStep={setStep} allTokens={allTokens} />,
+                        3: <FormStep3 formik={formik} setStep={setStep} />
                     }[step] || <div />
                 }
                 </Grid>
