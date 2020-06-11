@@ -31,15 +31,36 @@ const FormStep3 = (props) => {
         setStep,
     } = props;
 
+    const{
+        errors,
+        touched,
+        values,
+        handleBlur, //this is passed to onBlur of field to let formik manage touched event
+        setFieldValue
+    } = formik;
+
     const classes = useStyles();
     const {t} = useTranslation('CrowdSaleCreateForm');
 
-    const [startDate, setStartDate] = useState(formik.values[formFieldsNames.startDate]);
-    const [endDate, setEndDate] = useState(formik.values[formFieldsNames.endDate]);
-    const [contractFile, setContractFile] = useState(formik.values[formFieldsNames.contract]);
+    const [startDate, setStartDate] = useState(values[formFieldsNames.startDate]);
+    const [endDate, setEndDate] = useState(values[formFieldsNames.endDate]);
+    const [contractFile, setContractFile] = useState(values[formFieldsNames.contract]);
     const [contractName, setContractName] = useState(contractFile != null ? contractFile.name : null);
-    const contractInputFieldLabel = contractName === null ? t('contractPlaceholder') : contractName;
-
+    
+    let contractInputFieldLabel = null;
+    if( (errors[formFieldsNames.contract] != null)){
+        contractInputFieldLabel = (
+            <Typography style={{display: "inline-block", color: "#f44336"}}> 
+                {errors[formFieldsNames.contract]} - 
+            </Typography> 
+        )
+    }else{
+        contractInputFieldLabel = (
+            <Typography style={{display: "inline-block"}}> 
+                {contractName === null ? t('contractPlaceholder') : contractName} - 
+            </Typography> 
+        )
+    }
 
     const contractInputRef = React.createRef(); //this is necessary for how react manages inputs of type "file"
 
@@ -56,7 +77,8 @@ const FormStep3 = (props) => {
 
                 <Grid  item md={1} xs={12} className={classes.dateRow}>
                     <TextField
-                        id="startDateInput"
+                        id={formFieldsNames.startDate}
+                        name={formFieldsNames.startDate}
                         label={t('startDateLabel')}
                         type="date"
                         value={startDate} 
@@ -65,15 +87,19 @@ const FormStep3 = (props) => {
                             shrink: true,
                         }}
                         onChange={ (event) => {
-                            formik.setFieldValue(formFieldsNames.startDate, event.target.value);
+                            setFieldValue(formFieldsNames.startDate, event.target.value);
                             setStartDate(event.target.value);
                         }}
+                        onBlur={handleBlur}
+                        error={(errors[formFieldsNames.startDate] != null) && touched[formFieldsNames.startDate]}
+                        helperText={touched[formFieldsNames.startDate] ? errors[formFieldsNames.startDate] : null}
                     />
                 </Grid>
 
                 <Grid  item md={1} xs={12} className={classes.dateRow}>
                     <TextField
-                        id="endDateInput"
+                        id={formFieldsNames.endDate}
+                        name={formFieldsNames.endDate}
                         label={t('endDateLabel')}
                         type="date"
                         value={endDate} 
@@ -82,9 +108,12 @@ const FormStep3 = (props) => {
                             shrink: true,
                         }}
                         onChange={ (event) => {
-                            formik.setFieldValue(formFieldsNames.endDate, event.target.value);
+                            setFieldValue(formFieldsNames.endDate, event.target.value);
                             setEndDate(event.target.value);
                         }}
+                        onBlur={handleBlur}
+                        error={(errors[formFieldsNames.endDate] != null) && touched[formFieldsNames.endDate]}
+                        helperText={touched[formFieldsNames.endDate] ? errors[formFieldsNames.endDate] : null}
                     />
                 </Grid>
 
@@ -99,14 +128,14 @@ const FormStep3 = (props) => {
                             type="file"
                             style={{display: "none",}} //we don't want to show directly the html file input which is hardly customizable for security reasons
                             onChange={(event) => {
-                                formik.setFieldValue(formFieldsNames.contract, event.currentTarget.files[0]);
+                                setFieldValue(formFieldsNames.contract, event.currentTarget.files[0]);
                                 setContractFile(event.currentTarget.files[0]);
                                 setContractName(event.currentTarget.files[0].name);
                             }}
                             accept=".pdf"
                             ref={contractInputRef}
                         />
-                        <Typography style={{display: "inline-block"}}>{contractInputFieldLabel} - </Typography> 
+                        {contractInputFieldLabel}
                         <AttachFileIcon color="primary" fontSize="large" style={{verticalAlign: "middle"}}/>
                     </label>
                 </Grid>

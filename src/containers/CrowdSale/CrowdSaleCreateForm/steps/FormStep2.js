@@ -39,31 +39,40 @@ const FormStep2 = (props) => {
         setStep,
         allTokens
     } = props;
+
+    const{
+        errors,
+        touched,
+        values,
+        handleBlur, //this is passed to onBlur of field to let formik manage touched event
+        setFieldValue
+    } = formik;
+    
     const classes = useStyles();
     const { t } = useTranslation('CrowdSaleCreateForm');
-    const emittedCoupon = formik.values[formFieldsNames.emittedCoin];
+    const emittedCoupon = values[formFieldsNames.emittedCoin];
 
-    const [acceptedCoinRatio, setAcceptedCoinRatio] = useState(formik.values[formFieldsNames.acceptedCoinRatio]);
+    const [acceptedCoinRatio, setAcceptedCoinRatio] = useState(values[formFieldsNames.acceptedCoinRatio]);
 
-    const [selectedAcceptedCoin, setSelectedAcceptedCoin] = useState(formik.values[formFieldsNames.indexAcceptedCoin]);
+    const [selectedAcceptedCoin, setSelectedAcceptedCoin] = useState(values[formFieldsNames.indexAcceptedCoin]);
 
     useEffect( function initializeAcceptedCoin() {
-        if(formik.values[formFieldsNames.acceptedCoin].address != allTokens[selectedAcceptedCoin].address ){
-            formik.setFieldValue(formFieldsNames.acceptedCoin, allTokens[selectedAcceptedCoin]); //initialize correctly
+        if(values[formFieldsNames.acceptedCoin].address != allTokens[selectedAcceptedCoin].address ){
+            setFieldValue(formFieldsNames.acceptedCoin, allTokens[selectedAcceptedCoin]); //initialize correctly
         }
     }, [allTokens, formik]);
 
     useEffect( function updateTotalAcceptedCoin(){
-        let newTotalAcceptedCoin = formik.values[formFieldsNames.totalEmittedCoin] * formik.values[formFieldsNames.acceptedCoinRatio];
+        let newTotalAcceptedCoin = values[formFieldsNames.totalEmittedCoin] * values[formFieldsNames.acceptedCoinRatio];
         newTotalAcceptedCoin = Number(newTotalAcceptedCoin.toFixed(2)); //format to have two decimals
-        if(formik.values[formFieldsNames.totalAcceptedCoin] !== newTotalAcceptedCoin){
-            formik.setFieldValue(formFieldsNames.totalAcceptedCoin, newTotalAcceptedCoin);
+        if(values[formFieldsNames.totalAcceptedCoin] !== newTotalAcceptedCoin){
+            setFieldValue(formFieldsNames.totalAcceptedCoin, newTotalAcceptedCoin);
         }
     }, [formik]);
 
     const handleAcceptedCoinSelect = (event) => {
-        formik.setFieldValue(formFieldsNames.acceptedCoin, allTokens[event.target.value]);
-        formik.setFieldValue(formFieldsNames.indexAcceptedCoin, event.target.value);
+        setFieldValue(formFieldsNames.acceptedCoin, allTokens[event.target.value]);
+        setFieldValue(formFieldsNames.indexAcceptedCoin, event.target.value);
         setSelectedAcceptedCoin(event.target.value);
     };
 
@@ -77,7 +86,7 @@ const FormStep2 = (props) => {
             >
             <Grid container justify="center" alignItems="center" item xs={12}>
                 <Grid item xs={12} className={classes.formRow}>
-                    <Typography style={{display: "inline-block", paddingTop: "20px"}}>{t('forEachEmittedCoinLabel')} {formik.values[formFieldsNames.forEachEmittedCoin]}</Typography>
+                    <Typography style={{display: "inline-block", paddingTop: "20px"}}>{t('forEachEmittedCoinLabel')} {values[formFieldsNames.forEachEmittedCoin]}</Typography>
                     <Avatar
                         alt={emittedCoupon.symbol}
                         src={emittedCoupon.logoFile}
@@ -100,10 +109,13 @@ const FormStep2 = (props) => {
                             inputProps= {{ min: 0.01, step: 0.10}}//max={} //TODO put here 
                             value={acceptedCoinRatio}
                             onChange={(event) => {
-                                formik.setFieldValue(formFieldsNames.acceptedCoinRatio, event.target.value);
+                                setFieldValue(formFieldsNames.acceptedCoinRatio, event.target.value);
                                 setAcceptedCoinRatio(event.target.value);
                             }}
                             label="Quantity"
+                            onBlur={handleBlur}
+                            error={(errors[formFieldsNames.acceptedCoinRatio] != null) && touched[formFieldsNames.acceptedCoinRatio]}
+                            helperText={touched[formFieldsNames.acceptedCoinRatio] ? errors[formFieldsNames.acceptedCoinRatio] : null}
                         />
                     </Grid>
                     <Grid item lg={1} xs={12}>
@@ -141,13 +153,13 @@ const FormStep2 = (props) => {
 
                 <Grid item lg={12} xs={12} className={classes.formRow}>
                     <Typography style={{display: "inline-block", paddingTop: "20px"}}>
-                        {t("totalAcceptedCoinLabel")} {formik.values[formFieldsNames.totalAcceptedCoin]}
+                        {t("totalAcceptedCoinLabel")} {values[formFieldsNames.totalAcceptedCoin]}
                     </Typography>
                     <Avatar
                         style={{display: "inline-block", marginLeft: "10px"}}
-                        alt={formik.values[formFieldsNames.acceptedCoin].symbol}
-                        src={formik.values[formFieldsNames.acceptedCoin].logoFile}
-                        className={formik.values[formFieldsNames.acceptedCoin].avatar}
+                        alt={values[formFieldsNames.acceptedCoin].symbol}
+                        src={values[formFieldsNames.acceptedCoin].logoFile}
+                        className={values[formFieldsNames.acceptedCoin].avatar}
                     />
                 </Grid>
             </Grid>

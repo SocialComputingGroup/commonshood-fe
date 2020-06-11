@@ -29,22 +29,30 @@ const FormStep1 = (props) => {
         ownedCoupons
     } = props;
 
+    const{
+        errors,
+        touched,
+        values,
+        handleBlur, //this is passed to onBlur of field to let formik manage touched event
+        setFieldValue
+    } = formik;
+
     const classes = useStyles();
     const { t } = useTranslation('CrowdSaleCreateForm');
 
-    const [selectedEmittedCoin, setSelectedEmittedCoin] = useState(formik.values[formFieldsNames.indexEmittedCoin]); 
+    const [selectedEmittedCoin, setSelectedEmittedCoin] = useState(values[formFieldsNames.indexEmittedCoin]); 
     const minimumTotalEmittedCoin = 1;
-    const [totalEmittedCoin, setTotalEmittedCoin] = useState(formik.values[formFieldsNames.totalEmittedCoin]);
+    const [totalEmittedCoin, setTotalEmittedCoin] = useState(values[formFieldsNames.totalEmittedCoin]);
 
     useEffect( () => {
-        if(formik.values[formFieldsNames.emittedCoin].address != ownedCoupons[selectedEmittedCoin].address ){
-            formik.setFieldValue(formFieldsNames.emittedCoin, ownedCoupons[selectedEmittedCoin]); //initialize correctly
+        if(values[formFieldsNames.emittedCoin].address != ownedCoupons[selectedEmittedCoin].address ){
+            setFieldValue(formFieldsNames.emittedCoin, ownedCoupons[selectedEmittedCoin]); //initialize correctly
         }
     }, [ownedCoupons, formik]);
 
     const handleEmittedCoinSelect = (event) => {
-        formik.setFieldValue(formFieldsNames.emittedCoin, ownedCoupons[event.target.value]);
-        formik.setFieldValue(formFieldsNames.indexEmittedCoin, event.target.value);
+        setFieldValue(formFieldsNames.emittedCoin, ownedCoupons[event.target.value]);
+        setFieldValue(formFieldsNames.indexEmittedCoin, event.target.value);
         setSelectedEmittedCoin(event.target.value);
     };
 
@@ -71,10 +79,13 @@ const FormStep1 = (props) => {
                         value={totalEmittedCoin}
                         //max={} //TODO put here 
                         onChange={(event) => {
-                            formik.setFieldValue(formFieldsNames.totalEmittedCoin, event.target.value);
+                            setFieldValue(formFieldsNames.totalEmittedCoin, event.target.value);
                             setTotalEmittedCoin(event.target.value);
                         }}
                         label="Quantity"
+                        onBlur={handleBlur}
+                        error={(errors[formFieldsNames.totalEmittedCoin] != null) && touched[formFieldsNames.totalEmittedCoin]}
+                        helperText={touched[formFieldsNames.totalEmittedCoin] ? errors[formFieldsNames.totalEmittedCoin] : null}
                     />
                 </Grid>
 

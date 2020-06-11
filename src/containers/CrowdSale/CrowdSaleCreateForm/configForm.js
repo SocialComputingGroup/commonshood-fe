@@ -19,6 +19,14 @@ export const formFieldsNames = Object.freeze({
     addressSuggest: 'addressSuggest'
 });
 
+export const constraints = Object.freeze({
+    IMG_FILE_SIZE: 32000000,
+    CONTRACT_FILE_SIZE: 2097152, // 2MBytes
+    SUPPORTED_CONTRACT_FORMATS: ['application/pdf'],
+    SUPPORTED_IMG_FORMATS: ['image/jpg','image/jpeg','image/gif','image/png'],
+    SUPPORTED_IMG_FORMAT_STRINGIFIED: 'jpg, jpeg, gif, png',
+});
+
 export const formFieldsTypes = Object.freeze({
     imageInput: "imageInput",
     text: "text",

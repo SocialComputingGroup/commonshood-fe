@@ -14,7 +14,8 @@ import Typography from '@material-ui/core/Typography';
 import Grid from "@material-ui/core/Grid";
 
 import { useFormik, Formik, Field, ErrorMessage } from 'formik';
-import { formFieldsNames, formFieldsTypes} from './configForm';
+import * as Yup from 'yup';
+import { formFieldsNames, constraints} from './configForm';
 
 import Loading from '../../../components/UI/Loading/Loading.js'
 
@@ -23,9 +24,43 @@ import FormStep1 from './steps/FormStep1';
 import FormStep2 from './steps/FormStep2';
 import FormStep3 from './steps/FormStep3';
 
-const validationSchema = {
 
-};
+
+const validationSchema = Yup.object({
+    [formFieldsNames.mainImage]: Yup.mixed()
+        .required('A main image is required')
+        .test('imageFileFormat', "Unsupported File Format", value => value && constraints.SUPPORTED_IMG_FORMATS.includes(value.type) )
+        .test('imageFileSize', "File Size is too large", value => value && value.size <= constraints.IMG_FILE_SIZE),
+    [formFieldsNames.bigTitle]: Yup.string()
+        .min(5, "must be 5 characters or more")
+        .max(40, "must be 40 characters or less")
+        .required('A title is required'),
+    [formFieldsNames.details]: Yup.string()
+        .min(5, "must be 5 characters or more")
+        .max(500, "must be 500 characters or less")
+        .required('A description is required'),    
+    [formFieldsNames.totalEmittedCoin]: Yup.number('Emitted coin must be a number')
+        .required()
+        .positive('Emitted coin must be a positive number')
+        .integer('Emitted coin must be a integer'),
+    [formFieldsNames.acceptedCoinRatio]: Yup.string()
+        .required()
+        .matches(/^[0-9]+([.,][0-9][0-9]?)?$/, 'Must be a decimal number with 2 decimals' )
+        .test('parsedPositive', 'Must be a positive number', value => value && parseFloat(value) > 0),
+    [formFieldsNames.startDate]: Yup.date().required('Start Date is Required'),
+    [formFieldsNames.endDate]: Yup.date()
+        .required('End date is required')
+        .test('pastDate', "Can't end before start", function(value) {
+            return value > this.parent.startDate
+        }),
+    [formFieldsNames.contract]: Yup.mixed()
+        .required('A contract is required')
+        .test('contractFileSize', "File Size is too large", value => value && value.size <= constraints.CONTRACT_FILE_SIZE)
+        .test('contractFileFormat', 
+                `Unsupported File Format. Must be: ${constraints.SUPPORTED_CONTRACT_FORMATS}`, 
+                value => value && constraints.SUPPORTED_CONTRACT_FORMATS.includes(value.type) 
+            ),
+});
 
 const CrowdSaleCreateForm = (props) => {
     const {
@@ -61,6 +96,7 @@ const CrowdSaleCreateForm = (props) => {
             [formFieldsNames.endDate]: tomorrow,
             [formFieldsNames.contract]: null
         },
+        validationSchema,
         onSubmit: (values) => {
             logger.info("CrowdsaleCreateForm form values: ", values);
         }
@@ -89,6 +125,7 @@ const CrowdSaleCreateForm = (props) => {
     logger.info('alltokens => ', allTokens);
     logger.info('ownedCoupons =>', ownedCoupons);
     logger.info("CrowdsaleCreateForm form values: ", formik.values);
+    logger.info("Errors: ", formik.errors);
 
     if(coinList === null || coinList.length === 0){
         return (
