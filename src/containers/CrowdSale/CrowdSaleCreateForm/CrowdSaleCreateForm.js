@@ -99,6 +99,10 @@ const CrowdSaleCreateForm = (props) => {
         validationSchema,
         onSubmit: (values) => {
             logger.info("CrowdsaleCreateForm form values: ", values);
+            const {
+                onCreateCrowdSale
+            } = props;
+            onCreateCrowdSale(values);
         }
     });
 

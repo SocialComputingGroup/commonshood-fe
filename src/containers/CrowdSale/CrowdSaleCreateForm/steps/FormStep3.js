@@ -157,7 +157,7 @@ const FormStep3 = (props) => {
                     variant='contained'
                     color='primary'
                     style={{marginTop: "10px"}}
-                    //onClick={}
+                    type="submit"
                     >
                     CONFIRM
                 </Button>
