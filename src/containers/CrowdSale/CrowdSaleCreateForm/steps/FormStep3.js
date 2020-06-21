@@ -8,6 +8,11 @@ import { makeStyles, createStyles } from '@material-ui/core/styles';
 
 const useStyles = makeStyles( (theme) => {
     return createStyles({
+        contractLabel: {
+            borderColor: theme.palette.primary.main,
+            borderStyle: "solid",
+            padding: "13px",
+        },
         dateField: {
             width: "150px",
         },
@@ -29,6 +34,7 @@ const FormStep3 = (props) => {
     const {
         formik,
         setStep,
+        openModal
     } = props;
 
     const{
@@ -120,7 +126,7 @@ const FormStep3 = (props) => {
                 <Grid item xs={12} style={{marginTop: "25px", marginBottom: "15px"}}>
                     <label 
                         htmlFor={formFieldsNames.contract}
-                        // className={classes.imageLabel}
+                        className={classes.contractLabel}
                         >
                         <input
                             id={formFieldsNames.contract}
@@ -157,7 +163,8 @@ const FormStep3 = (props) => {
                     variant='contained'
                     color='primary'
                     style={{marginTop: "10px"}}
-                    type="submit"
+                    //type="submit"
+                    onClick={openModal}
                     >
                     CONFIRM
                 </Button>

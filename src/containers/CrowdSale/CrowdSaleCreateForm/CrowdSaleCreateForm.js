@@ -10,9 +10,9 @@ import { connect } from 'react-redux';
 import {assetsType} from '../../../config/assets';
 
 import FeaturedCard from '../../../components/UI/Card/FeaturedCard/FeaturedCard';
-import Typography from '@material-ui/core/Typography';
-import Grid from "@material-ui/core/Grid";
+import {Button, Divider, Grid, Typography} from '@material-ui/core';
 
+import { makeStyles, createStyles } from '@material-ui/core/styles';
 import { useFormik, Formik, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { formFieldsNames, constraints} from './configForm';
@@ -24,6 +24,7 @@ import FormStep1 from './steps/FormStep1';
 import FormStep2 from './steps/FormStep2';
 import FormStep3 from './steps/FormStep3';
 
+import ZoomModal from '../../../components/UI/Modal/ZoomModal/ZoomModal';
 
 
 const validationSchema = Yup.object({
@@ -62,13 +63,26 @@ const validationSchema = Yup.object({
             ),
 });
 
+
+const useStyles = makeStyles( (theme) => {
+    return createStyles({
+        typographyCreationModal: {
+            display: "inline-block",
+            marginTop: "10px",
+            marginBottom: "10px"
+        }
+    });
+});
+
 const CrowdSaleCreateForm = (props) => {
     const {
         onCoinGetAll,
+        coinListLoading,
         coinList,
         userWallet
     } = props;
     const {t} = useTranslation('CrowdSaleCreateForm');
+    const classes = useStyles();
 
     const [step, setStep] = useState(0); //this represents the form "parts"
     const [ownedCoupons, setOwnedCoupons] = useState([]);
@@ -78,6 +92,8 @@ const CrowdSaleCreateForm = (props) => {
     let tomorrow = new Date();
     tomorrow.setDate( ( new Date() ).getDate() +1);
     tomorrow = tomorrow.toISOString().substring(0,10);
+
+    const [modalOpen, setModalOpen] = useState(false);
 
     const formik = useFormik({
         initialValues: {
@@ -107,7 +123,9 @@ const CrowdSaleCreateForm = (props) => {
     });
 
     useEffect( () => {
-        onCoinGetAll();
+        console.log("coinGetAll")
+        if(!coinListLoading)
+            onCoinGetAll();
     }, []);
 
     useEffect( () => {
@@ -137,21 +155,112 @@ const CrowdSaleCreateForm = (props) => {
         )
     }
 
-    return (
-        <form onSubmit={formik.handleSubmit}>
-            <FeaturedCard title={t('describeCrowdSaleTitle')}>
-                <Grid container justify='center' alignItems='flex-end'>
-                {
-                    {
-                        0: <FormStep0 formik={formik} setStep={setStep} />,
-                        1: <FormStep1 formik={formik} setStep={setStep} ownedCoupons={ownedCoupons} />,
-                        2: <FormStep2 formik={formik} setStep={setStep} allTokens={allTokens} />,
-                        3: <FormStep3 formik={formik} setStep={setStep} />
-                    }[step] || <div />
-                }
+    let modalTitle = t('creationModalTitle');
+    const creationModal = 
+     (
+        <ZoomModal
+                title={modalTitle}
+                open={modalOpen}
+                //onClose={() => this.handleCreationModalClose()}
+                disableBackdropClick
+                disableEscapeKeyDown
+
+            >
+                <Typography className={classes.typographyCreationModal}>
+                    <strong>Main image:</strong> {formik.values[formFieldsNames.mainImage]?.name}
+                </Typography>
+                <Divider />
+                <Typography className={classes.typographyCreationModal}>
+                    <strong>Title:</strong> {formik.values[formFieldsNames.bigTitle]}
+                </Typography>
+                <Divider />
+                <Typography className={classes.typographyCreationModal}>
+                    <strong>Description:</strong> {formik.values[formFieldsNames.details]}
+                </Typography>
+                <Divider />
+                <Typography className={classes.typographyCreationModal}>
+                    <strong>Symbol of the Coupon I am giving out:</strong> {formik.values[formFieldsNames.emittedCoin]?.symbol}
+                </Typography>
+                <Divider />
+                <Typography className={classes.typographyCreationModal}>
+                    <strong>Number of coupons I am distributing:</strong> {formik.values[formFieldsNames.totalEmittedCoin]} {formik.values[formFieldsNames.emittedCoin]?.symbol}
+                </Typography>
+                <Divider />
+                {/* <Typography className={classes.typographyCreationModal}>
+                    <strong></strong> {formik.values[formFieldsNames.forEachEmittedCoin]}
+                </Typography> 
+                <Divider />
+                */}
+                <Typography className={classes.typographyCreationModal}>
+                    <strong>Symbol of the Coin I am accepting:</strong> {formik.values[formFieldsNames.acceptedCoin]?.symbol}
+                </Typography>
+                <Divider />
+                <Typography className={classes.typographyCreationModal}>
+                    <strong>How many coin I accept for each of my coupons:</strong> {formik.values[formFieldsNames.acceptedCoinRatio]} {formik.values[formFieldsNames.acceptedCoin]?.symbol}
+                </Typography>
+                <Divider />
+                <Typography className={classes.typographyCreationModal}>
+                    <strong>I'll receive a total of </strong> {formik.values[formFieldsNames.totalAcceptedCoin]} {formik.values[formFieldsNames.acceptedCoin]?.symbol}
+                </Typography>
+                <Divider />
+                <Typography className={classes.typographyCreationModal}>
+                    <strong>Starting date:</strong> {formik.values[formFieldsNames.startDate]}
+                </Typography>
+                <Divider />
+                <Typography className={classes.typographyCreationModal}>
+                    <strong>Ending date:</strong> {formik.values[formFieldsNames.endDate]}
+                </Typography>
+                <Divider />
+                <Typography className={classes.typographyCreationModal}>
+                    <strong>Contract file name:</strong> {formik.values[formFieldsNames.contract]?.name}
+                </Typography>
+                <Divider />
+
+                <Grid container justify='center' alignItems='flex-start'>
+                    <Grid item xs={12} md={6}>
+                        <Button 
+                            variant='contained'
+                            color='primary'
+                            style={{marginTop: "10px"}}
+                            onClick={() => setModalOpen(false)}
+                            >
+                            BACK
+                        </Button>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                        <Button 
+                            variant='contained'
+                            color='primary'
+                            style={{marginTop: "10px"}}
+                            onClick={ () => console.log("CONFIRM")}
+                            >
+                            CONFIRM
+                        </Button>
+                    </Grid>
                 </Grid>
-            </FeaturedCard>
-        </form>
+
+            </ZoomModal>
+    );
+
+    return (
+        
+            <form onSubmit={formik.handleSubmit}>
+                <FeaturedCard title={t('describeCrowdSaleTitle')}>
+                    <Grid container justify='center' alignItems='flex-end'>
+                    {
+                        {
+                            0: <FormStep0 formik={formik} setStep={setStep} />,
+                            1: <FormStep1 formik={formik} setStep={setStep} ownedCoupons={ownedCoupons} />,
+                            2: <FormStep2 formik={formik} setStep={setStep} allTokens={allTokens} />,
+                            3: <FormStep3 formik={formik} setStep={setStep} openModal={() => setModalOpen(true)} />
+                        }[step] || <div />
+                    }
+                    {creationModal}
+                    </Grid>
+                </FeaturedCard>
+            </form>
+     
+        
     );
 };
 
@@ -162,6 +271,7 @@ const mapStateToProps = state => {
         // fileList: state.file.fileList,
         // loading: state.coin.loading,
         // coinError: state.coin.error,
+        coinListLoading: state.coin.loadingCoinListForPiggies,
         coinList: state.coin.coinListForPiggies,
         // fileData: state.file.fileData,
         // fileError: state.file.error,
