@@ -291,72 +291,129 @@ export const crowdsaleCreate = (crowdsaleData) => {
     logger.info('[CROWDSALE CREATE] called', crowdsaleData);
 
     return ( async (dispatch, getState) => {
-        let geoLocationAddress;
         dispatch(crowdsaleCreateStart());
-        if(crowdsaleData.locationSelectedId != null) { // the user gave this crowdsale an exact geolocation
-            let data;
-            try{
-                const result = await fetch(`https://geocoder.ls.hereapi.com/6.2/geocode.json?apikey=VvXjx14bJOpsdA5WMO_PTLd5Hgia1wYAlb5vO7Oa8kk&locationid=${crowdsaleData.locationSelectedId}`);
-                if(result.ok){
-                    data = result.json();
-                }else{
-                    throw new Error("HERE api failure");
-                }
-            
-                const locationData = data.Response.View[0].Result[0].Location;
-                geoLocationAddress = locationData.Address.Label;
-                const lat = locationData.DisplayPosition.Latitude;
-                const lon = locationData.DisplayPosition.Longitude;
-
-                const payload = {
-                    type: "Feature",
-                    properties: {
-                        address: geoLocationAddress,
-                        valid_from: "1900-12-4T09:01:30.516Z",
-                        user: localStorage.getItem('member_id'),
-                        name: crowdsaleData.bigTitle,
-                        entity_type: "CC_CROWDFUNDING",
-                        type: "CC_CROWDFUNDING",
-                        domain_id: 35,
-                        zoom_level: 18,
-                        categories: []
-                    },
-                    geometry: {
-                        type: "Point",
-                        coordinates: [lon,lat]
-                    }
-                }
-                const flCreateHeader = {
-                    headers: {
-                        'Authorization' : 'Bearer '+localStorage.getItem("token")
-                    }
-                };
-            
-                axiosFl.post('Things',payload, flCreateHeader).then(response => {
-                    logger.info("[crowdsale.js - crowdsaleCreate]", response.data);
-                    saveCrowdSaleData(
-                        crowdsaleData, 
-                        geoLocationAddress, 
-                        response.data.id,
-                        dispatch,
-                        getState
-                    );
-                });
-            }catch(error){
-                dispatch(crowdsaleCreateFail(error));
+        const configFileHeader = {
+            headers: {
+                'content-type': 'multipart/form-data',
+                'Access-Control-Allow-Origin': '*'
             }
-                    
+        };
+        
+        let formData = new FormData();
+
+        // formData.append('file', crowdsaleData.contract);
+        // const contractResponse = await axios.post('/Resources/upload', formData, configFileHeader);
+        // const contractHash = contractResponse.data.file.hash;
+
+        // formData = new FormData();
+        // formData.append('file', crowdsaleData.mainImage);
+        // const imageResponse = axios.post('/Resources/upload', formData, configFileHeader);
+        // const imageHash = imageResponse.data.file.hash;
+        
+        const data = {
+            tokenToGiveAddr: crowdsaleData.emittedCoin.address,
+            tokenToAccept: crowdsaleData.acceptedCoin.address,
+            start: Math.floor( new Date(crowdsaleData.startDate).getTime() / 1000 ),
+            end: Math.floor( new Date(crowdsaleData.endDate).getTime() / 1000),
+            acceptRatio: parseInt(assetDecimalRepresentationToInteger(crowdsaleData.acceptedCoinRatio, crowdsaleData.acceptedCoin.decimals)),
+            giveRatio: parseInt(assetDecimalRepresentationToInteger(crowdsaleData.forEachEmittedCoin, crowdsaleData.emittedCoin.decimals)),
+            maxCap: parseInt(assetDecimalRepresentationToInteger(crowdsaleData.totalAcceptedCoin, crowdsaleData.acceptedCoin.decimals)),
         }
-        else {
-            saveCrowdSaleData(
-                crowdsaleData, 
-                geoLocationAddress,
-                null,
-                dispatch,
-                getState
-            );
+        console.log("prepared data ", data);
+        const web3 = getState().web3.web3Instance;
+        try{
+            const accountAddress = getState().web3.currentAccount;
+
+                const crowdsaleFactoryInstance = new web3.eth.Contract(
+                    config.smartContracts.CRWDSL_FCTRY_ABI,
+                    config.smartContracts.CRWDSL_FCTRY_ADDR,
+                );
+                const creationResponse = await crowdsaleFactoryInstance.methods.createCrowdsale(
+                    data.tokenToGiveAddr,
+                    data.tokenToAccept,
+                    data.start,
+                    data.end,
+                    data.acceptRatio,
+                    data.giveRatio,
+                    data.maxCap,
+                ).send({from: accountAddress, gasPrice: "0"});
+                logger.info('metamask succesfully created res: ', creationResponse); 
+                dispatch(crowdsaleCreateSuccess());
+        }catch(error){
+            console.log("ERROR: ", error);
+            dispatch(crowdsaleCreateFail("something went wrong with metamask"));
         }
+
+
+
     });
+    // return ( async (dispatch, getState) => {
+    //     let geoLocationAddress;
+    //     dispatch(crowdsaleCreateStart());
+    //     if(crowdsaleData.locationSelectedId != null) { // the user gave this crowdsale an exact geolocation
+    //         let data;
+    //         try{
+    //             const result = await fetch(`https://geocoder.ls.hereapi.com/6.2/geocode.json?apikey=VvXjx14bJOpsdA5WMO_PTLd5Hgia1wYAlb5vO7Oa8kk&locationid=${crowdsaleData.locationSelectedId}`);
+    //             if(result.ok){
+    //                 data = result.json();
+    //             }else{
+    //                 throw new Error("HERE api failure");
+    //             }
+            
+    //             const locationData = data.Response.View[0].Result[0].Location;
+    //             geoLocationAddress = locationData.Address.Label;
+    //             const lat = locationData.DisplayPosition.Latitude;
+    //             const lon = locationData.DisplayPosition.Longitude;
+
+    //             const payload = {
+    //                 type: "Feature",
+    //                 properties: {
+    //                     address: geoLocationAddress,
+    //                     valid_from: "1900-12-4T09:01:30.516Z",
+    //                     user: localStorage.getItem('member_id'),
+    //                     name: crowdsaleData.bigTitle,
+    //                     entity_type: "CC_CROWDFUNDING",
+    //                     type: "CC_CROWDFUNDING",
+    //                     domain_id: 35,
+    //                     zoom_level: 18,
+    //                     categories: []
+    //                 },
+    //                 geometry: {
+    //                     type: "Point",
+    //                     coordinates: [lon,lat]
+    //                 }
+    //             }
+    //             const flCreateHeader = {
+    //                 headers: {
+    //                     'Authorization' : 'Bearer '+localStorage.getItem("token")
+    //                 }
+    //             };
+            
+    //             axiosFl.post('Things',payload, flCreateHeader).then(response => {
+    //                 logger.info("[crowdsale.js - crowdsaleCreate]", response.data);
+    //                 saveCrowdSaleData(
+    //                     crowdsaleData, 
+    //                     geoLocationAddress, 
+    //                     response.data.id,
+    //                     dispatch,
+    //                     getState
+    //                 );
+    //             });
+    //         }catch(error){
+    //             dispatch(crowdsaleCreateFail(error));
+    //         }
+                    
+    //     }
+    //     else {
+    //         saveCrowdSaleData(
+    //             crowdsaleData, 
+    //             geoLocationAddress,
+    //             null,
+    //             dispatch,
+    //             getState
+    //         );
+    //     }
+    // });
 };
 
 
@@ -374,11 +431,19 @@ export const crowdsaleGetAll = () =>{
                 config.smartContracts.CRWDSL_FCTRY_ABI,
                 config.smartContracts.CRWDSL_FCTRY_ADDR,
             );
-
             let crowdsaleAddresses = [];
             crowdsaleAddresses = await CrowdsaleFactoryInstance.methods.getAllCrowdsalesAddresses()
                 .call({from: accountAddress, gasPrice: "0"});
-                logger.debug("CWD ADDR", crowdsaleAddresses);
+            console.log("CWD ADDR", crowdsaleAddresses);
+
+            let crowdsalesExtendedData = crowdsaleAddresses.map( (crowdsaleAddress) => {
+                return CrowdsaleFactoryInstance.methods.getCrowdSale(
+                        crowdsaleAddress
+                    ).call({from: accountAddress, gasPrice: "0"});
+            });
+            crowdsalesExtendedData = await Promise.all(crowdsalesExtendedData);
+
+            console.log(crowdsalesExtendedData);
         }catch(error){
             //TODO do something
             logger.debug("Error");
