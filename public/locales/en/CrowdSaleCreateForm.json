@@ -1,6 +1,6 @@
 {
   "describeCrowdSaleTitle": "Describe your CrowdSale",
-  "createButton": "Create Crowfunding",
+  
   "summaryPlaceholder": "Title",
   "detailsPlaceholder": "Detailed description",
   "acceptedCoinLabel": "Accepted Coin",
@@ -31,5 +31,27 @@
   "totalEmittedCoinLabel": "I want to give",
   "forEachEmittedCoinLabel": "For each ",
   "totalAcceptedCoinLabel": "I'll gather a total of",
-  "addressSuggestPLaceholder": "Add a location"
+  "addressSuggestPLaceholder": "Add a location",
+
+  "mainImageRequired": "A main image is required",
+  "mainImageUnsupportedFormat": "Unsupported Image Format. Use one of {{supportedFormats}}",
+  "mainImageFileSize": "File Size is too large. Max size: {{maxSize}} MB",
+  "titleRequired": "A title is required",
+  "titleMinChars": "The title must be at least {{value}} characters or more",
+  "titleMaxChars": "The title must be {{value}} characters or less",
+  "descriptionRequired": "A description is required",
+  "descriptionMinChars": "The description must be at least {{value}} characters or more",
+  "descriptionMaxChars": "The description must be {{value}} characters or less",
+  "emittedCoinMustBePositive": "Your crowdsale must give a > 0 of coupons",
+  "emittedCoinMustBeInteger": "The number of coupons your crowdsale gives must be an integer",
+  "acceptedCoinRatioDecimal": "The ratio of the accepted coin must be a real number with no more than 2 decimals",
+  "acceptedCoinRatioPositive": "The ratio of the accepted coin must be a positive number",
+  "startDateRequired": "Starting date is required",
+  "endDateRequired": "Ending date is required",
+  "endDateMustBeAfterStart": "The crowdsale has an ending date which comes before the starting one",
+  "contractRequired": "The contract is required",
+  "contractFileSize": "The contract file is too large. Max size: {{maxSize}} MB",
+  "contractUnsupportedFormat": "Unsupported contract format, must be: {{supportedFormats}}",
+
+  "loadingCoins": "Loading available coins from Blockchain..."
 }

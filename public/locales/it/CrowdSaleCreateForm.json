@@ -1,6 +1,5 @@
 {
   "describeCrowdSaleTitle": "Definisci la tua CrowdSale",
-  "createButton": "Crea il Crowfunding",
 
   "summaryPlaceholder": "Titolo",
   "detailsPlaceholder": "Descrizione dettagliata",
@@ -32,5 +31,31 @@
   "totalEmittedCoinLabel": "Voglio distribuire",
   "forEachEmittedCoinLabel": "Per ogni",
   "totalAcceptedCoinLabel": "Raccoglierò un totale di",
-  "addressSuggestPLaceholder": "Inserisci l'indirizzo"
+  "addressSuggestPLaceholder": "Inserisci l'indirizzo",
+
+
+
+  "mainImageRequired": "É richiesta un immagine principale",
+  "mainImageUnsupportedFormat": "Formato dell'immagine non supportato. Usa uno tra: {{supportedFormats}}",
+  "mainImageFileSize": "L'immagine è di dimensioni eccessive. Dimensioni massime: {{maxSize}} MB",
+  "titleRequired": "É necessario inserire un titolo",
+  "titleMinChars": "Il titolo deve essere di almeno {{value}} caratteri",
+  "titleMaxChars": "Il titolo deve essere di non più di {{value}} caratteri",
+  "descriptionRequired": "É necessario inserire una descrizione",
+  "descriptionMinChars": "La descrizione deve essere du aknebi {{value}} caratteri",
+  "descriptionMaxChars": "La descrizione deve essere di non più di {{value}} caratteri",
+  "emittedCoinMustBePositive": "La tua crowdsale deve distribuire un numero > 0 di coupon",
+  "emittedCoinMustBeInteger": "Il numero di coupon che la tua crowdsale distribuisce deve essere un intero",
+  "acceptedCoinRatioDecimal": "Il fattore di conversione in coin deve essere un numero reale con al più 2 decimali",
+  "acceptedCoinRatioPositive": "Il fattore di conversione in coin deve essere un numero positivo",
+  "startDateRequired": "La data iniziale è richiesta",
+  "endDateRequired": "La data di conclusione è richiesta",
+  "endDateMustBeAfterStart": "La crowdsale ha una data di conclusione antecedente a quella di inizio",
+  "contractRequired": "Il contratto è richiesto",
+  "contractFileSize": "Il file del contratto ha dimensione eccessive. Dimensioni massime: {{maxSize}} MB",
+  "contractUnsupportedFormat": "Il contratto ha un formato non supportato. Usa: {{supportedFormats}}",
+
+  "loadingCoins": "Carico le coin disponibili dalla Blockchain..."
+  
+
 }

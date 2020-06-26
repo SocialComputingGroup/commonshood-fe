@@ -26,42 +26,55 @@ import FormStep3 from './steps/FormStep3';
 import CreationModal from './CreationModal';
 
 
-
-const validationSchema = Yup.object({
-    [formFieldsNames.mainImage]: Yup.mixed()
-        .required('A main image is required')
-        .test('imageFileFormat', "Unsupported File Format", value => value && constraints.SUPPORTED_IMG_FORMATS.includes(value.type) )
-        .test('imageFileSize', "File Size is too large", value => value && value.size <= constraints.IMG_FILE_SIZE),
-    [formFieldsNames.bigTitle]: Yup.string()
-        .min(5, "must be 5 characters or more")
-        .max(40, "must be 40 characters or less")
-        .required('A title is required'),
-    [formFieldsNames.details]: Yup.string()
-        .min(5, "must be 5 characters or more")
-        .max(500, "must be 500 characters or less")
-        .required('A description is required'),    
-    [formFieldsNames.totalEmittedCoin]: Yup.number('Emitted coin must be a number')
-        .required()
-        .positive('Emitted coin must be a positive number')
-        .integer('Emitted coin must be a integer'),
-    [formFieldsNames.acceptedCoinRatio]: Yup.string()
-        .required()
-        .matches(/^[0-9]+([.,][0-9][0-9]?)?$/, 'Must be a decimal number with 2 decimals' )
-        .test('parsedPositive', 'Must be a positive number', value => value && parseFloat(value) > 0),
-    [formFieldsNames.startDate]: Yup.date().required('Start Date is Required'),
-    [formFieldsNames.endDate]: Yup.date()
-        .required('End date is required')
-        .test('pastDate', "Can't end before start", function(value) {
-            return value > this.parent.startDate
-        }),
-    [formFieldsNames.contract]: Yup.mixed()
-        .required('A contract is required')
-        .test('contractFileSize', "File Size is too large", value => value && value.size <= constraints.CONTRACT_FILE_SIZE)
-        .test('contractFileFormat', 
-                `Unsupported File Format. Must be: ${constraints.SUPPORTED_CONTRACT_FORMATS}`, 
-                value => value && constraints.SUPPORTED_CONTRACT_FORMATS.includes(value.type) 
-            ),
-});
+const getValidationSchema = (t) =>{
+    return Yup.object({
+        [formFieldsNames.mainImage]: Yup.mixed()
+            .required(t('mainImageRequired'))
+            .test(
+                'imageFileFormat', 
+                t('mainImageUnsupportedFormat', {supportedFormats: constraints.SUPPORTED_IMG_FORMAT_STRINGIFIED}), 
+                value => value && constraints.SUPPORTED_IMG_FORMATS.includes(value.type) 
+                )
+            .test(
+                'imageFileSize', 
+                t('mainImageFileSize', {maxSize: parseInt(constraints.IMG_FILE_SIZE / 1000000)}), //conversion to give a measure in megabytes 
+                value => value && value.size <= constraints.IMG_FILE_SIZE
+                ),
+        [formFieldsNames.bigTitle]: Yup.string()
+            .required(t('titleRequired'))
+            .min(constraints.TITLE_MIN_CHARS, t('titleMinChars', {value: constraints.TITLE_MIN_CHARS}))
+            .max(constraints.TITLE_MAX_CHARS, t('titleMaxChars', {value: constraints.TITLE_MAX_CHARS})),
+        [formFieldsNames.details]: Yup.string()
+            .required(t('descriptionRequired'))
+            .min(constraints.DESCRIPTION_MIN_CHARS, t('descriptionMinChars', {value: constraints.DESCRIPTION_MIN_CHARS}))
+            .max(constraints.DESCRIPTION_MAX_CHARS, t('descriptionMaxChars', {value: constraints.DESCRIPTION_MAX_CHARS})),
+        [formFieldsNames.totalEmittedCoin]: Yup.number('Emitted coin must be a number')
+            .required()
+            .positive(t('emittedCoinMustBePositive'))
+            .integer(t('emittedCoinMustBeInteger')),
+        [formFieldsNames.acceptedCoinRatio]: Yup.string()
+            .required()
+            .matches(/^[0-9]+([.,][0-9][0-9]?)?$/, t('acceptedCoinRatioDecimal') )
+            .test('parsedPositive', t('acceptedCoinRatioPositive'), value => value && parseFloat(value) > 0),
+        [formFieldsNames.startDate]: Yup.date().required(t('startDateRequired')),
+        [formFieldsNames.endDate]: Yup.date()
+            .required(t('endDateRequired'))
+            .test('pastDate', t('endDateMustBeAfterStart'), function(value) {
+                return value > this.parent.startDate
+            }),
+        [formFieldsNames.contract]: Yup.mixed()
+            .required(t('contractRequired'))
+            .test(
+                'contractFileSize', 
+                t('contractFileSize', {maxSize: parseInt(constraints.CONTRACT_FILE_SIZE / 1000000)}), 
+                value => value && value.size <= constraints.CONTRACT_FILE_SIZE
+                )
+            .test('contractFileFormat', 
+                    t('contractUnsupportedFormat', {supportedFormats: constraints.SUPPORTED_CONTRACT_FORMAT_STRINGIFIED}), 
+                    value => value && constraints.SUPPORTED_CONTRACT_FORMATS.includes(value.type) 
+                ),
+    });
+};
 
 
 const useStyles = makeStyles( (theme) => {
@@ -109,7 +122,7 @@ const CrowdSaleCreateForm = (props) => {
             [formFieldsNames.endDate]: tomorrow,
             [formFieldsNames.contract]: null
         },
-        validationSchema,
+        validationSchema: getValidationSchema(t),
         onSubmit: (values) => {
             logger.info("CrowdsaleCreateForm form values: ", values);
             const {
@@ -150,7 +163,7 @@ const CrowdSaleCreateForm = (props) => {
 
     if(coinList === null || coinList.length === 0){
         return (
-            <Loading withLoader={true} />
+            <Loading withLoader={true} title={t('loadingCoins')}/>
         )
     }
 

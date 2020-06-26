@@ -11,7 +11,6 @@ import * as actions from "../../../store/actions";
 import { connect } from 'react-redux';
 
 import Loading from '../../../components/UI/Loading/Loading.js'
-import { crowdsaleCreateFail } from '../../../store/actions/crowdsale';
 
 const useStyles = makeStyles( (theme) => {
     return createStyles({
@@ -127,6 +126,7 @@ const CreationModal = (props) => {
                 <Divider />
             </>
         );
+        disableSubmitButton = true;
     }else if(crowdsaleCreationError){
         modalContent = (
             <>
