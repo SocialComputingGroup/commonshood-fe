@@ -1,11 +1,11 @@
-
 import React, {useState, useEffect} from 'react';
 
 import * as actions from "../../../store/actions";
+import { connect } from 'react-redux';
+
 import { useTranslation } from "react-i18next";
 //import { withRouter } from 'react-router-dom';
 import { logger } from '../../../utilities/winstonLogging/winstonInit';
-import { connect } from 'react-redux';
 
 import {assetsType} from '../../../config/assets';
 
@@ -73,6 +73,7 @@ const useStyles = makeStyles( (theme) => {
 const CrowdSaleCreateForm = (props) => {
     const {
         onCoinGetAll,
+        onCrowdsaleCreateReset,
         coinListLoading,
         coinList,
         userWallet
@@ -120,8 +121,10 @@ const CrowdSaleCreateForm = (props) => {
 
     useEffect( () => {
         console.log("coinGetAll")
-        if(!coinListLoading)
+        if(!coinListLoading){
             onCoinGetAll();
+            onCrowdsaleCreateReset();
+        }
     }, []);
 
     useEffect( () => {

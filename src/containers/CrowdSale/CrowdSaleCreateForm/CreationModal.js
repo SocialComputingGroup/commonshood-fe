@@ -7,6 +7,11 @@ import { makeStyles, createStyles } from '@material-ui/core/styles';
 import { formFieldsNames} from './configForm';
 import ZoomModal from '../../../components/UI/Modal/ZoomModal/ZoomModal';
 
+import * as actions from "../../../store/actions";
+import { connect } from 'react-redux';
+
+import Loading from '../../../components/UI/Loading/Loading.js'
+import { crowdsaleCreateFail } from '../../../store/actions/crowdsale';
 
 const useStyles = makeStyles( (theme) => {
     return createStyles({
@@ -23,10 +28,17 @@ const CreationModal = (props) => {
         formik,
         modalOpen,
         closeModal,
+        crowdsaleCreationLoading,
+        crowdsaleCreationSuccess,
+        crowdsaleCreationError,
     } = props;
 
     const {t} = useTranslation('CrowdSaleCreateForm');
     const classes = useStyles();
+
+    const handleSubmit = () => {
+        formik.handleSubmit();
+    };
 
     let modalTitle = t('creationModalTitle');
     let modalContent = (
@@ -84,6 +96,7 @@ const CreationModal = (props) => {
     );
     let disableSubmitButton = false;
 
+    //case in which we have errors
     if(Object.keys(formik.errors).length !== 0){ //this is an easy way to check if we got any error in this form
         modalTitle = "Errors encountered";
         modalContent = Object.entries(formik.errors).map( ([key, value], index) => {
@@ -99,6 +112,33 @@ const CreationModal = (props) => {
         disableSubmitButton = true;
     }
 
+    //case in which we are awaiting for the transaction to be mined
+    if(crowdsaleCreationLoading){
+        modalContent = (
+            <Loading title="Wait for transaction to be mined..." withLoader={true} />
+        );
+        disableSubmitButton = true;
+    }else if(crowdsaleCreationSuccess){
+        modalContent = (
+            <>
+                <Typography variant="h5" className={classes.typographyCreationModal}>
+                    <strong>Crowdsale Successfully Created! You are gonna be redirected home in a few seconds...</strong>
+                </Typography>
+                <Divider />
+            </>
+        );
+    }else if(crowdsaleCreationError){
+        modalContent = (
+            <>
+                <Typography variant="h5" className={classes.typographyCreationModal} color="error">
+                    <strong>Wops some strange error occurred. Look at metamask for more information. Try later</strong>
+                </Typography>
+                <Divider />
+            </>
+        );
+    }
+
+    //general case
     return (
         <ZoomModal
             title={modalTitle}
@@ -126,7 +166,7 @@ const CreationModal = (props) => {
                         variant='contained'
                         color='primary'
                         style={{marginTop: "10px"}}
-                        onClick={ () => console.log("CONFIRM")}
+                        onClick={handleSubmit}
                         disabled={disableSubmitButton}
                         >
                         CONFIRM
@@ -138,4 +178,21 @@ const CreationModal = (props) => {
     );
 };
 
-export default CreationModal;
+
+const mapStateToProps = state => {
+    return {
+        crowdsaleCreationSuccess: state.crowdsale.crowdSaleCreated,
+        crowdsaleCreationError: state.crowdsale.error,
+        crowdsaleCreationLoading: state.crowdsale.loading,
+    }
+};
+
+const mapDispatchToProps = dispatch => {
+    return {
+        //onCrowdsaleCreateReset: () => dispatch(actions.crowdsaleCreateReset()),
+    }
+};
+
+export default connect(mapStateToProps,mapDispatchToProps) (
+    CreationModal
+);
