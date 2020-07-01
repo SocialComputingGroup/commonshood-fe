@@ -86,20 +86,17 @@ const FormStep2 = (props) => {
             >
             <Grid container justify="center" alignItems="center" item xs={12}>
                 <Grid item xs={12} className={classes.formRow}>
-                    <Typography style={{display: "inline-block", paddingTop: "20px"}}>{t('forEachEmittedCoinLabel')} {values[formFieldsNames.forEachEmittedCoin]}</Typography>
+                    <Typography style={{display: "inline-block", paddingTop: "20px"}}>{t('forEachCoupon')} {values[formFieldsNames.forEachEmittedCoin]}</Typography>
                     <Avatar
                         alt={emittedCoupon.symbol}
                         src={emittedCoupon.logoFile}
                         className={classes.avatar}
                     />
-                    <Typography style={{display: "inline-block"}}>{emittedCoupon.symbol}</Typography>
+                    <Typography style={{display: "inline-block"}}>{emittedCoupon.symbol} {t('coinsRatio')}</Typography>
                 </Grid>
 
                 <Grid container justify="center" alignItems="flex-end" item xs={12} className={classes.formRow}>
-                    <Grid item lg={1} xs={6}>
-                        <Typography style={{display: "inline-block", paddingTop: "20px"}}>{t('acceptCoinRatioLabel')}</Typography>
-                    </Grid>
-                    <Grid item lg={1} xs={6}>
+                    <Grid item lg={1} xs={12}>
                         <TextField 
                             id={formFieldsNames.acceptedCoinRatio}
                             name={formFieldsNames.acceptedCoinRatio}
@@ -112,13 +109,13 @@ const FormStep2 = (props) => {
                                 setFieldValue(formFieldsNames.acceptedCoinRatio, event.target.value);
                                 setAcceptedCoinRatio(event.target.value);
                             }}
-                            label="Quantity"
+                            label={t('amount')}
                             onBlur={handleBlur}
                             error={(errors[formFieldsNames.acceptedCoinRatio] != null) && touched[formFieldsNames.acceptedCoinRatio]}
                             helperText={touched[formFieldsNames.acceptedCoinRatio] ? errors[formFieldsNames.acceptedCoinRatio] : null}
                         />
                     </Grid>
-                    <Grid item lg={1} xs={12}>
+                    <Grid item lg={2} xs={12}>
                         <TextField 
                             select
                             id={formFieldsNames.acceptedCoin}
@@ -127,7 +124,7 @@ const FormStep2 = (props) => {
                             className={classes.select}
                             value={selectedAcceptedCoin}
                             onChange={(event) => handleAcceptedCoinSelect(event)}
-                            label="The coin to accept"
+                            label={t('coinToAccept')}
                         >
                             {allTokens.map( (token, index) => {
                                 return (
@@ -151,9 +148,9 @@ const FormStep2 = (props) => {
                     </Grid>
                 </Grid>
 
-                <Grid item lg={12} xs={12} className={classes.formRow}>
+                <Grid item xs={12} className={classes.formRow}>
                     <Typography style={{display: "inline-block", paddingTop: "20px"}}>
-                        {t("totalAcceptedCoinLabel")} {values[formFieldsNames.totalAcceptedCoin]}
+                        {t("totalCoins")} {values[formFieldsNames.totalAcceptedCoin]}
                     </Typography>
                     <Avatar
                         style={{display: "inline-block", marginLeft: "10px"}}
@@ -171,7 +168,7 @@ const FormStep2 = (props) => {
                     style={{marginTop: "10px"}}
                     onClick={ () => setStep(1)}
                     >
-                    GO PREV
+                    {t('back')}
                 </Button>
             </Grid>
             <Grid item md={6} xs={12}>
@@ -181,7 +178,7 @@ const FormStep2 = (props) => {
                     style={{marginTop: "10px"}}
                     onClick={ () => setStep(3)}
                     >
-                    GO NEXT
+                    {t('next')}
                 </Button>
             </Grid>
         </Grid>

@@ -193,18 +193,8 @@ const CrowdSaleCreateForm = (props) => {
 
 const mapStateToProps = state => {
     return {
-        // fileLoading: state.file.loading,
-        // fileList: state.file.fileList,
-        // loading: state.coin.loading,
-        // coinError: state.coin.error,
         coinListLoading: state.coin.loadingCoinListForPiggies,
         coinList: state.coin.coinListForPiggies,
-        // fileData: state.file.fileData,
-        // fileError: state.file.error,
-        // profile: state.user.currentProfile,
-        // creationSuccess: state.crowdsale.crowdSaleCreated,
-        // creationFailureError: state.crowdsale.error,
-        // crowdsaleLoading: state.crowdsale.loading,
         userWallet: state.web3.currentAccount
     }
 };
@@ -213,9 +203,6 @@ const mapDispatchToProps = dispatch => {
     return {
         onCoinGetListReset: () => dispatch(actions.coinGetListReset()),
         onCoinGetAll: () => dispatch(actions.coinGetList(null, false, false, true, null)),
-        onFileGetList: (hashArray) => dispatch(actions.fileGetList(hashArray)),
-        onFileGetListReset: () => dispatch(actions.fileGetListReset()),
-        onFileUpload: (file) => dispatch(actions.fileUpload(file)),
         onCreateCrowdSale: (crowdsaleData) => dispatch(actions.crowdsaleCreate(crowdsaleData)),
         onCrowdsaleCreateReset: () => dispatch(actions.crowdsaleCreateReset()),
 
@@ -224,4 +211,4 @@ const mapDispatchToProps = dispatch => {
 
 export default connect(mapStateToProps,mapDispatchToProps) (
     CrowdSaleCreateForm
-    );
+);

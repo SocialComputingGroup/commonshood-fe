@@ -1,37 +1,25 @@
 {
   "describeCrowdSaleTitle": "Describe your CrowdSale",
-  
-  "summaryPlaceholder": "Title",
-  "detailsPlaceholder": "Detailed description",
-  "acceptedCoinLabel": "Accepted Coin",
-  "emittedCoinLabel": "Emitted Coupon",
-  "minThresholdLabel": "Minimum amount to enter",
-  "maxThresholdLabel": "Maximum amount to gather",
-  "baseUnitLabel": "Base pledge unit",
-  "startDateLabel": "Start date",
-  "endDateLabel": "End Date",
-  "contractPlaceholder": "Upload terms and conditions (.pdf)",
-  "mainImageTitle": "Main image",
-  "loadingWait": "Loading, please wait",
-
-  "noCoins": "You have no coins",
-  "askCreate": "To create a Crowdsale you need both a coin and a coupon created by yourself",
-  "askCreateCouponToEmit": "To create a Crowdsale you need a coupon created by yourself",
-  "askCreateCoinToAccept": "To create a Crowdsale you need a coin created by yourself",
-
   "creationModalTitle": "Crowdsale Creation",
-  "errorModalTitle": "Error creating Crowdsale",
-  "errorDetails": "It was not possible to create a Crowdsale, retry later. Error: ",
-  "creationSuccessful": "Crowdsale creation request sent. You'll receive a confirmation notification",
-  "help": "Guida",
 
-  "capLabel": "I want to get",
-  "acceptCoinRatioLabel": "I want to get",
-  "emittedCoinRatioLabel": "I want to give",
-  "totalEmittedCoinLabel": "I want to give",
-  "forEachEmittedCoinLabel": "For each ",
-  "totalAcceptedCoinLabel": "I'll gather a total of",
-  "addressSuggestPLaceholder": "Add a location",
+  "mainImage": "Main Image",
+  "title": "Crowdsale Title",
+  "description": "Short Description",
+  "coupon": "Coupon",
+  "couponTicker": "Symbol of the coupon",
+  "forEachCoupon": "For each",
+  "couponQuantity": "How many coupons will be distributed",
+  "coinToAccept": "In exchange I'll receive",
+  "coinsRatio": "I am gonna get",
+  "totalCoins": "I'll receive a total of",
+  "startingDate": "Starting date",
+  "endingDate": "Ending date",
+  "contract": "Contract or Terms of service",
+  "contractFileName": "Contract file name",
+
+  "waitTransactionMining": "Wait for transaction to be mined",
+  "crowdsaleSuccessfullyCreated": "Crowdsale Successfully Created! You are gonna be redirected home in a few seconds",
+  "crowdsaleCreationError": "Transaction error. Check metamask logs and/or try later",
 
   "mainImageRequired": "A main image is required",
   "mainImageUnsupportedFormat": "Unsupported Image Format. Use one of {{supportedFormats}}",
@@ -52,6 +40,11 @@
   "contractRequired": "The contract is required",
   "contractFileSize": "The contract file is too large. Max size: {{maxSize}} MB",
   "contractUnsupportedFormat": "Unsupported contract format, must be: {{supportedFormats}}",
+
+  "amount": "Amount",
+  "back": "Back",
+  "confirm": "Confirm",
+  "next": "Next",
 
   "loadingCoins": "Loading available coins from Blockchain..."
 }

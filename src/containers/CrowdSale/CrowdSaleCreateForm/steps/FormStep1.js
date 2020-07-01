@@ -65,10 +65,10 @@ const FormStep1 = (props) => {
             style={{marginTop: "20px"}}
             >
             <Grid container justify="center" alignItems="flex-end" item xs={12}>
-                <Grid item lg={1} xs={6}>
-                    <Typography style={{paddingTop: "20px"}}>{t('totalEmittedCoinLabel')}</Typography>
+                <Grid item lg={3} xs={12}>
+                    <Typography style={{paddingTop: "20px"}}>{t('couponQuantity')}:</Typography>
                 </Grid>
-                <Grid item lg={1} xs={6}>
+                <Grid item lg={1} xs={12}>
                     <TextField 
                         id={formFieldsNames.totalEmittedCoin}
                         name={formFieldsNames.totalEmittedCoin}
@@ -82,7 +82,7 @@ const FormStep1 = (props) => {
                             setFieldValue(formFieldsNames.totalEmittedCoin, event.target.value);
                             setTotalEmittedCoin(event.target.value);
                         }}
-                        label="Quantity"
+                        label={t('amount')}
                         onBlur={handleBlur}
                         error={(errors[formFieldsNames.totalEmittedCoin] != null) && touched[formFieldsNames.totalEmittedCoin]}
                         helperText={touched[formFieldsNames.totalEmittedCoin] ? errors[formFieldsNames.totalEmittedCoin] : null}
@@ -98,11 +98,11 @@ const FormStep1 = (props) => {
                         className={classes.select}
                         value={selectedEmittedCoin}
                         onChange={(event) => handleEmittedCoinSelect(event)}
-                        label="The coupon to distribute"
+                        label={t('coupon')}
                     >
                         {ownedCoupons.map( (coupon, index) => {
                             return (
-                                <MenuItem key={coupon.symbol} value={index} key={index}>
+                                <MenuItem key={coupon.symbol} value={index}>
                                     <Grid container justify="space-around" alignItems="center">
                                         <Grid item xs={6}>
                                             <Avatar
@@ -128,7 +128,7 @@ const FormStep1 = (props) => {
                     style={{marginTop: "10px"}}
                     onClick={ () => setStep(0)}
                     >
-                    GO PREV
+                    {t('back')}
                 </Button>
             </Grid>
             <Grid item md={6} xs={12}>
@@ -138,7 +138,7 @@ const FormStep1 = (props) => {
                     style={{marginTop: "10px"}}
                     onClick={ () => setStep(2)}
                     >
-                    GO NEXT
+                    {t('next')}
                 </Button>
             </Grid>
         </Grid>

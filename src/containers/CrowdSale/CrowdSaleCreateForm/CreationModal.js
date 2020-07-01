@@ -43,23 +43,23 @@ const CreationModal = (props) => {
     let modalContent = (
         <>
             <Typography className={classes.typographyCreationModal}>
-                <strong>Main image:</strong> {formik.values[formFieldsNames.mainImage]?.name}
+                <strong>{t('mainImage')}:</strong> {formik.values[formFieldsNames.mainImage]?.name}
             </Typography>
             <Divider />
             <Typography className={classes.typographyCreationModal}>
-                <strong>Title:</strong> {formik.values[formFieldsNames.bigTitle]}
+                <strong>{t('title')}:</strong> {formik.values[formFieldsNames.bigTitle]}
             </Typography>
             <Divider />
             <Typography className={classes.typographyCreationModal}>
-                <strong>Description:</strong> {formik.values[formFieldsNames.details]}
+                <strong>{t('description')}:</strong> {formik.values[formFieldsNames.details]}
             </Typography>
             <Divider />
             <Typography className={classes.typographyCreationModal}>
-                <strong>Symbol of the Coupon I am giving out:</strong> {formik.values[formFieldsNames.emittedCoin]?.symbol}
+                <strong>{t('couponTicker')}:</strong> {formik.values[formFieldsNames.emittedCoin]?.symbol}
             </Typography>
             <Divider />
             <Typography className={classes.typographyCreationModal}>
-                <strong>Number of coupons I am distributing:</strong> {formik.values[formFieldsNames.totalEmittedCoin]} {formik.values[formFieldsNames.emittedCoin]?.symbol}
+                <strong>{t('couponQuantity')}:</strong> {formik.values[formFieldsNames.totalEmittedCoin]} {formik.values[formFieldsNames.emittedCoin]?.symbol}
             </Typography>
             <Divider />
             {/* <Typography className={classes.typographyCreationModal}>
@@ -68,27 +68,27 @@ const CreationModal = (props) => {
             <Divider />
             */}
             <Typography className={classes.typographyCreationModal}>
-                <strong>Symbol of the Coin I am accepting:</strong> {formik.values[formFieldsNames.acceptedCoin]?.symbol}
+                <strong>{t('couponTicker')}:</strong> {formik.values[formFieldsNames.acceptedCoin]?.symbol}
             </Typography>
             <Divider />
             <Typography className={classes.typographyCreationModal}>
-                <strong>How many coin I accept for each of my coupons:</strong> {formik.values[formFieldsNames.acceptedCoinRatio]} {formik.values[formFieldsNames.acceptedCoin]?.symbol}
+                <strong>{t('coinsRatio')}:</strong> {formik.values[formFieldsNames.acceptedCoinRatio]} {formik.values[formFieldsNames.acceptedCoin]?.symbol}
             </Typography>
             <Divider />
             <Typography className={classes.typographyCreationModal}>
-                <strong>I'll receive a total of </strong> {formik.values[formFieldsNames.totalAcceptedCoin]} {formik.values[formFieldsNames.acceptedCoin]?.symbol}
+                <strong>{t('totalCoins')}:</strong> {formik.values[formFieldsNames.totalAcceptedCoin]} {formik.values[formFieldsNames.acceptedCoin]?.symbol}
             </Typography>
             <Divider />
             <Typography className={classes.typographyCreationModal}>
-                <strong>Starting date:</strong> {formik.values[formFieldsNames.startDate]}
+                <strong>{t('startingDate')}:</strong> {formik.values[formFieldsNames.startDate]}
             </Typography>
             <Divider />
             <Typography className={classes.typographyCreationModal}>
-                <strong>Ending date:</strong> {formik.values[formFieldsNames.endDate]}
+                <strong>{t('endingDate')}:</strong> {formik.values[formFieldsNames.endDate]}
             </Typography>
             <Divider />
             <Typography className={classes.typographyCreationModal}>
-                <strong>Contract file name:</strong> {formik.values[formFieldsNames.contract]?.name}
+                <strong>{t('contractFileName')}</strong> {formik.values[formFieldsNames.contract]?.name}
             </Typography>
             <Divider />
         </>
@@ -114,14 +114,14 @@ const CreationModal = (props) => {
     //case in which we are awaiting for the transaction to be mined
     if(crowdsaleCreationLoading){
         modalContent = (
-            <Loading title="Wait for transaction to be mined..." withLoader={true} />
+            <Loading title={`${t('waitTransactionMining')}...`} withLoader={true} />
         );
         disableSubmitButton = true;
     }else if(crowdsaleCreationSuccess){
         modalContent = (
             <>
                 <Typography variant="h5" className={classes.typographyCreationModal}>
-                    <strong>Crowdsale Successfully Created! You are gonna be redirected home in a few seconds...</strong>
+                <strong>{`${t('crowdsaleSuccessfullyCreated')}...`}</strong>
                 </Typography>
                 <Divider />
             </>
@@ -131,7 +131,7 @@ const CreationModal = (props) => {
         modalContent = (
             <>
                 <Typography variant="h5" className={classes.typographyCreationModal} color="error">
-                    <strong>Wops some strange error occurred. Look at metamask for more information. Try later</strong>
+                    <strong>{t('crowdsaleCreationError')}</strong>
                 </Typography>
                 <Divider />
             </>
@@ -158,7 +158,7 @@ const CreationModal = (props) => {
                         style={{marginTop: "10px"}}
                         onClick={() => closeModal()}
                         >
-                        BACK
+                        {t('back')}
                     </Button>
                 </Grid>
                 <Grid item xs={12} md={6}>
@@ -169,7 +169,7 @@ const CreationModal = (props) => {
                         onClick={handleSubmit}
                         disabled={disableSubmitButton}
                         >
-                        CONFIRM
+                        {t('confirm')}
                     </Button>
                 </Grid>
             </Grid>

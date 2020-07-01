@@ -58,7 +58,7 @@ const FormStep0 = (props) => {
         }
     });
 
-    const imageInputFieldLabel = mainImageName === null ? t('mainImageTitle') : mainImageName;
+    const imageInputFieldLabel = mainImageName === null ? t('mainImage') : mainImageName;
 
     let imagePreviewComponent = null;
     if( errors[formFieldsNames.mainImage] != null){ //we have to show the error instead of the image preview
@@ -105,7 +105,7 @@ const FormStep0 = (props) => {
                 <TextField 
                     id={formFieldsNames.bigTitle}
                     name={formFieldsNames.bigTitle}
-                    label={t('summaryPlaceholder')}
+                    label={t('title')}
                     fullWidth
                     size="medium"
                     className={classes.textFields}
@@ -124,7 +124,7 @@ const FormStep0 = (props) => {
                     id={formFieldsNames.details}
                     name={formFieldsNames.details}
                     multiline
-                    label={t('detailsPlaceholder')}
+                    label={t('description')}
                     fullWidth
                     size="medium"
                     className={classes.textFields}
@@ -145,7 +145,7 @@ const FormStep0 = (props) => {
                     style={{marginTop: "10px"}}
                     onClick={ () => setStep(1)}
                     >
-                    GO NEXT
+                    {t('next')}
                 </Button>
             </Grid>
         </Grid>

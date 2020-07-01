@@ -1,39 +1,25 @@
 {
   "describeCrowdSaleTitle": "Definisci la tua CrowdSale",
-
-  "summaryPlaceholder": "Titolo",
-  "detailsPlaceholder": "Descrizione dettagliata",
-  "acceptedCoinLabel": "Coin accettata",
-  "emittedCoinLabel": "Coin emessa",
-  "minThresholdLabel": "Quantità minima accettata",
-  "maxThresholdLabel": "Quantità massima da raccogliere",
-  "baseUnitLabel": "Unità base",
-  "startDateLabel": "Data di inizio",
-  "endDateLabel": "Data di termine",
-  "contractPlaceholder": "Carica termini e condizioni (.pdf)",
-  "mainImageTitle": "Immagine Principale",
-  "loadingWait": "Caricamento in corso",
-
-  "noCoins": "Non hai coin",
-  "askCreate": "Per creare una crowdsale devi avere una coin e un coupon creati da te",
-  "askCreateCouponToEmit": "Per creare una crowdsale devi avere un coupon creato da te",
-  "askCreateCoinToAccept": "Per creare una crowdsale devi avere una coin creata da te",
-
   "creationModalTitle": "Creazione Crowdsale",
-  "errorModalTitle": "Errore nella creazione della Crowdsale",
-  "errorDetails": "Non è stato possibile creare la Crowdsale, riprova più avanti. Errore: ",
-  "creationSuccessful": "Richiesta di creazione Crowdsale inviata con successo. Attendi la notifica di conferma",
-  "help": "Guida",
 
-  "capLabel": "Voglio reccogliere",
-  "acceptCoinRatioLabel": "Voglio reccogliere",
-  "emittedCoinRatioLabel": "Voglio distribuire",
-  "totalEmittedCoinLabel": "Voglio distribuire",
-  "forEachEmittedCoinLabel": "Per ogni",
-  "totalAcceptedCoinLabel": "Raccoglierò un totale di",
-  "addressSuggestPLaceholder": "Inserisci l'indirizzo",
+  "mainImage": "Immagine Principale",
+  "title": "Titolo della Crowdsale",
+  "description": "Descrizione breve",
+  "coupon": "Coupon",
+  "couponTicker": "Simbolo del coupon",
+  "forEachCoupon": "Per ogni",
+  "couponQuantity": "Quanti coupon distribuirò",
+  "coinToAccept": "Riceverò in cambio",
+  "coinsRatio": "Quante coin otterrò per ogni coupon",
+  "totalCoins": "Riceverò un totale di",
+  "startingDate": "Data iniziale",
+  "endingDate": "Data finale",
+  "contract": "Contratto o Termini di Servizio",
+  "contractFileName": "Nome del file del contratto",
 
-
+  "waitTransactionMining": "Attendi che la transazione sia minata",
+  "crowdsaleSuccessfullyCreated": "Crowdsale creata con successo!",
+  "crowdsaleCreationError": "Errore nella transazione. Controlla i log di metamask e/o riprova più avanti",
 
   "mainImageRequired": "É richiesta un immagine principale",
   "mainImageUnsupportedFormat": "Formato dell'immagine non supportato. Usa uno tra: {{supportedFormats}}",
@@ -55,7 +41,10 @@
   "contractFileSize": "Il file del contratto ha dimensione eccessive. Dimensioni massime: {{maxSize}} MB",
   "contractUnsupportedFormat": "Il contratto ha un formato non supportato. Usa: {{supportedFormats}}",
 
-  "loadingCoins": "Carico le coin disponibili dalla Blockchain..."
-  
+  "amount": "Quantità",
+  "back": "Indietro",
+  "confirm": "Conferma",
+  "next": "Avanti",
 
+  "loadingCoins": "Carico le coin disponibili dalla Blockchain..."
 }

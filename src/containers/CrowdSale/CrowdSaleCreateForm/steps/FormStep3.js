@@ -63,7 +63,7 @@ const FormStep3 = (props) => {
     }else{
         contractInputFieldLabel = (
             <Typography style={{display: "inline-block"}}> 
-                {contractName === null ? t('contractPlaceholder') : contractName} - 
+                {contractName === null ? t('contract') : contractName} - 
             </Typography> 
         )
     }
@@ -85,7 +85,7 @@ const FormStep3 = (props) => {
                     <TextField
                         id={formFieldsNames.startDate}
                         name={formFieldsNames.startDate}
-                        label={t('startDateLabel')}
+                        label={t('startingDate')}
                         type="date"
                         value={startDate} 
                         className={classes.dateField}
@@ -106,7 +106,7 @@ const FormStep3 = (props) => {
                     <TextField
                         id={formFieldsNames.endDate}
                         name={formFieldsNames.endDate}
-                        label={t('endDateLabel')}
+                        label={t('endingDate')}
                         type="date"
                         value={endDate} 
                         className={classes.dateField}
@@ -155,7 +155,7 @@ const FormStep3 = (props) => {
                     style={{marginTop: "10px"}}
                     onClick={ () => setStep(2)}
                     >
-                    GO PREV
+                    {t('back')}
                 </Button>
             </Grid>
             <Grid item md={6} xs={12}>
@@ -166,7 +166,7 @@ const FormStep3 = (props) => {
                     //type="submit"
                     onClick={openModal}
                     >
-                    CONFIRM
+                    {t('next')}
                 </Button>
             </Grid>
 
