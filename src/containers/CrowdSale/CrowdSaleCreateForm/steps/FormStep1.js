@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from "react-i18next";
 import { formFieldsNames } from '../configForm';
 import { logger } from '../../../../utilities/winstonLogging/winstonInit';
+import {coinGetBalance} from '../../../../api/coinAPI';
 
 import { makeStyles, createStyles } from '@material-ui/core/styles';
 import {Grid, Button, Typography, TextField, MenuItem, Avatar} from "@material-ui/core";
@@ -26,7 +27,9 @@ const FormStep1 = (props) => {
     const {
         formik,
         setStep,
-        ownedCoupons
+        ownedCoupons,
+        currentAccount,
+        web3
     } = props;
 
     const{
@@ -43,12 +46,23 @@ const FormStep1 = (props) => {
     const [selectedEmittedCoin, setSelectedEmittedCoin] = useState(values[formFieldsNames.indexEmittedCoin]); 
     const minimumTotalEmittedCoin = 1;
     const [totalEmittedCoin, setTotalEmittedCoin] = useState(values[formFieldsNames.totalEmittedCoin]);
+    const [selectedEmittedCoinBalance, setSelectedEmittedCoinBalance] = useState( t('loadingCouponBalance'));
 
     useEffect( () => {
         if(values[formFieldsNames.emittedCoin].address != ownedCoupons[selectedEmittedCoin].address ){
             setFieldValue(formFieldsNames.emittedCoin, ownedCoupons[selectedEmittedCoin]); //initialize correctly
         }
     }, [ownedCoupons, formik]);
+
+    useEffect( () => {
+        //this is ugly but it's the suggested way to call an async method from inside useEffect
+        const f = async() => {
+            const coinData = await coinGetBalance(web3, currentAccount, ownedCoupons[selectedEmittedCoin].address);
+            logger.info("got coinData", coinData);
+            setSelectedEmittedCoinBalance(`${t('couponBalance')}: ${coinData.balance}`);
+        }
+        f();
+    }, [ values[formFieldsNames.indexEmittedCoin] ]);
 
     const handleEmittedCoinSelect = (event) => {
         setFieldValue(formFieldsNames.emittedCoin, ownedCoupons[event.target.value]);
@@ -119,6 +133,11 @@ const FormStep1 = (props) => {
                             )
                         })}
                     </TextField>
+                </Grid>
+                <Grid item xs={12}>
+                    <Typography style={{paddingTop: "20px"}}>
+                        {selectedEmittedCoinBalance}
+                    </Typography>
                 </Grid>
             </Grid>
             <Grid item md={6} xs={12}>

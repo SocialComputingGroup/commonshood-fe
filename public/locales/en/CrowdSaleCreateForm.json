@@ -17,6 +17,9 @@
   "contract": "Contract or Terms of service",
   "contractFileName": "Contract file name",
 
+  "loadingCouponBalance": "Your balance for this coupon is being loaded",
+  "couponBalance": "Your current balance for this coupon is",
+
   "waitTransactionMining": "Wait for transaction to be mined",
   "crowdsaleSuccessfullyCreated": "Crowdsale Successfully Created! You are gonna be redirected home in a few seconds",
   "crowdsaleCreationError": "Transaction error. Check metamask logs and/or try later",

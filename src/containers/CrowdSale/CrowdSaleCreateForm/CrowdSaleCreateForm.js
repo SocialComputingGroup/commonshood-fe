@@ -87,9 +87,10 @@ const CrowdSaleCreateForm = (props) => {
     const {
         onCoinGetAll,
         onCrowdsaleCreateReset,
+        userWallet,
+        web3,
         coinListLoading,
         coinList,
-        userWallet
     } = props;
     const {t} = useTranslation('CrowdSaleCreateForm');
     const classes = useStyles();
@@ -142,6 +143,7 @@ const CrowdSaleCreateForm = (props) => {
 
     useEffect( () => {
         if(coinList != null && coinList.length !== 0){
+            logger.info("Reloading tokens and coupons");
             setAllTokens( 
                 coinList
                     .filter( coin => coin.type === assetsType.token.name ) 
@@ -176,7 +178,7 @@ const CrowdSaleCreateForm = (props) => {
                     {
                         {
                             0: <FormStep0 formik={formik} setStep={setStep} />,
-                            1: <FormStep1 formik={formik} setStep={setStep} ownedCoupons={ownedCoupons} />,
+                            1: <FormStep1 formik={formik} setStep={setStep} ownedCoupons={ownedCoupons} currentAccount={userWallet} web3={web3}/>,
                             2: <FormStep2 formik={formik} setStep={setStep} allTokens={allTokens} />,
                             3: <FormStep3 formik={formik} setStep={setStep} openModal={() => setModalOpen(true)} />
                         }[step] || <div />
@@ -195,7 +197,8 @@ const mapStateToProps = state => {
     return {
         coinListLoading: state.coin.loadingCoinListForPiggies,
         coinList: state.coin.coinListForPiggies,
-        userWallet: state.web3.currentAccount
+        userWallet: state.web3.currentAccount,
+        web3: state.web3.web3Instance,
     }
 };
 
@@ -205,7 +208,6 @@ const mapDispatchToProps = dispatch => {
         onCoinGetAll: () => dispatch(actions.coinGetList(null, false, false, true, null)),
         onCreateCrowdSale: (crowdsaleData) => dispatch(actions.crowdsaleCreate(crowdsaleData)),
         onCrowdsaleCreateReset: () => dispatch(actions.crowdsaleCreateReset()),
-
     }
 };
 

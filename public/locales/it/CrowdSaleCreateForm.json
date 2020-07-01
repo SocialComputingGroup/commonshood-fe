@@ -17,6 +17,9 @@
   "contract": "Contratto o Termini di Servizio",
   "contractFileName": "Nome del file del contratto",
 
+  "loadingCouponBalance": "Il bilancio di questo coupon sta venendo caricato",
+  "couponBalance": "Il tuo bilancio corrente per questo coupon è",
+
   "waitTransactionMining": "Attendi che la transazione sia minata",
   "crowdsaleSuccessfullyCreated": "Crowdsale creata con successo!",
   "crowdsaleCreationError": "Errore nella transazione. Controlla i log di metamask e/o riprova più avanti",

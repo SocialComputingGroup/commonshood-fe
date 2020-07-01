@@ -344,8 +344,6 @@ export const crowdsaleCreate = (crowdsaleData) => {
             dispatch(crowdsaleCreateFail("something went wrong with metamask"));
         }
 
-
-
     });
     // return ( async (dispatch, getState) => {
     //     let geoLocationAddress;
