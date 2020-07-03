@@ -100,12 +100,12 @@ const CreationModal = (props) => {
         modalTitle = "Errors encountered";
         modalContent = Object.entries(formik.errors).map( ([key, value], index) => {
             return (
-                <>
+                <div key={key}>
                     <Typography className={classes.typographyCreationModal} color="error">
                         <strong>{value}</strong>
                     </Typography>
                     <Divider />
-                </>
+                </div>
             )
         });
         disableSubmitButton = true;

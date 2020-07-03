@@ -63,7 +63,11 @@ const FormStep1 = (props) => {
     }
 
     useEffect( () => {
-        if(values[formFieldsNames.emittedCoin].address.localeCompare( ownedCoupons[selectedEmittedCoin].address ) ){
+        if(
+            values[formFieldsNames.emittedCoin]?.address != null &&
+            ownedCoupons[selectedEmittedCoin]?.address != null &&
+            values[formFieldsNames.emittedCoin].address.localeCompare( ownedCoupons[selectedEmittedCoin].address )
+        ){
             setFieldValue(formFieldsNames.emittedCoin, ownedCoupons[selectedEmittedCoin]); //initialize correctly
         }
     }, [ownedCoupons, formik]);
@@ -75,7 +79,6 @@ const FormStep1 = (props) => {
             logger.info("got coinData", coinData);
             setSelectedEmittedCoinBalanceText(`${t('couponBalance')}: ${coinData.balance}`);
             setFieldValue(formFieldsNames.emittedCoinDisposability, coinData.balance);
-
         }
         f();
     }, [ values[formFieldsNames.indexEmittedCoin] ]);
