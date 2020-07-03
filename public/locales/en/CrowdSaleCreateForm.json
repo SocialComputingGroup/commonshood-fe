@@ -19,6 +19,7 @@
 
   "loadingCouponBalance": "Your balance for this coupon is being loaded",
   "couponBalance": "Your current balance for this coupon is",
+  "emissionExcedingBalance": "You will need to mint more of these coupons, atm you have not enough in your wallet",
 
   "waitTransactionMining": "Wait for transaction to be mined",
   "crowdsaleSuccessfullyCreated": "Crowdsale Successfully Created! You are gonna be redirected home in a few seconds",

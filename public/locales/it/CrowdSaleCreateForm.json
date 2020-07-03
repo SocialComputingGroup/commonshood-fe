@@ -19,6 +19,7 @@
 
   "loadingCouponBalance": "Il bilancio di questo coupon sta venendo caricato",
   "couponBalance": "Il tuo bilancio corrente per questo coupon è",
+  "emissionExcedingBalance": "Dovrai coniare un numero maggiore di questi coupon, al momento non ne hai a sufficienza nel wallet",
 
   "waitTransactionMining": "Attendi che la transazione sia minata",
   "crowdsaleSuccessfullyCreated": "Crowdsale creata con successo!",

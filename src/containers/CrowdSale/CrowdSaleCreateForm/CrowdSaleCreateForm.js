@@ -115,6 +115,7 @@ const CrowdSaleCreateForm = (props) => {
             [formFieldsNames.indexEmittedCoin]: 0,
             [formFieldsNames.emittedCoin]: {},
             [formFieldsNames.forEachEmittedCoin]: 1, //fixed
+            [formFieldsNames.emittedCoinDisposability]: null,
             [formFieldsNames.acceptedCoinRatio]: 0.01,
             [formFieldsNames.indexAcceptedCoin]: 0,
             [formFieldsNames.acceptedCoin]: {},

@@ -121,7 +121,7 @@ const CreationModal = (props) => {
         modalContent = (
             <>
                 <Typography variant="h5" className={classes.typographyCreationModal}>
-                <strong>{`${t('crowdsaleSuccessfullyCreated')}...`}</strong>
+                    <strong>{`${t('crowdsaleSuccessfullyCreated')}...`}</strong>
                 </Typography>
                 <Divider />
             </>

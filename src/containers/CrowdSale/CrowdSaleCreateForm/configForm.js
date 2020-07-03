@@ -8,6 +8,7 @@ export const formFieldsNames = Object.freeze({
     emittedCoin: "emittedCoin",
     acceptedCoinRatio: "acceptedCoinRatio",
     emittedCoinRatio: "emittedCoinRatio",
+    emittedCoinDisposability: "emittedCoinDisposability",
     cap: "cap",
     coinsCouponsErrors: "coinsCouponsErrors",
     startDate: "startDate",

@@ -46,10 +46,24 @@ const FormStep1 = (props) => {
     const [selectedEmittedCoin, setSelectedEmittedCoin] = useState(values[formFieldsNames.indexEmittedCoin]); 
     const minimumTotalEmittedCoin = 1;
     const [totalEmittedCoin, setTotalEmittedCoin] = useState(values[formFieldsNames.totalEmittedCoin]);
-    const [selectedEmittedCoinBalance, setSelectedEmittedCoinBalance] = useState( t('loadingCouponBalance'));
+    const [selectedEmittedCoinBalanceText, setSelectedEmittedCoinBalanceText] = useState( t('loadingCouponBalance'));
+
+    //managing warning message for when the totalEmittedCoin amount is > emittedCoinDisposability and so the user
+    // must know he has to mint more coin in the near future if he wants to start this crowdsale
+    let warningAboutMint = null;
+    if(
+        values[formFieldsNames.emittedCoinDisposability] !== null &&
+        parseInt(totalEmittedCoin) > values[formFieldsNames.emittedCoinDisposability]
+    ){
+        warningAboutMint = (
+            <Typography style={{paddingTop: "20px"}} color="error">
+                {t('emissionExcedingBalance')}
+            </Typography>
+        )
+    }
 
     useEffect( () => {
-        if(values[formFieldsNames.emittedCoin].address != ownedCoupons[selectedEmittedCoin].address ){
+        if(values[formFieldsNames.emittedCoin].address.localeCompare( ownedCoupons[selectedEmittedCoin].address ) ){
             setFieldValue(formFieldsNames.emittedCoin, ownedCoupons[selectedEmittedCoin]); //initialize correctly
         }
     }, [ownedCoupons, formik]);
@@ -59,7 +73,9 @@ const FormStep1 = (props) => {
         const f = async() => {
             const coinData = await coinGetBalance(web3, currentAccount, ownedCoupons[selectedEmittedCoin].address);
             logger.info("got coinData", coinData);
-            setSelectedEmittedCoinBalance(`${t('couponBalance')}: ${coinData.balance}`);
+            setSelectedEmittedCoinBalanceText(`${t('couponBalance')}: ${coinData.balance}`);
+            setFieldValue(formFieldsNames.emittedCoinDisposability, coinData.balance);
+
         }
         f();
     }, [ values[formFieldsNames.indexEmittedCoin] ]);
@@ -136,8 +152,11 @@ const FormStep1 = (props) => {
                 </Grid>
                 <Grid item xs={12}>
                     <Typography style={{paddingTop: "20px"}}>
-                        {selectedEmittedCoinBalance}
+                        {selectedEmittedCoinBalanceText}
                     </Typography>
+                </Grid>
+                <Grid item xs={12}>
+                        {warningAboutMint}
                 </Grid>
             </Grid>
             <Grid item md={6} xs={12}>
