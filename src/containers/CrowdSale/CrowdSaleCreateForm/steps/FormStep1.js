@@ -43,7 +43,7 @@ const FormStep1 = (props) => {
     const classes = useStyles();
     const { t } = useTranslation('CrowdSaleCreateForm');
 
-    const [selectedEmittedCoin, setSelectedEmittedCoin] = useState(values[formFieldsNames.indexEmittedCoin]); 
+    const [selectedEmittedCoinIndex, setSelectedEmittedCoinIndex] = useState(values[formFieldsNames.indexEmittedCoin]);
     const minimumTotalEmittedCoin = 1;
     const [totalEmittedCoin, setTotalEmittedCoin] = useState(values[formFieldsNames.totalEmittedCoin]);
     const [selectedEmittedCoinBalanceText, setSelectedEmittedCoinBalanceText] = useState( t('loadingCouponBalance'));
@@ -65,17 +65,17 @@ const FormStep1 = (props) => {
     useEffect( () => {
         if(
             values[formFieldsNames.emittedCoin]?.address != null &&
-            ownedCoupons[selectedEmittedCoin]?.address != null &&
-            values[formFieldsNames.emittedCoin].address.localeCompare( ownedCoupons[selectedEmittedCoin].address )
+            ownedCoupons[selectedEmittedCoinIndex]?.address != null &&
+            values[formFieldsNames.emittedCoin].address.localeCompare( ownedCoupons[selectedEmittedCoinIndex].address )
         ){
-            setFieldValue(formFieldsNames.emittedCoin, ownedCoupons[selectedEmittedCoin]); //initialize correctly
+            setFieldValue(formFieldsNames.emittedCoin, ownedCoupons[selectedEmittedCoinIndex]); //initialize correctly
         }
     }, [ownedCoupons, formik]);
 
     useEffect( () => {
         //this is ugly but it's the suggested way to call an async method from inside useEffect
         const f = async() => {
-            const coinData = await coinGetBalance(web3, currentAccount, ownedCoupons[selectedEmittedCoin].address);
+            const coinData = await coinGetBalance(web3, currentAccount, ownedCoupons[selectedEmittedCoinIndex].address);
             logger.info("got coinData", coinData);
             setSelectedEmittedCoinBalanceText(`${t('couponBalance')}: ${coinData.balance}`);
             setFieldValue(formFieldsNames.emittedCoinDisposability, coinData.balance);
@@ -86,7 +86,7 @@ const FormStep1 = (props) => {
     const handleEmittedCoinSelect = (event) => {
         setFieldValue(formFieldsNames.emittedCoin, ownedCoupons[event.target.value]);
         setFieldValue(formFieldsNames.indexEmittedCoin, event.target.value);
-        setSelectedEmittedCoin(event.target.value);
+        setSelectedEmittedCoinIndex(event.target.value);
     };
 
     return (
@@ -129,7 +129,7 @@ const FormStep1 = (props) => {
                         name={formFieldsNames.emittedCoin}
                         size="medium"
                         className={classes.select}
-                        value={selectedEmittedCoin}
+                        value={selectedEmittedCoinIndex}
                         onChange={(event) => handleEmittedCoinSelect(event)}
                         label={t('coupon')}
                     >
