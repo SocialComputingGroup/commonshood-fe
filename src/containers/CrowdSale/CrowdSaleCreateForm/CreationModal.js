@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from "react-i18next";
+import { useHistory } from "react-router-dom";
 
 import {Button, Divider, Grid, Typography} from '@material-ui/core';
 import { makeStyles, createStyles } from '@material-ui/core/styles';
@@ -33,6 +34,7 @@ const CreationModal = (props) => {
     } = props;
 
     const {t} = useTranslation('CrowdSaleCreateForm');
+    const history = useHistory();
     const classes = useStyles();
 
     const handleSubmit = () => {
@@ -93,7 +95,33 @@ const CreationModal = (props) => {
             <Divider />
         </>
     );
-    let disableSubmitButton = false;
+
+
+    let buttons = (
+        <Grid container justify='center' alignItems='flex-start'>
+            <Grid item xs={12} md={6}>
+                <Button
+                    variant='contained'
+                    color='primary'
+                    style={{marginTop: "10px"}}
+                    onClick={() => closeModal()}
+                >
+                    {t('back')}
+                </Button>
+            </Grid>
+            <Grid item xs={12} md={6}>
+                <Button
+                    variant='contained'
+                    color='primary'
+                    style={{marginTop: "10px"}}
+                    onClick={handleSubmit}
+                >
+                    {t('confirm')}
+                </Button>
+            </Grid>
+        </Grid>
+    );
+
 
     //case in which we have errors
     if(Object.keys(formik.errors).length !== 0){ //this is an easy way to check if we got any error in this form
@@ -108,26 +136,85 @@ const CreationModal = (props) => {
                 </div>
             )
         });
-        disableSubmitButton = true;
+        buttons = (
+            <Grid container justify='center' alignItems='flex-start'>
+                <Grid item xs={12} md={6}>
+                    <Button
+                        variant='contained'
+                        color='primary'
+                        style={{marginTop: "10px"}}
+                        onClick={() => closeModal()}
+                    >
+                        {t('back')}
+                    </Button>
+                </Grid>
+            </Grid>
+        );
     }
 
-    //case in which we are awaiting for the transaction to be mined
-    if(crowdsaleCreationLoading){
+
+    if(crowdsaleCreationLoading){//case in which we are awaiting for the transaction to be mined
         modalContent = (
             <Loading title={`${t('waitTransactionMining')}...`} withLoader={true} />
         );
-        disableSubmitButton = true;
-    }else if(crowdsaleCreationSuccess){
+        buttons = null;
+    }else if(crowdsaleCreationSuccess){ //case in which crowdsale was created correctly on bc
+        let mintNeeded = null;
+        if(
+            formik.values[formFieldsNames.emittedCoinDisposability] !== null &&
+            parseInt(formik.values[formFieldsNames.totalEmittedCoin]) > formik.values[formFieldsNames.emittedCoinDisposability]
+        ) { //user need to mint more coupons to start this crowdsale
+            mintNeeded = (
+                <>
+                    <Typography variant="h5" className={classes.typographyCreationModal} color="error">
+                        <strong>{`${t('emissionExcedingBalance')}.`}</strong>
+                    </Typography>
+                    <Divider />
+                </>
+            );
+        }
+
         modalContent = (
             <>
                 <Typography variant="h5" className={classes.typographyCreationModal}>
-                    <strong>{`${t('crowdsaleSuccessfullyCreated')}...`}</strong>
+                    <strong>{`${t('crowdsaleSuccessfullyCreated')}.`}</strong>
                 </Typography>
                 <Divider />
+                <Typography variant="h5" className={classes.typographyCreationModal}>
+                    <strong>{`${t('successExtraInfo')}.`}</strong>
+                </Typography>
+                <Divider />
+                {mintNeeded}
             </>
         );
-        disableSubmitButton = true;
-    }else if(crowdsaleCreationError){
+        buttons = (
+            <Grid container justify='center' alignItems='flex-start'>
+                <Grid item xs={12}>
+                    <Button
+                        variant='contained'
+                        color='primary'
+                        style={{marginTop: "10px"}}
+                        onClick={() => {
+                            history.push("/");
+                            props.showCrowdsalesPage();
+                        }}
+                    >
+                        {t('loadCoupons')}
+                    </Button>
+                </Grid>
+                <Grid item xs={12}>
+                    <Button
+                        variant='contained'
+                        color='primary'
+                        style={{marginTop: "10px"}}
+                        onClick={() => history.push("/")}
+                    >
+                        {t('goHome')}
+                    </Button>
+                </Grid>
+            </Grid>
+        )
+    }else if(crowdsaleCreationError){ //case in which there was an error creating the crowdsale
         modalContent = (
             <>
                 <Typography variant="h5" className={classes.typographyCreationModal} color="error">
@@ -135,6 +222,20 @@ const CreationModal = (props) => {
                 </Typography>
                 <Divider />
             </>
+        );
+        buttons = (
+            <Grid container justify='center' alignItems='flex-start'>
+                <Grid item xs={12} md={6}>
+                    <Button
+                        variant='contained'
+                        color='primary'
+                        style={{marginTop: "10px"}}
+                        onClick={() => closeModal()}
+                    >
+                        {t('back')}
+                    </Button>
+                </Grid>
+            </Grid>
         );
     }
 
@@ -149,30 +250,7 @@ const CreationModal = (props) => {
 
         >
             {modalContent}
-
-            <Grid container justify='center' alignItems='flex-start'>
-                <Grid item xs={12} md={6}>
-                    <Button 
-                        variant='contained'
-                        color='primary'
-                        style={{marginTop: "10px"}}
-                        onClick={() => closeModal()}
-                        >
-                        {t('back')}
-                    </Button>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                    <Button 
-                        variant='contained'
-                        color='primary'
-                        style={{marginTop: "10px"}}
-                        onClick={handleSubmit}
-                        disabled={disableSubmitButton}
-                        >
-                        {t('confirm')}
-                    </Button>
-                </Grid>
-            </Grid>
+            {buttons}
 
         </ZoomModal>
     );
@@ -190,6 +268,7 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
     return {
         //onCrowdsaleCreateReset: () => dispatch(actions.crowdsaleCreateReset()),
+        showCrowdsalesPage: () => dispatch(actions.handleBottomMenuIndexChange(1)),
     }
 };
 

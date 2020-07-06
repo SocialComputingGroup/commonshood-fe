@@ -22,7 +22,8 @@
   "emissionExcedingBalance": "You will need to mint more of these coupons, atm you have not enough in your wallet",
 
   "waitTransactionMining": "Wait for transaction to be mined",
-  "crowdsaleSuccessfullyCreated": "Crowdsale Successfully Created! You are gonna be redirected home in a few seconds",
+  "crowdsaleSuccessfullyCreated": "Crowdsale Successfully Created!",
+  "successExtraInfo": "You'll have to go in the Crowdsale page, load the coupons and unlock it before it can start",
   "crowdsaleCreationError": "Transaction error. Check metamask logs and/or try later",
 
   "mainImageRequired": "A main image is required",
@@ -49,6 +50,8 @@
   "back": "Back",
   "confirm": "Confirm",
   "next": "Next",
+  "goHome": "Home Page",
+  "loadCoupons": "Go to Crowdsales page to load the coupon and unlock",
 
   "loadingCoins": "Loading available coins from Blockchain..."
 }

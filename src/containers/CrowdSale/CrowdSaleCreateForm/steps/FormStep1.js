@@ -63,12 +63,16 @@ const FormStep1 = (props) => {
     }
 
     useEffect( () => {
+        setFieldValue(formFieldsNames.emittedCoin, ownedCoupons[selectedEmittedCoinIndex]); //initialize correctly
+    }, []); //run only once
+
+    useEffect( () => {
         if(
             values[formFieldsNames.emittedCoin]?.address != null &&
             ownedCoupons[selectedEmittedCoinIndex]?.address != null &&
             values[formFieldsNames.emittedCoin].address.localeCompare( ownedCoupons[selectedEmittedCoinIndex].address )
         ){
-            setFieldValue(formFieldsNames.emittedCoin, ownedCoupons[selectedEmittedCoinIndex]); //initialize correctly
+            setFieldValue(formFieldsNames.emittedCoin, ownedCoupons[selectedEmittedCoinIndex]);
         }
     }, [ownedCoupons, formik]);
 

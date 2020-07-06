@@ -23,6 +23,7 @@
 
   "waitTransactionMining": "Attendi che la transazione sia minata",
   "crowdsaleSuccessfullyCreated": "Crowdsale creata con successo!",
+  "successExtraInfo": "Devi andare nella pagina delle crowdsales, caricare i couponsd e \"unlockarla\" prima che possa cominciare",
   "crowdsaleCreationError": "Errore nella transazione. Controlla i log di metamask e/o riprova più avanti",
 
   "mainImageRequired": "É richiesta un immagine principale",
@@ -49,6 +50,10 @@
   "back": "Indietro",
   "confirm": "Conferma",
   "next": "Avanti",
+  "goHome": "Pagina Principale",
+  "loadCoupons": "Vai alla pagina delle Crowdsale per caricare i coupon e \"unlockarla\"",
+
+
 
   "loadingCoins": "Carico le coin disponibili dalla Blockchain..."
 }
