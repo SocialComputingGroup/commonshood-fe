@@ -298,18 +298,23 @@ export const crowdsaleCreate = (crowdsaleData) => {
                 'Access-Control-Allow-Origin': '*'
             }
         };
-        
-        let formData = new FormData();
 
-        // formData.append('file', crowdsaleData.contract);
-        // const contractResponse = await axios.post('/Resources/upload', formData, configFileHeader);
-        // const contractHash = contractResponse.data.file.hash;
+        let contractHash, imageHash;
+        try {
+            let formData = new FormData();
+            formData.append('file', crowdsaleData.contract);
+            const contractResponse = await axios.post('/Resources/upload', formData, configFileHeader);
+            contractHash = contractResponse.data.file.hash;
 
-        // formData = new FormData();
-        // formData.append('file', crowdsaleData.mainImage);
-        // const imageResponse = axios.post('/Resources/upload', formData, configFileHeader);
-        // const imageHash = imageResponse.data.file.hash;
-        
+            formData = new FormData();
+            formData.append('file', crowdsaleData.mainImage);
+            const imageResponse = await axios.post('/Resources/upload', formData, configFileHeader);
+            imageHash = imageResponse.data.file.hash;
+        }catch(error){
+            dispatch(crowdsaleCreateFail("Something went wrong while loading image or TOS in backend"));
+            return;
+        }
+
         const data = {
             tokenToGiveAddr: crowdsaleData.emittedCoin.address,
             tokenToAccept: crowdsaleData.acceptedCoin.address,
@@ -318,6 +323,12 @@ export const crowdsaleCreate = (crowdsaleData) => {
             acceptRatio: parseInt(assetDecimalRepresentationToInteger(crowdsaleData.acceptedCoinRatio, crowdsaleData.acceptedCoin.decimals)),
             giveRatio: parseInt(assetDecimalRepresentationToInteger(crowdsaleData.forEachEmittedCoin, crowdsaleData.emittedCoin.decimals)),
             maxCap: parseInt(assetDecimalRepresentationToInteger(crowdsaleData.totalAcceptedCoin, crowdsaleData.acceptedCoin.decimals)),
+            metadata: [
+                crowdsaleData.bigTitle,
+                crowdsaleData.details,
+                imageHash,
+                contractHash,
+            ]
         }
         console.log("prepared data ", data);
         const web3 = getState().web3.web3Instance;
@@ -336,6 +347,7 @@ export const crowdsaleCreate = (crowdsaleData) => {
                     data.acceptRatio,
                     data.giveRatio,
                     data.maxCap,
+                    data.metadata,
                 ).send({from: accountAddress, gasPrice: "0"});
                 logger.info('metamask succesfully created res: ', creationResponse); 
                 dispatch(crowdsaleCreateSuccess());
