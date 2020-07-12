@@ -31,6 +31,7 @@ const CreationModal = (props) => {
         crowdsaleCreationLoading,
         crowdsaleCreationSuccess,
         crowdsaleCreationError,
+        crowdsaleCreationResetCall
     } = props;
 
     const {t} = useTranslation('CrowdSaleCreateForm');
@@ -230,7 +231,10 @@ const CreationModal = (props) => {
                         variant='contained'
                         color='primary'
                         style={{marginTop: "10px"}}
-                        onClick={() => closeModal()}
+                        onClick={() => {
+                            crowdsaleCreationResetCall();
+                            closeModal();
+                        }}
                     >
                         {t('back')}
                     </Button>
@@ -267,7 +271,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return {
-        //onCrowdsaleCreateReset: () => dispatch(actions.crowdsaleCreateReset()),
+        crowdsaleCreationResetCall: () => dispatch(actions.crowdsaleCreateReset()),
         showCrowdsalesPage: () => dispatch(actions.handleBottomMenuIndexChange(1)),
     }
 };
