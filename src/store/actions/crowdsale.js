@@ -6,6 +6,7 @@ import config from '../../config';
 
 import * as actionTypes from './actionTypes';
 
+import {coinGetFullData} from '../../api/coinAPI';
 import {logger} from '../../utilities/winstonLogging/winstonInit';
 
 export const crowdsaleCreateStart = () => {
@@ -469,7 +470,17 @@ export const crowdsaleGetAll = () =>{
                 const acceptRatioRaw = await crowdsaleInstance.methods.acceptRatio().call({from: accountAddress, gasPrice: "0"});
                 const giveRatioRaw = await crowdsaleInstance.methods.giveRatio().call({from: accountAddress, gasPrice: "0"});
                 const tokenToGiveAddr = await crowdsaleInstance.methods.tokenToGiveAddr().call({from: accountAddress, gasPrice: "0"});
+                const tokenToGive = await coinGetFullData(
+                    getState().web3.web3Instance,
+                    getState().web3.currentAccount,
+                    tokenToGiveAddr
+                );
                 const tokenToAcceptAddr = await crowdsaleInstance.methods.tokenToAcceptAddr().call({from: accountAddress, gasPrice: "0"});
+                const tokenToAccept = await coinGetFullData(
+                    getState().web3.web3Instance,
+                    getState().web3.currentAccount,
+                    tokenToAcceptAddr
+                );
                 const status = await crowdsaleInstance.methods.status().call({from: accountAddress, gasPrice: "0"});
                 const cap = await crowdsaleInstance.methods.maxCap().call({from: accountAddress, gasPrice: "0"});
                 const totalReservations = await crowdsaleInstance.methods.raised().call({from: accountAddress, gasPrice: "0"});
@@ -481,16 +492,17 @@ export const crowdsaleGetAll = () =>{
                 const params = {};
                 if(crowdsaleIconCache.has(logoHash)){ //icon already in cache
                     logger.info(`icon for crowdsale ${title} in cache`);
-                    crowdsaleImage = crowdsaleIconCache.get(logoHash)
+                    crowdsaleImage = crowdsaleIconCache.get(logoHash);
                 }else{ //get icon from API
                     logger.info(`icon for crowdsale ${title} NOT in cache`);
                     const img = await axios.get(url+logoHash, params);
                     //save in cache
-                    dispatch(crowdsaleAddIconToCache(logoHash, img.data));
-                    crowdsaleImage = img.data;
+                    dispatch(crowdsaleAddIconToCache(logoHash, img.data.file));
+                    crowdsaleImage = img.data.file;
                 }
 
                 return {
+                    crowdsaleAddress,
                     ownerAddress,
                     title,
                     description,
@@ -503,7 +515,9 @@ export const crowdsaleGetAll = () =>{
                     giveRatio: assetIntegerToDecimalRepresentation(giveRatioRaw, 0), //giver ratio has always 0 decimals (coupons)
                     maxCap: assetIntegerToDecimalRepresentation(cap, 2), //2 decimals (cap refers amount of coins)
                     tokenToAcceptAddr,
+                    tokenToAccept,
                     tokenToGiveAddr,
+                    tokenToGive,
                     status,
                     totalReservations
                 }
@@ -519,68 +533,6 @@ export const crowdsaleGetAll = () =>{
                 "ERROR -> Something went wrong while retriving crowdsales";
             dispatch(crowdsaleGetAllFail(errorMessage));
         }
-
-        // let response = await axios.get(
-        //     '/Crowdsales', 
-        //     { 
-        //         params: {
-        //             filter: 
-        //                 {
-        //                     where: {state: "confirmed" } //get only crowdsales already in blockchain and not still pending
-        //                 },
-        //         }
-        //     }
-        // );
-        // logger.debug('[CROWDSALEGETALL response] ', response);
-        // let crowdsales = response.data;
-        // if(crowdsales.length === 0){
-        //     //no crowdsales found
-        //     dispatch(crowdsaleGetAllSuccess([]));
-        // }else{
-        //     //now we have to get the image of each crowdsale
-        //     const crowdsaleIconCache = getState().crowdsale.iconsCache;
-        //     let url = '/Resources/get/';
-        //     const params = {};
-
-        //     try{
-        //         crowdsales.forEach( async (crowdsale) =>{
-        //             //converting maxCap, acceptRatio and giveRatio based on decimals of related coins
-        //             crowdsale.maxCap = assetIntegerToDecimalRepresentation(crowdsale.maxCap, crowdsale.acceptedCoinDecimals);
-        //             crowdsale.acceptRatio = assetIntegerToDecimalRepresentation(crowdsale.acceptRatio, crowdsale.acceptedCoinDecimals);
-        //             crowdsale.giveRatio = assetIntegerToDecimalRepresentation(crowdsale.giveRatio, crowdsale.coinToGiveDecimals);
-                    
-        //             //photo contains the hash, replace it with the image
-        //             if(crowdsaleIconCache.has(crowdsale.photo)){ //icon already in cache
-        //                 logger.info(`icon for crowdsale ${crowdsale.title} in cache`);
-        //                 crowdsale.photo = crowdsaleIconCache.get(crowdsale.photo)
-        //             }else{ //get icon from API
-        //                 logger.info(`icon for crowdsale ${crowdsale.title} NOT in cache`);
-        //                 const img = await axios.get(url+crowdsale.photo, params);
-        //                 //save in cache
-        //                 dispatch(crowdsaleAddIconToCache(crowdsale.photo, img.data));
-        //                 crowdsale.photo = img.data;
-        //             }
-
-        //             let promises = [];
-        //             crowdsales.forEach((crowdsale) => {
-        //                 //photo contains the hash
-        //                 promises.push(axios.get(`/Crowdsales/${crowdsale.crowdsaleID}/getReservations`, params));
-        //             });
-
-        //             Promise.all(promises).then((resultReservations) => {
-        //                 crowdsales.forEach( (crowdsale, index) => {
-        //                     crowdsale.totalReservations = assetIntegerToDecimalRepresentation(resultReservations[index].data.totalReservations, crowdsale.acceptedCoinDecimals);
-        //                 });
-        //                 logger.info('[CROWDSALEGETALL after get reservations]', crowdsales);
-        //                 dispatch(crowdsaleGetAllSuccess(crowdsales));
-        //             });
-                    
-        //         });
-        //     }catch(error){
-        //         logger.error('[CROWDSALEGETALL error] ', error);
-        //         dispatch(crowdsaleGetAllFail(error));
-        //     }
-        // }
     }
 };
 

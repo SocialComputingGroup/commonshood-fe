@@ -21,3 +21,26 @@ export const coinGetBalance = async (web3, accountAddress, coinAddress) => {
     }
 };
 
+export const coinGetFullData = async (web3, accountAddress, coinAddress) => {
+    const coinContractInstance = new web3.eth.Contract(
+        config.smartContracts.TKN_TMPLT_ABI,
+        coinAddress
+    );
+
+    const name = await coinContractInstance.methods.name().call({from: accountAddress});
+    const owner = await coinContractInstance.methods.owner().call({from: accountAddress});
+    const logoHash = await coinContractInstance.methods.logoHash().call({from: accountAddress});
+    const logoUrl = await coinContractInstance.methods.logoURL().call({from: accountAddress});
+    const contractHash = await coinContractInstance.methods.contractHash().call({from: accountAddress});
+    const symbol = await coinContractInstance.methods.symbol().call({from: accountAddress});
+
+    return {
+        owner,
+        name,
+        symbol,
+        logoHash,
+        logoUrl,
+        contractHash,
+    }
+
+};

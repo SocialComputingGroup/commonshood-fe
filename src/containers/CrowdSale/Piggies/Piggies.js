@@ -1,6 +1,8 @@
 import React, {Component} from 'react';
 import {logger} from '../../../utilities/winstonLogging/winstonInit';
 
+import config from '../../../config';
+
 import Loading from '../../../components/UI/Loading/Loading';
 import Slide from '@material-ui/core/Slide';
 import PiggyCard from './PiggyCard/PiggyCard';
@@ -52,7 +54,7 @@ class Piggies extends Component {
         const {
             onGetAllCrowdsales,
             onGetCoinList,
-            onGetCoinListReset
+            onGetCoinListReset,
         } = this.props;
 
         onGetCoinListReset();
@@ -85,7 +87,8 @@ class Piggies extends Component {
             coinList,
             coinListLoading,
             coords,
-            crowdsalesLoading
+            crowdsalesLoading,
+            userWalletAddress
         }= this.props;
         const currentProfileId = this.props.currentProfile.id;
 
@@ -100,7 +103,7 @@ class Piggies extends Component {
         }
 
         //managing case of no crowdsales
-        if( !crowdsalesLoading && (crowdsales.length === 0 || crowdsales == null) ){ 
+        if( !crowdsalesLoading && (crowdsales == null || crowdsales.length === 0) ){
             logger.info('No active crowdsales found right now');
             return (
                 <Grid container alignItems="center" justify="center" direction="column">
@@ -112,46 +115,49 @@ class Piggies extends Component {
         }
 
         //standard case:
-        let currentLocation = fromLonLat([7.686856, 45.070312]); //default
+        let currentLocation = fromLonLat([
+            config.defaultGeoCoordinates.longitude,
+            config.defaultGeoCoordinates.latitude
+        ]); //default on Turin
         if(coords) {
             currentLocation = fromLonLat([coords.longitude,coords.latitude]);
         }
         
         
         const cards = crowdsales.map( crowdsale =>{
-            //check if this crowdsale is owned
-            //FIXME atm checks only the user Id, in the future check currentProfile
-            crowdsale.owned = crowdsale.owner.id === currentProfileId;
+            //check if this crowdsale is owned by the currently logged user
+            crowdsale.isOwner = crowdsale.ownerAddress === userWalletAddress;
 
             //images
-            let acceptedCoinLogo = null, coinToGiveLogo = null;
+            let tokenToAcceptLogo = null, tokenToGiveLogo = null;
             if( (coinList != null) && (coinList.length !== 0) && (!coinListLoading) ){
-                const completeAcceptedCoin = coinList.find( (elem) => elem.symbol === crowdsale.acceptedCoin );
-                acceptedCoinLogo = completeAcceptedCoin ?  completeAcceptedCoin.logoFile : null;
-                const completeCoinToGive= coinList.find( (elem) => elem.symbol === crowdsale.coinToGive );
-                coinToGiveLogo = completeCoinToGive ? completeCoinToGive.logoFile : null;
+                const completeAcceptedCoin = coinList.find( (elem) => elem.address === crowdsale.tokenToAcceptAddr );
+                tokenToAcceptLogo = completeAcceptedCoin ?  completeAcceptedCoin.logoFile : null;
+                const completeCoinToGive= coinList.find( (elem) => elem.address === crowdsale.tokenToGiveAddr );
+                tokenToGiveLogo = completeCoinToGive ? completeCoinToGive.logoFile : null;
             }
             
             return (
-                <Grid item xs={12} sm={12} md={6} lg={4} key={crowdsale.id} >
+                <Grid item xs={12} sm={12} md={6} lg={4} key={crowdsale.crowdsaleAddress} >
                     <PiggyCard
-                    image={crowdsale.photo.file.body}
-                    title={crowdsale.title}
-                    description={crowdsale.description}
-                    handleOpen = {() => {this.crowdSaleDetailOpen(crowdsale)}}
-                    acceptedCoin={crowdsale.acceptedCoin}
-                    acceptedCoinLogo={acceptedCoinLogo}
-                    coinToGive={crowdsale.coinToGive}
-                    coinToGiveLogo={coinToGiveLogo}
-                    acceptedCoinRatio={crowdsale.acceptRatio}
-                    coinToGiveRatio={crowdsale.giveRatio}
-                    startDate={crowdsale.startDate}
-                    endDate={crowdsale.endDate}
-                    totalReservations={crowdsale.totalReservations}
-                    owned={crowdsale.owned}
-                    owner={crowdsale.owner}
-                    maxCap={crowdsale.maxCap}
-                    key={crowdsale.id}
+                        crowdsaleAddress={crowdsale.crowdsaleAddress}
+                        image={crowdsale.photo}
+                        title={crowdsale.title}
+                        description={crowdsale.description}
+                        handleOpen = {() => {this.crowdSaleDetailOpen(crowdsale)}}
+                        acceptedCoin={crowdsale.tokenToAccept}
+                        acceptedCoinLogo={tokenToAcceptLogo}
+                        coinToGive={crowdsale.tokenToGive}
+                        coinToGiveLogo={tokenToGiveLogo}
+                        acceptedCoinRatio={crowdsale.acceptRatio}
+                        coinToGiveRatio={crowdsale.giveRatio}
+                        startDate={crowdsale.startDate}
+                        endDate={crowdsale.endDate}
+                        totalReservations={crowdsale.totalReservations}
+                        owned={crowdsale.owned}
+                        isOwner={crowdsale.isOwner}
+                        maxCap={crowdsale.maxCap}
+                        key={crowdsale.crowdsaleAddress}
                     />
                 </Grid>
             );
@@ -223,6 +229,7 @@ const mapStateToProps = state => {
         coinListLoading: state.coin.loadingCoinListForPiggies,
         
         currentProfile: state.user.currentProfile,
+        userWalletAddress: state.web3.currentAccount,
     }
 };
 

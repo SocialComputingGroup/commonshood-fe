@@ -56,8 +56,11 @@ const config = {
         TKN_CRWDSL_ABI: [],
 
         CCDAO_ABI: [],
-    },  
-  
+    },
+    defaultGeoCoordinates: { //these below are centered on Turin
+        longitude: 7.686856,
+        latitude: 45.070312,
+    }
   
 
 };

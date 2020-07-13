@@ -35,16 +35,15 @@ const PiggyCard = (props) => {
         startDate,
         endDate,
         maxCap,
-        owned,
+        isOwned,
         acceptedCoinLogo,
         coinToGiveLogo,
         classes
     } = props;
-    let ownedButton = null;
-    
     const { t } = useTranslation('PiggyCard');
 
-    if(owned){
+    let ownedButton = null;
+    if(isOwned){
         ownedButton = ( 
             <Button variant="contained" component="div" color="default" className={classes.owned}>
                 <Icon>vpn_key</Icon> OWNED
@@ -87,16 +86,11 @@ const PiggyCard = (props) => {
             <CardActionArea>
                 <CardMedia
                     className={classes.media}
-                    image={image}
+                    image={image.body}
                     title={title}
                     onClick={handleOpen}
                 />
-                {/*<Fab size="small" className={classes.favorite}>*/}
-                {/*    <Icon color="error">favorite</Icon>*/}
-                {/*</Fab>*/}
-                { 
-                    ownedButton
-                }
+                { ownedButton }
 
                 <CardContent  onClick={handleOpen}>
                     <Typography component="p" >
@@ -111,7 +105,7 @@ const PiggyCard = (props) => {
                                     {
                                         raised: totalReservations,
                                         cap: maxCap,
-                                        ticker: acceptedCoin
+                                        ticker: acceptedCoin.symbol
                                     }
                             })
                         }
@@ -123,23 +117,19 @@ const PiggyCard = (props) => {
                 {/* <Typography variant="caption">{distance} m</Typography> */}
                 <IconButton disabled={true} className={classes.acceptedCoin}>
                     {/* <Icon>attach_money</Icon> */}
-                    <CoinAvatarLabeled noName={true} coin={ {symbol: acceptedCoin, logoFile: acceptedCoinLogo}} />
-                    <Typography style={{color: "grey"}} variant="caption">{acceptedCoinRatio + ' ' + acceptedCoin}</Typography>
+                    <CoinAvatarLabeled noName={true} coin={ {symbol: acceptedCoin.symbol, logoFile: acceptedCoinLogo}} />
+                    <Typography style={{color: "grey"}} variant="caption">{acceptedCoinRatio + ' ' + acceptedCoin.symbol}</Typography>
                 </IconButton>
                 <Icon disabled>compare_arrows</Icon>
                 <IconButton disabled={true} className={classes.coinToGive}>
                     {/* <Icon>style</Icon> */}
-                    <CoinAvatarLabeled noName={true} coin={ {symbol: coinToGive, logoFile: coinToGiveLogo}} />
-                    <Typography style={{color: "grey"}} variant="caption">{parseInt(coinToGiveRatio) + ' ' + coinToGive}</Typography>
+                    <CoinAvatarLabeled noName={true} coin={ {symbol: coinToGive.symbol, logoFile: coinToGiveLogo}} />
+                    <Typography style={{color: "grey"}} variant="caption">{parseInt(coinToGiveRatio) + ' ' + coinToGive.symbol}</Typography>
                 </IconButton>
             </CardActions>
         </Card>
     );
 }
 
-PiggyCard.propTypes = {
-    classes: PropTypes.object.isRequired
-};
-  
 export default withStyles(PiggyCardStyle)(PiggyCard);
   
