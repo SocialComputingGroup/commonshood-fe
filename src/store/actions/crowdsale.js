@@ -446,17 +446,78 @@ export const crowdsaleGetAll = () =>{
                 .call({from: accountAddress, gasPrice: "0"});
             console.log("CWD ADDR", crowdsaleAddresses);
 
-            let crowdsalesExtendedData = crowdsaleAddresses.map( (crowdsaleAddress) => {
-                return CrowdsaleFactoryInstance.methods.getCrowdSale(
-                        crowdsaleAddress
-                    ).call({from: accountAddress, gasPrice: "0"});
-            });
-            crowdsalesExtendedData = await Promise.all(crowdsalesExtendedData);
+            if(crowdsaleAddresses == null || crowdsaleAddresses.length === 0){ //no crowdsales found
+                dispatch(crowdsaleGetAllSuccess([]));
+                return;
+            }
 
-            console.log(crowdsalesExtendedData);
+            let crowdsalesExtendedData = await Promise.all( crowdsaleAddresses.map( async (crowdsaleAddress) => {
+                const crowdsaleInstance =  new web3.eth.Contract(
+                    config.smartContracts.TKN_CRWDSL_ABI,
+                    crowdsaleAddress,
+                );
+
+                //TODO see if its possible to directly return a struct from the contract instead of making all these calls!
+                const ownerAddress = await crowdsaleInstance.methods.owner().call({from: accountAddress, gasPrice: "0"});
+                const title = await crowdsaleInstance.methods.title().call({from: accountAddress, gasPrice: "0"});
+                const description = await crowdsaleInstance.methods.description().call({from: accountAddress, gasPrice: "0"});
+                const logoHash = await crowdsaleInstance.methods.logoHash().call({from: accountAddress, gasPrice: "0"});
+                let crowdsaleImage = null;
+                const TOSHash = await crowdsaleInstance.methods.TOSHash().call({from: accountAddress, gasPrice: "0"});
+                const startDateRaw = await crowdsaleInstance.methods.start().call({from: accountAddress, gasPrice: "0"});
+                const endDateRaw = await crowdsaleInstance.methods.end().call({from: accountAddress, gasPrice: "0"});
+                const acceptRatioRaw = await crowdsaleInstance.methods.acceptRatio().call({from: accountAddress, gasPrice: "0"});
+                const giveRatioRaw = await crowdsaleInstance.methods.giveRatio().call({from: accountAddress, gasPrice: "0"});
+                const tokenToGiveAddr = await crowdsaleInstance.methods.tokenToGiveAddr().call({from: accountAddress, gasPrice: "0"});
+                const tokenToAcceptAddr = await crowdsaleInstance.methods.tokenToAcceptAddr().call({from: accountAddress, gasPrice: "0"});
+                const status = await crowdsaleInstance.methods.status().call({from: accountAddress, gasPrice: "0"});
+                const cap = await crowdsaleInstance.methods.maxCap().call({from: accountAddress, gasPrice: "0"});
+                const totalReservations = await crowdsaleInstance.methods.raised().call({from: accountAddress, gasPrice: "0"});
+
+                //getting files from webserver:
+                // photo contains the hash, replace it with the image
+                const crowdsaleIconCache = getState().crowdsale.iconsCache;
+                const url = '/Resources/get/';
+                const params = {};
+                if(crowdsaleIconCache.has(logoHash)){ //icon already in cache
+                    logger.info(`icon for crowdsale ${title} in cache`);
+                    crowdsaleImage = crowdsaleIconCache.get(logoHash)
+                }else{ //get icon from API
+                    logger.info(`icon for crowdsale ${title} NOT in cache`);
+                    const img = await axios.get(url+logoHash, params);
+                    //save in cache
+                    dispatch(crowdsaleAddIconToCache(logoHash, img.data));
+                    crowdsaleImage = img.data;
+                }
+
+                return {
+                    ownerAddress,
+                    title,
+                    description,
+                    logoHash,
+                    photo: crowdsaleImage,
+                    contractHash: TOSHash,
+                    startDate: new Date(startDateRaw *1000),
+                    endDate: new Date(endDateRaw * 1000),
+                    acceptRatio: assetIntegerToDecimalRepresentation(acceptRatioRaw, 2), //accept ratio has always 2 decimals (coins)
+                    giveRatio: assetIntegerToDecimalRepresentation(giveRatioRaw, 0), //giver ratio has always 0 decimals (coupons)
+                    maxCap: assetIntegerToDecimalRepresentation(cap, 2), //2 decimals (cap refers amount of coins)
+                    tokenToAcceptAddr,
+                    tokenToGiveAddr,
+                    status,
+                    totalReservations
+                }
+            }));
+
+            logger.info("crowdsales extended data: ", crowdsalesExtendedData);
+            dispatch(crowdsaleGetAllSuccess(crowdsalesExtendedData));
         }catch(error){
             //TODO do something
-            logger.debug("Error");
+            logger.debug("Error =>", error);
+            const errorMessage = error?.message ?
+                error.message :
+                "ERROR -> Something went wrong while retriving crowdsales";
+            dispatch(crowdsaleGetAllFail(errorMessage));
         }
 
         // let response = await axios.get(
