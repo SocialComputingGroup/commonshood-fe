@@ -195,6 +195,8 @@ const mongoObjectId = () => {
     }).toLowerCase();
 };
 
+
+
 const saveCrowdSaleData = (crowdsaleData, address, firsLifePointId, dispatch, getState) => {
         const configFileHeader = {
             headers: {
@@ -435,6 +437,7 @@ export const crowdsaleGetAll = () =>{
         dispatch(crowdsaleGetAllReset());
         dispatch(crowdsaleGetAllStart());
 
+        const crowdsaleStatusEnum = config.crowdsaleStatus;
         const web3 = getState().web3.web3Instance;
         try{
             const accountAddress = getState().web3.currentAccount;
@@ -465,6 +468,7 @@ export const crowdsaleGetAll = () =>{
                 const logoHash = await crowdsaleInstance.methods.logoHash().call({from: accountAddress, gasPrice: "0"});
                 let crowdsaleImage = null;
                 const TOSHash = await crowdsaleInstance.methods.TOSHash().call({from: accountAddress, gasPrice: "0"});
+                let TOS = null;
                 const startDateRaw = await crowdsaleInstance.methods.start().call({from: accountAddress, gasPrice: "0"});
                 const endDateRaw = await crowdsaleInstance.methods.end().call({from: accountAddress, gasPrice: "0"});
                 const acceptRatioRaw = await crowdsaleInstance.methods.acceptRatio().call({from: accountAddress, gasPrice: "0"});
@@ -501,6 +505,10 @@ export const crowdsaleGetAll = () =>{
                     crowdsaleImage = img.data.file;
                 }
 
+                //TODO maybe start caching also the TOS file?
+                const TOSraw = await axios.get(url+TOSHash, params);
+                TOS = TOSraw.data.file;
+
                 return {
                     crowdsaleAddress,
                     ownerAddress,
@@ -508,18 +516,19 @@ export const crowdsaleGetAll = () =>{
                     description,
                     logoHash,
                     photo: crowdsaleImage,
+                    TOS,
                     contractHash: TOSHash,
                     startDate: new Date(startDateRaw *1000),
                     endDate: new Date(endDateRaw * 1000),
-                    acceptRatio: assetIntegerToDecimalRepresentation(acceptRatioRaw, 2), //accept ratio has always 2 decimals (coins)
-                    giveRatio: assetIntegerToDecimalRepresentation(giveRatioRaw, 0), //giver ratio has always 0 decimals (coupons)
-                    maxCap: assetIntegerToDecimalRepresentation(cap, 2), //2 decimals (cap refers amount of coins)
+                    acceptRatio: parseFloat( assetIntegerToDecimalRepresentation(acceptRatioRaw, 2)), //accept ratio has always 2 decimals (coins)
+                    giveRatio: parseInt( giveRatioRaw ), //giver ratio has always 0 decimals (coupons)
+                    maxCap: parseFloat( assetIntegerToDecimalRepresentation(cap, 2)), //2 decimals (cap refers amount of coins)
                     tokenToAcceptAddr,
                     tokenToAccept,
                     tokenToGiveAddr,
                     tokenToGive,
-                    status,
-                    totalReservations
+                    status: crowdsaleStatusEnum[status],
+                    totalReservations: parseFloat(totalReservations),
                 }
             }));
 
@@ -669,8 +678,18 @@ export const crowdsaleGetStatus = (crowdsaleId) => {
 
 
 export const crowdsaleGetCompleteReservations = (crowdsaleId, acceptedCoinDecimals) => {
-    return (dispatch) => {
+    return (dispatch, getState) => {
         dispatch(crowdsaleGetCompleteReservationsReset());
+        const web3 = getState().web3.web3Instance;
+        try {
+            const accountAddress = getState().web3.currentAccount;
+            const CrowdsaleFactoryInstance = new web3.eth.Contract(
+                config.smartContracts.CRWDSL_FCTRY_ABI,
+                config.smartContracts.CRWDSL_FCTRY_ADDR,
+            );
+        }catch(error){
+
+        }
 
         const url = `/Crowdsales/${crowdsaleId}/getReservations`;
         return axios.get(url)

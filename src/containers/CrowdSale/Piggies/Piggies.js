@@ -124,45 +124,34 @@ class Piggies extends Component {
         }
         
         
-        const cards = crowdsales.map( crowdsale =>{
-            //check if this crowdsale is owned by the currently logged user
-            crowdsale.isOwner = crowdsale.ownerAddress === userWalletAddress;
-
+        const extendedCrowdsales = crowdsales.map( crowdsale =>{
+            const extendedCrowdsale = {...crowdsale};
             //images
             let tokenToAcceptLogo = null, tokenToGiveLogo = null;
             if( (coinList != null) && (coinList.length !== 0) && (!coinListLoading) ){
                 const completeAcceptedCoin = coinList.find( (elem) => elem.address === crowdsale.tokenToAcceptAddr );
-                tokenToAcceptLogo = completeAcceptedCoin ?  completeAcceptedCoin.logoFile : null;
+                extendedCrowdsale.acceptedCoinLogo = completeAcceptedCoin ?  completeAcceptedCoin.logoFile : null;
                 const completeCoinToGive= coinList.find( (elem) => elem.address === crowdsale.tokenToGiveAddr );
-                tokenToGiveLogo = completeCoinToGive ? completeCoinToGive.logoFile : null;
+                extendedCrowdsale.coinToGiveLogo = completeCoinToGive ? completeCoinToGive.logoFile : null;
             }
+
+            extendedCrowdsale.isOwnedByCurrentUserWallet = crowdsale.ownerAddress === userWalletAddress
             
+            return extendedCrowdsale;
+        });
+
+        const cards = extendedCrowdsales.map(extendedCrowdsale => {
             return (
-                <Grid item xs={12} sm={12} md={6} lg={4} key={crowdsale.crowdsaleAddress} >
+                <Grid item xs={12} sm={12} md={6} lg={4} key={extendedCrowdsale.crowdsaleAddress} >
                     <PiggyCard
-                        crowdsaleAddress={crowdsale.crowdsaleAddress}
-                        image={crowdsale.photo}
-                        title={crowdsale.title}
-                        description={crowdsale.description}
-                        handleOpen = {() => {this.crowdSaleDetailOpen(crowdsale)}}
-                        acceptedCoin={crowdsale.tokenToAccept}
-                        acceptedCoinLogo={tokenToAcceptLogo}
-                        coinToGive={crowdsale.tokenToGive}
-                        coinToGiveLogo={tokenToGiveLogo}
-                        acceptedCoinRatio={crowdsale.acceptRatio}
-                        coinToGiveRatio={crowdsale.giveRatio}
-                        startDate={crowdsale.startDate}
-                        endDate={crowdsale.endDate}
-                        totalReservations={crowdsale.totalReservations}
-                        owned={crowdsale.owned}
-                        isOwner={crowdsale.isOwner}
-                        maxCap={crowdsale.maxCap}
-                        key={crowdsale.crowdsaleAddress}
+                        crowdsale={extendedCrowdsale}
+                        handleOpen = {() => {this.crowdSaleDetailOpen(extendedCrowdsale)}}
+                        // contract={extendedCrowdsale.TOS}
                     />
                 </Grid>
             );
         });
-        
+
         let piggiesDetails = null;
         if(this.state.selectedCrowdSale !== null){
             piggiesDetails = <PiggiesDetails

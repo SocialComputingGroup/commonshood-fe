@@ -18,32 +18,37 @@ import Icon from "@material-ui/core/Icon";
 import Button from "@material-ui/core/Button";
 
 import CoinAvatarLabeled from '../../../../components/UI/CoinAvatarLabeled/CoinAvatarLabeled';
+import {logger} from "../../../../utilities/winstonLogging/winstonInit";
 
 
 
 const PiggyCard = (props) => {
 
     const {
-        image,
-        title,
+        classes,
+        crowdsale,
         handleOpen,
-        acceptedCoin,
-        acceptedCoinRatio,
-        coinToGive,
-        coinToGiveRatio,
-        totalReservations,
+    } = props;
+    const {
+        title,
+        description,
+        isOwnedByCurrentUserWallet,
         startDate,
         endDate,
         maxCap,
-        isOwned,
+        totalReservations,
+        photo,
+        acceptRatio,
+        tokenToAccept,
         acceptedCoinLogo,
+        giveRatio,
+        tokenToGive,
         coinToGiveLogo,
-        classes
-    } = props;
+    } = crowdsale;
     const { t } = useTranslation('PiggyCard');
 
     let ownedButton = null;
-    if(isOwned){
+    if(isOwnedByCurrentUserWallet){
         ownedButton = ( 
             <Button variant="contained" component="div" color="default" className={classes.owned}>
                 <Icon>vpn_key</Icon> OWNED
@@ -86,7 +91,7 @@ const PiggyCard = (props) => {
             <CardActionArea>
                 <CardMedia
                     className={classes.media}
-                    image={image.body}
+                    image={photo.body}
                     title={title}
                     onClick={handleOpen}
                 />
@@ -105,7 +110,7 @@ const PiggyCard = (props) => {
                                     {
                                         raised: totalReservations,
                                         cap: maxCap,
-                                        ticker: acceptedCoin.symbol
+                                        ticker: tokenToAccept.symbol
                                     }
                             })
                         }
@@ -117,14 +122,14 @@ const PiggyCard = (props) => {
                 {/* <Typography variant="caption">{distance} m</Typography> */}
                 <IconButton disabled={true} className={classes.acceptedCoin}>
                     {/* <Icon>attach_money</Icon> */}
-                    <CoinAvatarLabeled noName={true} coin={ {symbol: acceptedCoin.symbol, logoFile: acceptedCoinLogo}} />
-                    <Typography style={{color: "grey"}} variant="caption">{acceptedCoinRatio + ' ' + acceptedCoin.symbol}</Typography>
+                    <CoinAvatarLabeled noName={true} coin={ {symbol: tokenToAccept.symbol, logoFile: acceptedCoinLogo}} />
+                    <Typography style={{color: "grey"}} variant="caption">{acceptRatio + ' ' + tokenToAccept.symbol}</Typography>
                 </IconButton>
                 <Icon disabled>compare_arrows</Icon>
                 <IconButton disabled={true} className={classes.coinToGive}>
                     {/* <Icon>style</Icon> */}
-                    <CoinAvatarLabeled noName={true} coin={ {symbol: coinToGive.symbol, logoFile: coinToGiveLogo}} />
-                    <Typography style={{color: "grey"}} variant="caption">{parseInt(coinToGiveRatio) + ' ' + coinToGive.symbol}</Typography>
+                    <CoinAvatarLabeled noName={true} coin={ {symbol: tokenToGive.symbol, logoFile: coinToGiveLogo}} />
+                    <Typography style={{color: "grey"}} variant="caption">{giveRatio + ' ' + tokenToGive.symbol}</Typography>
                 </IconButton>
             </CardActions>
         </Card>
