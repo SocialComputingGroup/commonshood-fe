@@ -40,10 +40,10 @@ const PiggyCard = (props) => {
         photo,
         acceptRatio,
         tokenToAccept,
-        acceptedCoinLogo,
+        tokenToAcceptLogo,
         giveRatio,
         tokenToGive,
-        coinToGiveLogo,
+        tokenToGiveLogo,
     } = crowdsale;
     const { t } = useTranslation('PiggyCard');
 
@@ -122,13 +122,13 @@ const PiggyCard = (props) => {
                 {/* <Typography variant="caption">{distance} m</Typography> */}
                 <IconButton disabled={true} className={classes.acceptedCoin}>
                     {/* <Icon>attach_money</Icon> */}
-                    <CoinAvatarLabeled noName={true} coin={ {symbol: tokenToAccept.symbol, logoFile: acceptedCoinLogo}} />
+                    <CoinAvatarLabeled noName={true} coin={ {symbol: tokenToAccept.symbol, logoFile: tokenToAcceptLogo}} />
                     <Typography style={{color: "grey"}} variant="caption">{acceptRatio + ' ' + tokenToAccept.symbol}</Typography>
                 </IconButton>
                 <Icon disabled>compare_arrows</Icon>
                 <IconButton disabled={true} className={classes.coinToGive}>
                     {/* <Icon>style</Icon> */}
-                    <CoinAvatarLabeled noName={true} coin={ {symbol: tokenToGive.symbol, logoFile: coinToGiveLogo}} />
+                    <CoinAvatarLabeled noName={true} coin={ {symbol: tokenToGive.symbol, logoFile: tokenToGiveLogo}} />
                     <Typography style={{color: "grey"}} variant="caption">{giveRatio + ' ' + tokenToGive.symbol}</Typography>
                 </IconButton>
             </CardActions>

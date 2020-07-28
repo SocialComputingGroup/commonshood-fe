@@ -35,7 +35,6 @@ class Piggies extends Component {
 
     state = {
         crowdSaleModalOpened: false,
-        selectedCrowdsaleId: null,
         selectedCrowdsale: null,
         mapModalOpened: false,
 
@@ -65,7 +64,6 @@ class Piggies extends Component {
     // Opens CrowdSale Detail
     crowdSaleDetailOpen = (crowdsale) => {
         this.setState({
-            selectedCrowdsaleId: crowdsale.id,
             selectedCrowdsale: crowdsale,
             crowdSaleModalOpened: true
         });
@@ -74,7 +72,6 @@ class Piggies extends Component {
     //Close CrowdSale Detail
     crowdSaleDetailClose = () => {
         this.setState({
-            selectedCrowdsaleId: null,
             selectedCrowdsale: null,
             crowdSaleModalOpened: false
         });
@@ -129,10 +126,10 @@ class Piggies extends Component {
             //images
             let tokenToAcceptLogo = null, tokenToGiveLogo = null;
             if( (coinList != null) && (coinList.length !== 0) && (!coinListLoading) ){
-                const completeAcceptedCoin = coinList.find( (elem) => elem.address === crowdsale.tokenToAcceptAddr );
-                extendedCrowdsale.acceptedCoinLogo = completeAcceptedCoin ?  completeAcceptedCoin.logoFile : null;
-                const completeCoinToGive= coinList.find( (elem) => elem.address === crowdsale.tokenToGiveAddr );
-                extendedCrowdsale.coinToGiveLogo = completeCoinToGive ? completeCoinToGive.logoFile : null;
+                const completeTokenToAccept = coinList.find( (elem) => elem.address === crowdsale.tokenToAcceptAddr );
+                extendedCrowdsale.tokenToAcceptLogo = completeTokenToAccept ?  completeTokenToAccept.logoFile : null;
+                const completeTokenToGive= coinList.find( (elem) => elem.address === crowdsale.tokenToGiveAddr );
+                extendedCrowdsale.tokenToGiveLogo = completeTokenToGive ? completeTokenToGive.logoFile : null;
             }
 
             extendedCrowdsale.isOwnedByCurrentUserWallet = crowdsale.ownerAddress === userWalletAddress
