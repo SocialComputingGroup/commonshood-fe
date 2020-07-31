@@ -12,7 +12,7 @@ const piggiesDetailsStyle = theme => ({
         overflow: "auto",
     },
     media: {
-        objectFit: 'cover',
+        objectFit: 'contain',
         maxHeight: "300px",
     },
     actions: {

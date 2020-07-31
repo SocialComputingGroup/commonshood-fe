@@ -346,7 +346,7 @@ const PiggiesDetails = (props) => {
                     <Typography>
                         <IconButton disabled={true}>
                             <CoinAvatarLabeled noName={true} coin={ {symbol: crowdsale.tokenToAccept.symbol, logoFile: crowdsale.tokenToAcceptLogo}} />
-                            <Typography variant="caption">{crowdsale.acceptRatio + ' ' + crowdsale.tokenToAccept}</Typography>
+                            <Typography variant="caption">{crowdsale.acceptRatio + ' ' + crowdsale.tokenToAccept.symbol}</Typography>
                         </IconButton>
                         <Icon disabled>compare_arrows</Icon>
                         <IconButton disabled={true}>
@@ -404,10 +404,7 @@ const mapStateToProps = state => {
         crowdsales: state.crowdsale.crowdsales,
         profile: state.user.currentProfile,
 
-        completeReservations: state.crowdsale.totalReservation,
         coinList: state.coin.coinListForPiggies,
-        fileLoading: state.file.loading,
-        fileData: state.file.fileData,
 
         userWalletAddress: state.web3.currentAccount,
         web3Instance: state.web3.web3Instance,
@@ -418,7 +415,6 @@ const mapDispatchToProps = dispatch => {
     return{
         onGetUserFromId: (id) => dispatch(actions.userGetDataFromId(id)),
         onGetDaoFromId: (id) => dispatch(actions.daoGetDataFromId(id)),
-
     };
 };
 
