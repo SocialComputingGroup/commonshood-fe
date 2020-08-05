@@ -90,7 +90,7 @@ class Piggies extends Component {
         const currentProfileId = this.props.currentProfile.id;
 
         logger.debug('[PIGGIES.js] crowdsales =>', crowdsales);
-        logger.info('[PIGGIES.js] crowdsales still loading =>', crowdsalesLoading);
+        logger.info('[PIGGIES.js] crowdsales still loading =>', crowdsalesLoading.toString());
 
         //managing case of still loading crowdsales (if any)
         if(crowdsalesLoading){
@@ -150,6 +150,7 @@ class Piggies extends Component {
         });
 
         let piggiesDetails = null;
+        console.log("=======> ", this.state.selectedCrowdsale);
         if(this.state.selectedCrowdSale !== null){
             piggiesDetails = <PiggiesDetails
                                 crowdsale={this.state.selectedCrowdsale}

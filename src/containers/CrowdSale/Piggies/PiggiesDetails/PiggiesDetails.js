@@ -1,5 +1,4 @@
 import React, {useState, useEffect} from "react";
-import PropTypes from "prop-types";
 import { connect } from 'react-redux';
 import * as actions from "../../../../store/actions/index";
 import {logger} from '../../../../utilities/winstonLogging/winstonInit';
@@ -93,7 +92,6 @@ const PiggiesDetails = (props) => {
     const {
         closePiggieDetails,
         crowdsale,
-        coinList,
         web3Instance,
         userWalletAddress,
         classes
@@ -124,7 +122,10 @@ const PiggiesDetails = (props) => {
         getBalance();
         getReservations();
     }, []);
-
+    
+    if(!crowdsale){
+        return null;
+    }
 
     let timeLeftComponent = null;
     const crowdsaleTime = computeTimeLeft(crowdsale.startDate, crowdsale.endDate);
@@ -404,7 +405,7 @@ const mapStateToProps = state => {
         crowdsales: state.crowdsale.crowdsales,
         profile: state.user.currentProfile,
 
-        coinList: state.coin.coinListForPiggies,
+        // coinList: state.coin.coinListForPiggies,
 
         userWalletAddress: state.web3.currentAccount,
         web3Instance: state.web3.web3Instance,
