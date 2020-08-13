@@ -32,3 +32,28 @@ export const crowdsaleGetReservationsOfAccount = async (web3, accountAddress, cr
 
     return accountReservations;
 }
+
+export const getCrowdsaleWalletBalanceOfTokenToGive = async (web3, accountAddress, crowdsaleAddress, tokenToGiveAddress) => {
+    // const crowdsaleContractInstance = new web3.eth.Contract(
+    //     config.smartContracts.TKN_CRWDSL_ABI,
+    //     crowdsaleAddress
+    // );
+
+    const coinContractInstance = new web3.eth.Contract(
+        config.smartContracts.TKN_TMPLT_ABI,
+        tokenToGiveAddress
+    );
+    const tickerBalance = await coinContractInstance.methods.balanceOf(crowdsaleAddress).call();
+    const decimals = await coinContractInstance.methods.decimals().call();
+
+    let balance =  parseFloat(assetIntegerToDecimalRepresentation(tickerBalance, decimals));
+    if(decimals == 0){
+        balance = parseInt(balance);
+    }
+
+    return {
+        balance,
+        decimals,
+    }
+
+}

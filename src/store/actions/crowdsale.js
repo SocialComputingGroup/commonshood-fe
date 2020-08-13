@@ -7,6 +7,7 @@ import config from '../../config';
 import * as actionTypes from './actionTypes';
 
 import {coinGetFullData} from '../../api/coinAPI';
+import {getCrowdsaleWalletBalanceOfTokenToGive} from '../../api/crowdsaleAPI';
 import {logger} from '../../utilities/winstonLogging/winstonInit';
 
 export const crowdsaleCreateStart = () => {
@@ -489,6 +490,8 @@ export const crowdsaleGetAll = () =>{
                 const cap = await crowdsaleInstance.methods.maxCap().call({from: accountAddress, gasPrice: "0"});
                 const totalReservations = await crowdsaleInstance.methods.raised().call({from: accountAddress, gasPrice: "0"});
 
+                const tokenToGiveBalance = await getCrowdsaleWalletBalanceOfTokenToGive(web3, accountAddress, crowdsaleAddress, tokenToGiveAddr);
+
                 //getting files from webserver:
                 // photo contains the hash, replace it with the image
                 const crowdsaleIconCache = getState().crowdsale.iconsCache;
@@ -529,6 +532,7 @@ export const crowdsaleGetAll = () =>{
                     tokenToGive,
                     status: crowdsaleStatusEnum[status],
                     totalReservations: parseFloat(totalReservations),
+                    tokenToGiveBalance,
                 }
             }));
 
