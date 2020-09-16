@@ -137,16 +137,25 @@ class Piggies extends Component {
             return extendedCrowdsale;
         });
 
-        const cards = extendedCrowdsales.map(extendedCrowdsale => {
-            return (
-                <Grid item xs={12} sm={12} md={6} lg={4} key={extendedCrowdsale.crowdsaleAddress} >
-                    <PiggyCard
-                        crowdsale={extendedCrowdsale}
-                        handleOpen = {() => {this.crowdSaleDetailOpen(extendedCrowdsale)}}
-                        // contract={extendedCrowdsale.TOS}
-                    />
-                </Grid>
-            );
+        const cards = extendedCrowdsales
+            .filter(extendedCrowdsale => {
+                //show only those which are fully loaded with coupons
+                    //if(extendedCrowdsale.tokenToGiveBalance !==)
+                //TODO and unlocked
+
+                return extendedCrowdsale.tokenToGiveBalance > 0;
+            })
+            .map(extendedCrowdsale => {
+
+                return (
+                    <Grid item xs={12} sm={12} md={6} lg={4} key={extendedCrowdsale.crowdsaleAddress} >
+                        <PiggyCard
+                            crowdsale={extendedCrowdsale}
+                            handleOpen = {() => {this.crowdSaleDetailOpen(extendedCrowdsale)}}
+                            // contract={extendedCrowdsale.TOS}
+                        />
+                    </Grid>
+                );
         });
 
         let piggiesDetails = null;
