@@ -139,11 +139,17 @@ class Piggies extends Component {
 
         const cards = extendedCrowdsales
             .filter(extendedCrowdsale => {
-                //show only those which are fully loaded with coupons
-                    //if(extendedCrowdsale.tokenToGiveBalance !==)
-                //TODO and unlocked
+                //show only those which are fully loaded with coupons and unlocked
+                //or of which I am the owner
 
-                return extendedCrowdsale.tokenToGiveBalance > 0;
+                return (
+                    (extendedCrowdsale.ownerAddress === userWalletAddress) ||
+                    (
+                        (extendedCrowdsale.tokenToGiveBalance >= extendedCrowdsale.maxCap) // coupons loaded
+                        &&
+                        (extendedCrowdsale.status.localeCompare(config.crowdsaleStatus[1])) //running
+                    )
+                );
             })
             .map(extendedCrowdsale => {
 
