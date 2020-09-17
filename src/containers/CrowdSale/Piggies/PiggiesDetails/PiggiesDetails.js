@@ -122,7 +122,9 @@ const PiggiesDetails = (props) => {
         getBalance();
         getReservations();
     }, []);
-    
+
+    // This is just to avoid a race condition when closing the modal which removes the crowdsale passed as a
+    // props but sometimes it does it before this component is unmounted causing a reference error
     if(!crowdsale){
         return null;
     }

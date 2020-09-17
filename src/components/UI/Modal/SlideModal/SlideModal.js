@@ -26,6 +26,7 @@ const slideModal = props => {
     const {
         classes,
         children,
+        fullscreen,
         open,
         handleClose,
         title,
@@ -37,7 +38,7 @@ const slideModal = props => {
     return (
         <div>
             <Dialog
-                fullScreen
+                fullScreen={ fullscreen != null ? fullscreen : true }
                 open={open}
                 onClose={handleClose}
                 TransitionComponent={transition}

@@ -1,5 +1,4 @@
-import React from 'react';
-import PropTypes from "prop-types";
+import React, {useState} from 'react';
 import { useTranslation } from 'react-i18next';
 
 // Styles
@@ -17,8 +16,10 @@ import IconButton from "@material-ui/core/IconButton";
 import Icon from "@material-ui/core/Icon";
 import Button from "@material-ui/core/Button";
 
+//custom components
 import CoinAvatarLabeled from '../../../../components/UI/CoinAvatarLabeled/CoinAvatarLabeled';
 import {logger} from "../../../../utilities/winstonLogging/winstonInit";
+import PiggyLoad from "./PiggyLoad/PiggyLoad";
 
 
 
@@ -40,13 +41,20 @@ const PiggyCard = (props) => {
         photo,
         acceptRatio,
         tokenToAccept,
+        tokenToAcceptAddr,
         tokenToAcceptLogo,
         giveRatio,
         tokenToGive,
+        tokenToGiveAddr,
         tokenToGiveLogo,
+        tokenToGiveBalance //note that this is the balance of the related token for the crowdsale's wallet!
     } = crowdsale;
     const { t } = useTranslation('PiggyCard');
 
+    // we open a different modal if the crowdsale has not coupons loaded yet
+    const [openPiggyLoad, setOpenPiggyLoad] = useState(false);
+
+    // visually shows if the logged user ownes the crowdsale
     let ownedButton = null;
     if(isOwnedByCurrentUserWallet){
         ownedButton = ( 
@@ -86,6 +94,53 @@ const PiggyCard = (props) => {
        timeLeft = t("crowdsaleReachedCap");
     }
 
+    //default case
+    let iconButtons = (
+        <>
+            <IconButton disabled={true} className={classes.acceptedCoin}>
+                <CoinAvatarLabeled noName={true} coin={ {symbol: tokenToAccept.symbol, logoFile: tokenToAcceptLogo}} />
+                <Typography style={{color: "grey"}} variant="caption">{acceptRatio + ' ' + tokenToAccept.symbol}</Typography>
+            </IconButton>
+            <Icon disabled>compare_arrows</Icon>
+            <IconButton disabled={true} className={classes.coinToGive}>
+                <CoinAvatarLabeled noName={true} coin={ {symbol: tokenToGive.symbol, logoFile: tokenToGiveLogo}} />
+                <Typography style={{color: "grey"}} variant="caption">{giveRatio + ' ' + tokenToGive.symbol}</Typography>
+            </IconButton>
+        </>
+    );
+    if(tokenToGiveBalance !== 0){ //the coupons of this crowdsale have not be loaded yet!
+        iconButtons = (
+            <>
+                <Typography style={{color: "grey"}} variant="caption">
+                    {t('couponsNotLoaded',
+                        {params: {
+                            total: tokenToGiveBalance.balance,
+                            symbol: tokenToGive.symbol
+                        }}
+                    )}
+                </Typography>
+                <Typography style={{color: "grey"}} variant="caption">
+                    {t('couponsNotLoaded',
+                        {params: {
+                                total: tokenToGiveBalance.balance,
+                                symbol: tokenToGive.symbol
+                            }}
+                    )}
+                </Typography>
+                <Button variant="contained" color="primary" onClick={() => setOpenPiggyLoad(true)}>
+                    Transfer Coupon
+                </Button>
+                <PiggyLoad
+                    open={openPiggyLoad}
+                    handleClose={() => setOpenPiggyLoad(false)}
+                    tokenToGive={tokenToGive}
+                    tokenToGiveAddr={tokenToGiveAddr}
+                    tokenToGiveCrowdsaleBalance={tokenToGiveBalance.balance}
+                />
+            </>
+            );
+    }
+
     return (
         <Card className={classes.card}>
             <CardActionArea>
@@ -118,19 +173,7 @@ const PiggyCard = (props) => {
                 </CardContent>
             </CardActionArea>
             <CardActions className={classes.actions}>
-                {/* <Icon>room</Icon> */}
-                {/* <Typography variant="caption">{distance} m</Typography> */}
-                <IconButton disabled={true} className={classes.acceptedCoin}>
-                    {/* <Icon>attach_money</Icon> */}
-                    <CoinAvatarLabeled noName={true} coin={ {symbol: tokenToAccept.symbol, logoFile: tokenToAcceptLogo}} />
-                    <Typography style={{color: "grey"}} variant="caption">{acceptRatio + ' ' + tokenToAccept.symbol}</Typography>
-                </IconButton>
-                <Icon disabled>compare_arrows</Icon>
-                <IconButton disabled={true} className={classes.coinToGive}>
-                    {/* <Icon>style</Icon> */}
-                    <CoinAvatarLabeled noName={true} coin={ {symbol: tokenToGive.symbol, logoFile: tokenToGiveLogo}} />
-                    <Typography style={{color: "grey"}} variant="caption">{giveRatio + ' ' + tokenToGive.symbol}</Typography>
-                </IconButton>
+                {iconButtons}
             </CardActions>
         </Card>
     );

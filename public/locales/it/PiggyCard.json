@@ -5,5 +5,11 @@
     "endingIn": "Termina in {{params.days}} giorni",
     "currentlyRaised": "Sono stati già raccolti {{params.raised}} di {{params.cap}} {{params.ticker}}",
     "crowdsaleOver": "Questa crowdsale è terminata",
-    "crowdsaleReachedCap": "Obiettivo già raggiunto"
+    "crowdsaleReachedCap": "Obiettivo già raggiunto",
+
+    "couponsNotLoaded": "Devi caricare {{params.total}} {{params.symbol}}",
+    "notEnoughCouponsInWallet": "Hai solo {{params.quantity}} {{params.symbol}}.",
+    "mineMore": "Devi minare {{params.needed}} {{params.symbol}} da caricare nella Crowdsale",
+    "enoughCouponInWallet": "You have enough coupon to load this crowdsale",
+    "loadCrowdsaleButton": "Load Coupons in Crowdsale"
 }
