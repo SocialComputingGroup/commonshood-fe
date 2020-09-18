@@ -136,6 +136,7 @@ const PiggyCard = (props) => {
                     tokenToGive={tokenToGive}
                     tokenToGiveAddr={tokenToGiveAddr}
                     tokenToGiveCrowdsaleBalance={tokenToGiveBalance.balance}
+                    tokenToGiveTotalNeeded={maxCap}
                 />
             </>
             );

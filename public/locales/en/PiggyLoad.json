@@ -1,0 +1,7 @@
+{
+  "piggyLoadTitle": "Load Crowdsale",
+  "couponsNeeded": "This crowdsale needs {{params.quantity}} {{params.symbol}}",
+  "couponsUserHas": "You have {{params.quantity}} {{params.symbol}}",
+  "notEnough": "You need to go to your wallet and mint enough {{params.symbol}} to load this crowdsale",
+  "loadButton": "Load {{params.quantity}} {{params.symbol}}"
+}
