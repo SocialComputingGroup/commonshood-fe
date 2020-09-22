@@ -6,6 +6,7 @@ import { Button, Grid, Typography } from "@material-ui/core";
 
 //api
 import {coinGetBalance} from "../../../../../api/coinAPI";
+import {loadCouponsInCrowdsale} from "../../../../../api/crowdsaleAPI";
 
 //redux
 import {connect} from "react-redux";
@@ -19,17 +20,22 @@ import {logger} from "../../../../../utilities/winstonLogging/winstonInit";
 
 const PiggyLoad = (props) => {
     const {
+        crowdsaleAddress,
+
         open,
         handleClose,
         tokenToGive,
         tokenToGiveAddr,
         tokenToGiveCrowdsaleBalance,
+        tokenToGiveDecimals,
         tokenToGiveTotalNeeded,
 
         userWalletAddress,
         web3Instance
     } = props;
     const [ userBalance, setUserBalance ] = useState(0);
+    const couponsNeeded = tokenToGiveTotalNeeded - tokenToGiveCrowdsaleBalance;
+    const [ loaded, setLoaded ] = useState(couponsNeeded === 0 );
     const { t } = useTranslation('PiggyLoad');
 
     useEffect( () => {
@@ -40,9 +46,20 @@ const PiggyLoad = (props) => {
         if(tokenToGive != null) {
             loadBalance();
         }
-    }, [tokenToGive]);
+    }, [tokenToGive, loaded]);
 
-    const couponsNeeded = tokenToGiveTotalNeeded - tokenToGiveCrowdsaleBalance;
+    const handleLoadClick = async() => {
+        logger.info("userwallet", userWalletAddress);
+        logger.info("cwd addr", crowdsaleAddress);
+        logger.info("tokenaddr", tokenToGiveAddr);
+        logger.info("amount", couponsNeeded);
+        logger.info("decimals", tokenToGiveDecimals);
+        const successfullyLoaded = await loadCouponsInCrowdsale(web3Instance, userWalletAddress, crowdsaleAddress, tokenToGiveAddr, couponsNeeded, tokenToGiveDecimals);
+        if(successfullyLoaded){
+            setLoaded(true);
+        }
+    }
+
 
     let notEnoughCouponsComponent = null;
     let loadButton = null;
@@ -60,14 +77,20 @@ const PiggyLoad = (props) => {
     }else{
         logger.info("[PIGGYLOAD] user has enough coupons to load cwd");
         loadButton = (
-            <Button variant="contained" color="primary" style={{marginTop: "1em"}}>{t('loadButton',
-                {
-                    params:{
-                        quantity: couponsNeeded,
-                        symbol: tokenToGive.symbol,
+            <Button
+                variant="contained"
+                color="primary"
+                style={{marginTop: "1em"}}
+                onClick={handleLoadClick}>
+                {t('loadButton',
+                    {
+                        params:{
+                            quantity: couponsNeeded,
+                            symbol: tokenToGive.symbol,
+                        }
                     }
-                }
-            )}</Button>
+                )}
+            </Button>
         )
     }
 

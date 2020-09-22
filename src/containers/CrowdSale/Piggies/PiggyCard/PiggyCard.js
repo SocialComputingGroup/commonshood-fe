@@ -31,6 +31,7 @@ const PiggyCard = (props) => {
         handleOpen,
     } = props;
     const {
+        crowdsaleAddress,
         title,
         description,
         isOwnedByCurrentUserWallet,
@@ -136,7 +137,9 @@ const PiggyCard = (props) => {
                     tokenToGive={tokenToGive}
                     tokenToGiveAddr={tokenToGiveAddr}
                     tokenToGiveCrowdsaleBalance={tokenToGiveBalance.balance}
-                    tokenToGiveTotalNeeded={maxCap}
+                    tokenToGiveDecimals={tokenToGiveBalance.decimals}
+                    tokenToGiveTotalNeeded={ parseInt(maxCap/acceptRatio) }
+                    crowdsaleAddress={crowdsaleAddress}
                 />
             </>
             );

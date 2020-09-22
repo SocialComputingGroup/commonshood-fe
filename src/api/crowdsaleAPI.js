@@ -33,6 +33,14 @@ export const crowdsaleGetReservationsOfAccount = async (web3, accountAddress, cr
     return accountReservations;
 }
 
+/**
+ *
+ * @param web3
+ * @param accountAddress
+ * @param crowdsaleAddress
+ * @param tokenToGiveAddress
+ * @returns {Promise<{balance: number, decimals: *}>}
+ */
 export const getCrowdsaleWalletBalanceOfTokenToGive = async (web3, accountAddress, crowdsaleAddress, tokenToGiveAddress) => {
     // const crowdsaleContractInstance = new web3.eth.Contract(
     //     config.smartContracts.TKN_CRWDSL_ABI,
@@ -56,4 +64,25 @@ export const getCrowdsaleWalletBalanceOfTokenToGive = async (web3, accountAddres
         decimals,
     }
 
+}
+
+
+
+export const loadCouponsInCrowdsale = async(web3, accountAddress, crowdsaleAddress, tokenToGiveAddress, amount, decimals) => {
+    const coinContractInstance = new web3.eth.Contract(
+        config.smartContracts.TKN_TMPLT_ABI,
+        tokenToGiveAddress
+    );
+
+    //in theory no need to convert because coupons have always 0 decimals
+    //but better be future proof
+    const trueAmount = parseInt(assetDecimalRepresentationToInteger(amount, decimals));
+    try {
+        await coinContractInstance.methods
+            .transfer(crowdsaleAddress, trueAmount)
+            .send({from: accountAddress, gasPrice: '0'});
+        return true;
+    }catch(error){
+        return false;
+    }
 }
