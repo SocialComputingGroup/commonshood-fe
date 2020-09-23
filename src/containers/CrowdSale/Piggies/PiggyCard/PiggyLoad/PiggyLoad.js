@@ -48,7 +48,7 @@ const PiggyLoad = (props) => {
         }
     }, [tokenToGive, loaded]);
 
-    const handleLoadClick = async() => {
+    const handleLoadClick = async () => {
         logger.info("userwallet", userWalletAddress);
         logger.info("cwd addr", crowdsaleAddress);
         logger.info("tokenaddr", tokenToGiveAddr);
@@ -60,36 +60,79 @@ const PiggyLoad = (props) => {
         }
     }
 
+    const handleUnlockClick = async () => {
 
-    let notEnoughCouponsComponent = null;
-    let loadButton = null;
-    if( userBalance - couponsNeeded < 0){
-        logger.info("[PIGGYLOAD] user has ÑOT enough coupons to load cwd");
-        notEnoughCouponsComponent = (
-            <Typography color="error" style={{marginTop: "1em"}}>{t('notEnough',
+    }
+
+    //ui elements
+    let couponsNeededTypography = null;
+    let couponsPossessedTypography = null;
+    let couponsInfoTypography = null;
+    let actionButton = null;
+    if(couponsNeeded > 0) { //this crowdsale has not been loaded yet
+        couponsInfoTypography = (
+            <Typography>{t('couponsNeeded',
                 {
                     params: {
-                        symbol: tokenToGive.symbol
+                        quantity: tokenToGiveTotalNeeded - tokenToGiveCrowdsaleBalance,
+                        symbol: tokenToGive.symbol,
                     }
                 }
             )}</Typography>
+        );
+        couponsPossessedTypography = (
+            <Typography>{t('couponsUserHas',
+                {
+                    params: {
+                        quantity: userBalance,
+                        symbol: tokenToGive.symbol,
+                    }
+                }
+            )}</Typography>
+        );
+
+
+        if (userBalance - couponsNeeded < 0) {
+            logger.info("[PIGGYLOAD] user has NOT enough coupons to load cwd");
+            couponsInfoTypography = (
+                <Typography color="error" style={{marginTop: "1em"}}>{t('notEnough',
+                    {
+                        params: {
+                            symbol: tokenToGive.symbol
+                        }
+                    }
+                )}</Typography>
+            )
+        } else {
+            logger.info("[PIGGYLOAD] user has enough coupons to load cwd");
+            actionButton = (
+                <Button
+                    variant="contained"
+                    color="primary"
+                    style={{marginTop: "1em"}}
+                    onClick={handleLoadClick}>
+                    {t('loadButton',
+                        {
+                            params: {
+                                quantity: couponsNeeded,
+                                symbol: tokenToGive.symbol,
+                            }
+                        }
+                    )}
+                </Button>
+            )
+        }
+    }else{//this crowdsale is already loaded!
+        couponsInfoTypography = (
+            <Typography color="error" style={{marginTop: "1em"}}>{t('unlockMessage')}</Typography>
         )
-    }else{
-        logger.info("[PIGGYLOAD] user has enough coupons to load cwd");
-        loadButton = (
+        actionButton = (
             <Button
                 variant="contained"
                 color="primary"
                 style={{marginTop: "1em"}}
-                onClick={handleLoadClick}>
-                {t('loadButton',
-                    {
-                        params:{
-                            quantity: couponsNeeded,
-                            symbol: tokenToGive.symbol,
-                        }
-                    }
-                )}
+                onClick={handleUnlockClick}>
+                {t('unlockButton')}
             </Button>
         )
     }
@@ -112,30 +155,16 @@ const PiggyLoad = (props) => {
                   style={{margin: "2em 0", padding: "0 2em"}}
             >
                 <Grid item>
-                    <Typography>{t('couponsNeeded',
-                        {
-                            params: {
-                                quantity: tokenToGiveTotalNeeded - tokenToGiveCrowdsaleBalance,
-                                symbol: tokenToGive.symbol,
-                            }
-                        }
-                    )}</Typography>
+                    {couponsNeededTypography}
                 </Grid>
                 <Grid item>
-                    <Typography>{t('couponsUserHas',
-                        {
-                            params: {
-                                quantity: userBalance,
-                                symbol: tokenToGive.symbol,
-                            }
-                        }
-                    )}</Typography>
+                    {couponsPossessedTypography}
                 </Grid>
                 <Grid item>
-                    {notEnoughCouponsComponent}
+                    {couponsInfoTypography}
                 </Grid>
                 <Grid item>
-                    {loadButton}
+                    {actionButton}
                 </Grid>
             </Grid>
         </SlideModal>

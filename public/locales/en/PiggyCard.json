@@ -7,9 +7,6 @@
     "crowdsaleOver": "This crowdsale is over",
     "crowdsaleReachedCap": "Goal already reached",
 
-    "couponsNotLoaded": "You need to load {{params.total}} {{params.symbol}}",
-    "notEnoughCouponsInWallet": "You have just {{params.quantity}} {{params.symbol}}.",
-    "mineMore": "You need to mine {{params.needed}} {{params.symbol}} to load this crowdsale",
-    "enoughCouponInWallet": "You have enough coupon to load this crowdsale",
+    "couponsNotLoaded": "You need to load {{params.total}} {{params.symbol}} before unlocking the crowdsale",
     "loadCrowdsaleButton": "Load Coupons in Crowdsale"
 }
