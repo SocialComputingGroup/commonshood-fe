@@ -67,7 +67,6 @@ export const getCrowdsaleWalletBalanceOfTokenToGive = async (web3, accountAddres
 }
 
 
-
 export const loadCouponsInCrowdsale = async(web3, accountAddress, crowdsaleAddress, tokenToGiveAddress, amount, decimals) => {
     const coinContractInstance = new web3.eth.Contract(
         config.smartContracts.TKN_TMPLT_ABI,
@@ -80,6 +79,23 @@ export const loadCouponsInCrowdsale = async(web3, accountAddress, crowdsaleAddre
     try {
         await coinContractInstance.methods
             .transfer(crowdsaleAddress, trueAmount)
+            .send({from: accountAddress, gasPrice: '0'});
+        return true;
+    }catch(error){
+        return false;
+    }
+}
+
+
+export const unlockCrowdsale = async(web3, accountAddress, crowdsaleAddress) => {
+    const crowdsaleContractInstance = new web3.eth.Contract(
+        config.smartContracts.TKN_CRWDSL_ABI,
+        crowdsaleAddress
+    );
+
+    try {
+        await crowdsaleContractInstance.methods
+            .unlockCrowdsale()
             .send({from: accountAddress, gasPrice: '0'});
         return true;
     }catch(error){
