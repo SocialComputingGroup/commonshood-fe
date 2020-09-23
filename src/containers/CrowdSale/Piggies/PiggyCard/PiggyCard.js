@@ -6,23 +6,17 @@ import { withStyles } from "@material-ui/core/styles";
 import PiggyCardStyle from "./PiggyCardStyle"
 
 //Material UI Components
-import Card from "@material-ui/core/Card";
-import CardActionArea from "@material-ui/core/CardActionArea";
-import CardActions from "@material-ui/core/CardActions";
-import CardContent from "@material-ui/core/CardContent";
-import CardMedia from "@material-ui/core/CardMedia";
-import Typography from "@material-ui/core/Typography";
-import IconButton from "@material-ui/core/IconButton";
-import Icon from "@material-ui/core/Icon";
-import Button from "@material-ui/core/Button";
+import { Button,
+    Card, CardActions, CardActionArea, CardContent, CardMedia,
+    Grid, Icon, IconButton, Typography } from "@material-ui/core";
+
 
 //custom components
 import CoinAvatarLabeled from '../../../../components/UI/CoinAvatarLabeled/CoinAvatarLabeled';
 import {logger} from "../../../../utilities/winstonLogging/winstonInit";
 import PiggyLoad from "./PiggyLoad/PiggyLoad";
-import {Grid} from "@material-ui/core";
 
-
+import config from "../../../../config";
 
 const PiggyCard = (props) => {
 
@@ -41,6 +35,7 @@ const PiggyCard = (props) => {
         maxCap,
         totalReservations,
         photo,
+        status,
         acceptRatio,
         tokenToAccept,
         tokenToAcceptAddr,
@@ -110,38 +105,67 @@ const PiggyCard = (props) => {
             </IconButton>
         </>
     );
+
     logger.info(`Crowdsale ${title} has a balance of ${tokenToGiveBalance.balance}`);
     logger.info("  \--> it requires: ", parseInt(maxCap/acceptRatio));
+
     if(tokenToGiveBalance.balance < parseInt(maxCap/acceptRatio) ){ //this crowdsale has not enough coupons loaded yet
         iconButtons = (
-            <Grid container direction="column" justify="center" alignItems="center">
-                <Grid item>
-                    <Typography color="error" variant="caption">
-                        {t('couponsNotLoaded',
-                            {params: {
-                                total: parseInt(maxCap/acceptRatio) - tokenToGiveBalance.balance,
-                                symbol: tokenToGive.symbol
-                            }}
-                        )}
-                    </Typography>
+                <Grid container direction="column" justify="center" alignItems="center">
+                    <Grid item>
+                        <Typography color="error" variant="caption">
+                            {t('couponsNotLoaded',
+                                {params: {
+                                    total: parseInt(maxCap/acceptRatio) - tokenToGiveBalance.balance,
+                                    symbol: tokenToGive.symbol
+                                }}
+                            )}
+                        </Typography>
+                    </Grid>
+                    <Grid item>
+                        <Button variant="contained" color="primary" onClick={() => setOpenPiggyLoad(true)}>
+                            {t("loadCrowdsaleButton")}
+                        </Button>
+                        <PiggyLoad
+                            open={openPiggyLoad}
+                            handleClose={() => setOpenPiggyLoad(false)}
+                            tokenToGive={tokenToGive}
+                            tokenToGiveAddr={tokenToGiveAddr}
+                            tokenToGiveCrowdsaleBalance={tokenToGiveBalance.balance}
+                            tokenToGiveDecimals={tokenToGiveBalance.decimals}
+                            tokenToGiveTotalNeeded={ parseInt(maxCap/acceptRatio) }
+                            crowdsaleAddress={crowdsaleAddress}
+                        />
+                    </Grid>
                 </Grid>
-                <Grid item>
-                    <Button variant="contained" color="primary" onClick={() => setOpenPiggyLoad(true)}>
-                        {t("loadCrowdsaleButton")}
-                    </Button>
-                    <PiggyLoad
-                        open={openPiggyLoad}
-                        handleClose={() => setOpenPiggyLoad(false)}
-                        tokenToGive={tokenToGive}
-                        tokenToGiveAddr={tokenToGiveAddr}
-                        tokenToGiveCrowdsaleBalance={tokenToGiveBalance.balance}
-                        tokenToGiveDecimals={tokenToGiveBalance.decimals}
-                        tokenToGiveTotalNeeded={ parseInt(maxCap/acceptRatio) }
-                        crowdsaleAddress={crowdsaleAddress}
-                    />
-                </Grid>
-            </Grid>
             );
+    }else{ //crowdsale has enough coupons loaded
+        if(status === config.crowdsaleStatus[2]){ //crowdsale is still LOCKED
+            iconButtons = (
+                <Grid container direction="column" justify="center" alignItems="center">
+                    <Grid item>
+                        <Typography color="error" variant="caption">
+                            {t('couponsLoaded')}
+                        </Typography>
+                    </Grid>
+                    <Grid item>
+                        <Button variant="contained" color="primary" onClick={() => setOpenPiggyLoad(true)}>
+                            {t("unlockCrowdsaleButton")}
+                        </Button>
+                        <PiggyLoad
+                            open={openPiggyLoad}
+                            handleClose={() => setOpenPiggyLoad(false)}
+                            tokenToGive={tokenToGive}
+                            tokenToGiveAddr={tokenToGiveAddr}
+                            tokenToGiveCrowdsaleBalance={tokenToGiveBalance.balance}
+                            tokenToGiveDecimals={tokenToGiveBalance.decimals}
+                            tokenToGiveTotalNeeded={ parseInt(maxCap/acceptRatio) }
+                            crowdsaleAddress={crowdsaleAddress}
+                        />
+                    </Grid>
+                </Grid>
+            )
+        }
     }
 
     return (

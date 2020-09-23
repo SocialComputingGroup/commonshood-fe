@@ -8,5 +8,7 @@
     "crowdsaleReachedCap": "Obiettivo già raggiunto",
 
     "couponsNotLoaded": "Devi caricare {{params.total}} {{params.symbol}} per poter sbloccare la crowdsale",
-    "loadCrowdsaleButton": "Carica i coupons nella crowdsale"
+    "loadCrowdsaleButton": "Carica i coupons nella Crowdsale",
+    "couponsLoaded": "Ora puoi sbloccare la Crowdsale",
+    "unlockCrowdsaleButton": "Sblocca la Crowdsale"
 }

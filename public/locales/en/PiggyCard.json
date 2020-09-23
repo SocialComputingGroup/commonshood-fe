@@ -8,5 +8,7 @@
     "crowdsaleReachedCap": "Goal already reached",
 
     "couponsNotLoaded": "You need to load {{params.total}} {{params.symbol}} before unlocking the crowdsale",
-    "loadCrowdsaleButton": "Load Coupons in Crowdsale"
+    "loadCrowdsaleButton": "Load Coupons in Crowdsale",
+    "couponsLoaded": "Now you can unlock the Crowdsale",
+    "unlockCrowdsaleButton": "Unlock Crowdsale"
 }
