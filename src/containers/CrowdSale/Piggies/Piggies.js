@@ -145,9 +145,10 @@ class Piggies extends Component {
                 return (
                     (extendedCrowdsale.ownerAddress === userWalletAddress) ||
                     (
-                        (extendedCrowdsale.tokenToGiveBalance >= extendedCrowdsale.maxCap) // coupons loaded
+                        ( extendedCrowdsale.tokenToGiveBalance.balance >=
+                            extendedCrowdsale.maxCap/extendedCrowdsale.acceptRatio) // coupons loaded
                         &&
-                        (extendedCrowdsale.status.localeCompare(config.crowdsaleStatus[1])) //running
+                        (extendedCrowdsale.status.localeCompare(config.crowdsaleStatus[0]) === 0) //running
                     )
                 );
             })
