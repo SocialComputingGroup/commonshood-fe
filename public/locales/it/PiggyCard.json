@@ -10,5 +10,6 @@
     "couponsNotLoaded": "Devi caricare {{params.total}} {{params.symbol}} per poter sbloccare la crowdsale",
     "loadCrowdsaleButton": "Carica i coupons nella Crowdsale",
     "couponsLoaded": "Ora puoi sbloccare la Crowdsale",
-    "unlockCrowdsaleButton": "Sblocca la Crowdsale"
+    "unlockCrowdsaleButton": "Sblocca la Crowdsale",
+    "crowdsaleIsVisible": "La tua crowdsale è ora visibile agli altri utenti"
 }

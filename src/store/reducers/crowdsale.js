@@ -73,7 +73,7 @@ const crowdsaleGetAllReset = (state, action) => {
     return {
         ...state,
         loading: false,
-        crowdasales: []
+        crowdsales: []
     }
 };
 

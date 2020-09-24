@@ -6,7 +6,7 @@ import { Button, Grid, Typography } from "@material-ui/core";
 
 //api
 import {coinGetBalance} from "../../../../../api/coinAPI";
-import {loadCouponsInCrowdsale} from "../../../../../api/crowdsaleAPI";
+import {loadCouponsInCrowdsale, unlockCrowdsale} from "../../../../../api/crowdsaleAPI";
 
 //redux
 import {connect} from "react-redux";
@@ -16,11 +16,14 @@ import {useTranslation} from "react-i18next";
 
 //logger
 import {logger} from "../../../../../utilities/winstonLogging/winstonInit";
+import * as actions from "../../../../../store/actions";
 
 
 const PiggyLoad = (props) => {
     const {
         crowdsaleAddress,
+
+        crowdsalesReload,
 
         open,
         handleClose,
@@ -61,7 +64,10 @@ const PiggyLoad = (props) => {
     }
 
     const handleUnlockClick = async () => {
-
+        const successfullyUnlocked = await unlockCrowdsale(web3Instance, userWalletAddress, crowdsaleAddress);
+        if(successfullyUnlocked){
+            crowdsalesReload();
+        }
     }
 
     //ui elements
@@ -179,7 +185,9 @@ const mapStateToProps = state => {
 };
 
 const mapDispatchToProps = dispatch => {
-    return {};
+    return {
+        crowdsalesReload: () => dispatch(actions.crowdsaleGetAll()),
+    };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(PiggyLoad);

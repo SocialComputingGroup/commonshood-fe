@@ -91,19 +91,36 @@ const PiggyCard = (props) => {
        timeLeft = t("crowdsaleReachedCap");
     }
 
+    //messages reserved to the owner
+    let crowdsaleIsVisibleTypography = null;
+    if(isOwnedByCurrentUserWallet &&
+        status === config.crowdsaleStatus[0] //RUNNING aka the owner already loaded and unlocked it
+        ){
+        crowdsaleIsVisibleTypography = (
+            <Typography color="error" style={{marginTop: "1em"}}>
+                {t("crowdsaleIsVisible")}
+            </Typography>
+        )
+    }
+
     //default case
     let iconButtons = (
-        <>
-            <IconButton disabled={true} className={classes.acceptedCoin}>
-                <CoinAvatarLabeled noName={true} coin={ {symbol: tokenToAccept.symbol, logoFile: tokenToAcceptLogo}} />
-                <Typography style={{color: "grey"}} variant="caption">{acceptRatio + ' ' + tokenToAccept.symbol}</Typography>
-            </IconButton>
-            <Icon disabled>compare_arrows</Icon>
-            <IconButton disabled={true} className={classes.coinToGive}>
-                <CoinAvatarLabeled noName={true} coin={ {symbol: tokenToGive.symbol, logoFile: tokenToGiveLogo}} />
-                <Typography style={{color: "grey"}} variant="caption">{giveRatio + ' ' + tokenToGive.symbol}</Typography>
-            </IconButton>
-        </>
+        <Grid container direction="column" justify="center" alignItems="center">
+            <Grid item>
+                {crowdsaleIsVisibleTypography}
+            </Grid>
+            <Grid item>
+                <IconButton disabled={true} className={classes.acceptedCoin}>
+                    <CoinAvatarLabeled noName={true} coin={ {symbol: tokenToAccept.symbol, logoFile: tokenToAcceptLogo}} />
+                    <Typography style={{color: "grey"}} variant="caption">{acceptRatio + ' ' + tokenToAccept.symbol}</Typography>
+                </IconButton>
+                <Icon disabled>compare_arrows</Icon>
+                <IconButton disabled={true} className={classes.coinToGive}>
+                    <CoinAvatarLabeled noName={true} coin={ {symbol: tokenToGive.symbol, logoFile: tokenToGiveLogo}} />
+                    <Typography style={{color: "grey"}} variant="caption">{giveRatio + ' ' + tokenToGive.symbol}</Typography>
+                </IconButton>
+            </Grid>
+        </Grid>
     );
 
     logger.info(`Crowdsale ${title} has a balance of ${tokenToGiveBalance.balance}`);
