@@ -1,4 +1,6 @@
 import React, {useState, useEffect} from 'react';
+
+import Loading from "../../../../../components/UI/Loading/Loading";
 import SlideModal from "../../../../../components/UI/Modal/SlideModal/SlideModal";
 
 //material ui components
@@ -39,6 +41,7 @@ const PiggyLoad = (props) => {
     const [ userBalance, setUserBalance ] = useState(0);
     const couponsNeeded = tokenToGiveTotalNeeded - tokenToGiveCrowdsaleBalance;
     const [ loaded, setLoaded ] = useState(couponsNeeded === 0 );
+    const [ showLoadingComponent, setShowLoadingComponent ] = useState(false);
     const { t } = useTranslation('PiggyLoad');
 
     useEffect( () => {
@@ -52,22 +55,26 @@ const PiggyLoad = (props) => {
     }, [tokenToGive, loaded]);
 
     const handleLoadClick = async () => {
-        logger.info("userwallet", userWalletAddress);
-        logger.info("cwd addr", crowdsaleAddress);
-        logger.info("tokenaddr", tokenToGiveAddr);
-        logger.info("amount", couponsNeeded);
-        logger.info("decimals", tokenToGiveDecimals);
+        // logger.info("userwallet", userWalletAddress);
+        // logger.info("cwd addr", crowdsaleAddress);
+        // logger.info("tokenaddr", tokenToGiveAddr);
+        // logger.info("amount", couponsNeeded);
+        // logger.info("decimals", tokenToGiveDecimals);
+        setShowLoadingComponent(true)
         const successfullyLoaded = await loadCouponsInCrowdsale(web3Instance, userWalletAddress, crowdsaleAddress, tokenToGiveAddr, couponsNeeded, tokenToGiveDecimals);
         if(successfullyLoaded){
             setLoaded(true);
         }
+        setShowLoadingComponent(false);
     }
 
     const handleUnlockClick = async () => {
+        setShowLoadingComponent(true);
         const successfullyUnlocked = await unlockCrowdsale(web3Instance, userWalletAddress, crowdsaleAddress);
         if(successfullyUnlocked){
             crowdsalesReload();
         }
+        setShowLoadingComponent(false);
     }
 
     //ui elements
@@ -143,9 +150,9 @@ const PiggyLoad = (props) => {
         )
     }
 
-
-
-
+    const loadingTransactionComponent = (
+        <Loading title={t("waitingTransaction")} withLoader />
+    );
 
     return (
         <SlideModal
@@ -171,6 +178,9 @@ const PiggyLoad = (props) => {
                 </Grid>
                 <Grid item>
                     {actionButton}
+                </Grid>
+                <Grid item>
+                    {showLoadingComponent ? loadingTransactionComponent : null}
                 </Grid>
             </Grid>
         </SlideModal>

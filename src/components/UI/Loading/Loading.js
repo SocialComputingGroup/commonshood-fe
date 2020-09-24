@@ -12,7 +12,7 @@ import withStyles from "@material-ui/core/styles/withStyles";
 import Logo from '../Logo/Logo'
 
 import loadingStyle from "./LoadingStyle";
-const loading = props => {
+const Loading = props => {
     const {
         title,
         withLoader,
@@ -41,4 +41,4 @@ const loading = props => {
     );
 };
 
-export default withStyles(loadingStyle)(loading);
+export default withStyles(loadingStyle)(Loading);

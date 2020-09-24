@@ -5,5 +5,6 @@
   "notEnough": "You need to go to your wallet and mint enough {{params.symbol}} to load this crowdsale",
   "loadButton": "Load {{params.quantity}} {{params.symbol}}",
   "unlockButton": "Unlock",
-  "unlockMessage": "Now you can unlock the crowdsale"
+  "unlockMessage": "Now you can unlock the crowdsale",
+  "waitingTransaction": "Wait transaction confirmation"
 }
