@@ -213,6 +213,26 @@ const PiggiesDetails = (props) => {
         }
     }
 
+    //pledge button DEactivation conditions check
+    // console.log("1  === ", crowdsale.isOwnedByCurrentUserWallet);
+    // console.log("2  === ", !crowdsale.isOwnedByCurrentUserWallet &&
+    //     !crowdsaleTime.timeStatus !== TimeStatusEnum.started);
+    // console.log("3  === ", !crowdsale.isOwnedByCurrentUserWallet &&
+    //     crowdsaleTime.timeStatus === TimeStatusEnum.ended &&
+    //     areUserWalletReservationsLoaded &&
+    //     userWalletReservations <= 0);
+    // console.log("4  === ", !crowdsale.isOwnedByCurrentUserWallet &&
+    //     userBalanceIsReady &&
+    //     tokenToAcceptUserBalance <= crowdsale.acceptRatio &&
+    //     areUserWalletReservationsLoaded &&
+    //     userWalletReservations <= 0);
+    // console.log("5  === ", !crowdsale.isOwnedByCurrentUserWallet &&
+    //     crowdsale.status !== crowdsaleStatusEnum[0] &&
+    //     areUserWalletReservationsLoaded &&
+    //     areUserWalletReservationsLoaded <= 0);
+    //
+    //====
+
     const pledgeButton = (
         <Button
             variant="contained"
@@ -221,7 +241,9 @@ const PiggiesDetails = (props) => {
             fullWidth
             disabled = { //disable this button if:
                 crowdsale.isOwnedByCurrentUserWallet || // user is the owner, so cannot join
-                (!crowdsale.isOwnedByCurrentUserWallet && !crowdsaleTime.timeStatus !== TimeStatusEnum.started) || //not started
+                (
+                    !crowdsale.isOwnedByCurrentUserWallet &&
+                    crowdsaleTime.timeStatus !== TimeStatusEnum.started) || //not started
                 (
                     !crowdsale.isOwnedByCurrentUserWallet &&
                     crowdsaleTime.timeStatus === TimeStatusEnum.ended &&
@@ -390,7 +412,7 @@ const PiggiesDetails = (props) => {
                     }}
                     crowdsale={crowdsale}
                     crowdsaleEnded={crowdsaleTime.timeStatus === crowdsaleStatusEnum[0]}
-                    coinToJoinBalance={tokenToAcceptUserBalance}
+                    tokenToAcceptUserBalance={tokenToAcceptUserBalance}
                     startingReservation={ crowdsale.totalReservations.toFixed(2)}
                     maxJoinLeft={maxJoinLeft}
                 />
@@ -416,8 +438,6 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return{
-        onGetUserFromId: (id) => dispatch(actions.userGetDataFromId(id)),
-        onGetDaoFromId: (id) => dispatch(actions.daoGetDataFromId(id)),
     };
 };
 

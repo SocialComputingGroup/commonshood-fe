@@ -64,6 +64,7 @@ const PiggyLoad = (props) => {
         const successfullyLoaded = await loadCouponsInCrowdsale(web3Instance, userWalletAddress, crowdsaleAddress, tokenToGiveAddr, couponsNeeded, tokenToGiveDecimals);
         if(successfullyLoaded){
             setLoaded(true);
+            crowdsalesReload();
         }
         setShowLoadingComponent(false);
     }
@@ -118,36 +119,40 @@ const PiggyLoad = (props) => {
             )
         } else {
             logger.info("[PIGGYLOAD] user has enough coupons to load cwd");
-            actionButton = (
-                <Button
-                    variant="contained"
-                    color="primary"
-                    style={{marginTop: "1em"}}
-                    onClick={handleLoadClick}>
-                    {t('loadButton',
-                        {
-                            params: {
-                                quantity: couponsNeeded,
-                                symbol: tokenToGive.symbol,
+            if(!showLoadingComponent) {
+                actionButton = (
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        style={{marginTop: "1em"}}
+                        onClick={handleLoadClick}>
+                        {t('loadButton',
+                            {
+                                params: {
+                                    quantity: couponsNeeded,
+                                    symbol: tokenToGive.symbol,
+                                }
                             }
-                        }
-                    )}
-                </Button>
-            )
+                        )}
+                    </Button>
+                )
+            }
         }
     }else{//this crowdsale is already loaded!
         couponsInfoTypography = (
             <Typography color="error" style={{marginTop: "1em"}}>{t('unlockMessage')}</Typography>
         )
-        actionButton = (
-            <Button
-                variant="contained"
-                color="primary"
-                style={{marginTop: "1em"}}
-                onClick={handleUnlockClick}>
-                {t('unlockButton')}
-            </Button>
-        )
+        if(!showLoadingComponent) { //no transaction pending
+            actionButton = (
+                <Button
+                    variant="contained"
+                    color="primary"
+                    style={{marginTop: "1em"}}
+                    onClick={handleUnlockClick}>
+                    {t('unlockButton')}
+                </Button>
+            );
+        }
     }
 
     const loadingTransactionComponent = (
