@@ -33,11 +33,13 @@ export const coinGetFullData = async (web3, accountAddress, tokenAddress) => {
     const logoUrl = await coinContractInstance.methods.logoURL().call({from: accountAddress});
     const contractHash = await coinContractInstance.methods.contractHash().call({from: accountAddress});
     const symbol = await coinContractInstance.methods.symbol().call({from: accountAddress});
+    const decimals = await coinContractInstance.methods.decimals().call({from: accountAddress});
 
     return {
         owner,
         name,
         symbol,
+        decimals,
         logoHash,
         logoUrl,
         contractHash,

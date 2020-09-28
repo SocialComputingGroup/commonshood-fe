@@ -102,3 +102,35 @@ export const unlockCrowdsale = async(web3, accountAddress, crowdsaleAddress) => 
         return false;
     }
 }
+
+
+export const joinCrowdsale = async (web3, accountAddress, crowdsaleAddress, tokenAddress, amount) => {
+
+    const crowdsaleContractInstance = new web3.eth.Contract(
+        config.smartContracts.TKN_CRWDSL_ABI,
+        crowdsaleAddress
+    );
+    const tokenContractInstance =  new web3.eth.Contract(
+        config.smartContracts.TKN_TMPLT_ABI,
+        tokenAddress
+    );
+
+    try{
+        await tokenContractInstance.methods.approve(
+            crowdsaleAddress,
+            amount
+        ).send({from: accountAddress, gasPrice: '0'});
+
+        await crowdsaleContractInstance.methods.joinCrowdsale(
+            amount
+        ).send({from: accountAddress, gasPrice: '0'});
+
+        return true;
+    }catch(error){
+        return false;
+    }
+}
+
+export const refundFromCrowdsale = async (web3, accountAddress, crowdsaleAddress, token, amount) => {
+
+}
