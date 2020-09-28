@@ -162,7 +162,7 @@ const PiggiesDetails = (props) => {
             timeLeftComponent = (
                 <CardActions className={classes.actions}>
                     <Grid container alignContent="space-between" direction="row">
-                        <Grid item align={isWidthUp('sm', this.props.width) ? "right" : "center"} xs={12}>
+                        <Grid item align={isWidthUp('sm', props.width) ? "right" : "center"} xs={12}>
                             <Icon className={classes.end}>alarm_on</Icon>
                             <Typography variant="caption">{t('timeLeft', {params: {days: Math.round(crowdsaleTime.timeLeft)}})}</Typography>
                         </Grid>
