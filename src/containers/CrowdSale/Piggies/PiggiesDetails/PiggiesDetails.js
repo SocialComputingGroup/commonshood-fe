@@ -2,6 +2,8 @@ import React, {useState, useEffect} from "react";
 import { connect } from 'react-redux';
 import * as actions from "../../../../store/actions/index";
 import {logger} from '../../../../utilities/winstonLogging/winstonInit';
+import { base64ToArrayBuffer } from '../../../../utilities/utilities'
+import {assetDecimalRepresentationToInteger, assetIntegerToDecimalRepresentation} from '../../../../utilities/decimalsHandler/decimalsHandler';
 
 import config from '../../../../config';
 
@@ -9,12 +11,9 @@ import config from '../../../../config';
 import {coinGetBalance} from '../../../../api/coinAPI';
 import {crowdsaleGetReservationsOfAccount} from '../../../../api/crowdsaleAPI';
 
-import withWidth, { isWidthUp, isWidthDown } from '@material-ui/core/withWidth';
-
-import { base64ToArrayBuffer } from '../../../../utilities/utilities'
-
 //styles
 import { withStyles } from "@material-ui/core/styles";
+import withWidth, { isWidthUp, isWidthDown } from '@material-ui/core/withWidth';
 import piggiesDetailsStyle from './PiggiesDetailsStyle';
 
 //i18n
@@ -413,7 +412,7 @@ const PiggiesDetails = (props) => {
                     crowdsale={crowdsale}
                     crowdsaleEnded={crowdsaleTime.timeStatus === crowdsaleStatusEnum[0]}
                     tokenToAcceptUserBalance={tokenToAcceptUserBalance}
-                    startingReservation={ crowdsale.totalReservations.toFixed(2)}
+                    startingReservation={ crowdsale.totalReservations }
                     maxJoinLeft={maxJoinLeft}
                 />
             </SlideModal>

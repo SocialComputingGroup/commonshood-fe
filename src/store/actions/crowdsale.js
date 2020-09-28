@@ -7,7 +7,7 @@ import config from '../../config';
 import * as actionTypes from './actionTypes';
 
 import {coinGetFullData} from '../../api/coinAPI';
-import {getCrowdsaleWalletBalanceOfTokenToGive} from '../../api/crowdsaleAPI';
+import {getCrowdsaleWalletBalanceOfTokenToGive, joinCrowdsale, refundFromCrowdsale} from '../../api/crowdsaleAPI';
 import {logger} from '../../utilities/winstonLogging/winstonInit';
 
 export const crowdsaleCreateStart = () => {
@@ -531,7 +531,7 @@ export const crowdsaleGetAll = () =>{
                     tokenToGiveAddr,
                     tokenToGive,
                     status: crowdsaleStatusEnum[status],
-                    totalReservations: parseFloat(totalReservations),
+                    totalReservations: parseFloat(assetIntegerToDecimalRepresentation(totalReservations, 2)),
                     tokenToGiveBalance,
                 }
             }));
@@ -621,24 +621,38 @@ export const crowdsaleGetParticipantReservation = (crowdsaleId, acceptedCoinDeci
 
 
 
-export const crowdsaleJoin = (crowdsaleId, amount, acceptedCoinDecimals) => {
-    return (dispatch) => {
+export const crowdsaleJoin = (crowdsaleAddress, amount, decimals, tokenToAcceptAddress) => {
+    return async (dispatch, getState) =>{
         dispatch(crowdsaleJoinReset());
+        const correctAmount = parseInt( assetDecimalRepresentationToInteger(amount, decimals) );
+        const web3Instance = getState().web3.web3Instance;
+        const userWalletAddress = getState().web3.currentAccount;
 
-        const url = `/Crowdsales/${crowdsaleId}/join/${assetDecimalRepresentationToInteger(amount, acceptedCoinDecimals)}`;
-
-        return axios.post(url)
-            .then( (response) => {
-                logger.debug('[CROWDSALE JOIN] success', response);
-                dispatch(crowdsaleJoinSuccess());
-                //add this transaction to those waiting for confirmation in profile list
-                dispatch(userAddCrowdsaleToWaitingTransactionConfirmation(crowdsaleId));
-            })
-            .catch( (error) =>{
-                logger.error('[CROWDSALE JOIN] failure', error);
-                dispatch(crowdsaleJoinFail());
-            })
+        const joinCompleted = joinCrowdsale(web3Instance, userWalletAddress, crowdsaleAddress, tokenToAcceptAddress, correctAmount);
+        if(joinCompleted){
+            dispatch(crowdsaleJoinSuccess());
+        }else{
+            dispatch(crowdsaleJoinFail());
+        }
     }
+    //old version
+    // return (dispatch) => {
+    //     dispatch(crowdsaleJoinReset());
+    //
+    //     const url = `/Crowdsales/${crowdsaleId}/join/${assetDecimalRepresentationToInteger(amount, acceptedCoinDecimals)}`;
+    //
+    //     return axios.post(url)
+    //         .then( (response) => {
+    //             logger.debug('[CROWDSALE JOIN] success', response);
+    //             dispatch(crowdsaleJoinSuccess());
+    //             //add this transaction to those waiting for confirmation in profile list
+    //             dispatch(userAddCrowdsaleToWaitingTransactionConfirmation(crowdsaleId));
+    //         })
+    //         .catch( (error) =>{
+    //             logger.error('[CROWDSALE JOIN] failure', error);
+    //             dispatch(crowdsaleJoinFail());
+    //         })
+    // }
 
 };
 
