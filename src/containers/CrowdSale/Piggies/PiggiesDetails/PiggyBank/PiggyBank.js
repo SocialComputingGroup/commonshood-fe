@@ -1,9 +1,9 @@
-import React from "react";
+import React, {useState, useEffect} from "react";
 import {logger} from '../../../../../utilities/winstonLogging/winstonInit';
 import theme from '../../../../../theme/theme';
 
 //i18n
-import {withTranslation} from "react-i18next";
+import {useTranslation} from "react-i18next";
 
 import Typography from "@material-ui/core/Typography";
 import Icon from "@material-ui/core/Icon";
@@ -19,167 +19,160 @@ import PiggyBankStyle from './PiggyBankStyle';
 
 import PiggyBankModal from './PiggyBankConfirmationModal/PiggyBankConfirmationModal';
 
-class PiggyBank extends React.Component {
-    state = {
-        currentReservation: parseFloat(this.props.startingReservation),
-        pledgeDifference: 0,
-        openModal: false,
+const PiggyBank = (props) => {
+    const {
+        classes,
+        crowdsale,
+        crowdsaleEnded,
+        maxJoinLeft,
+        piggyBankClose,
+        startingReservation,
+        tokenToAcceptUserBalance,
+
+        //from redux:
+        joined,
+        joinCrowdsale,
+        refunded,
+        refundCrowdsale,
+    } = props;
+    const { crowdsaleAddress, acceptRatio, giveRatio, tokenToAccept, tokenToAcceptAddr, tokenToGive } = crowdsale;
+
+    const [currentReservation, setCurrentReservation] = useState( parseFloat(startingReservation) );
+    const [pledgeDifference, setpledgeDifference] = useState(0);
+    const [openModal, setOpenModal] = useState(false);
+
+    const {t} = useTranslation("PiggyBank");
+
+
+    const handleSubmitPledge = async () => {
+        if( pledgeDifference < 0 ) { //asking for a refund
+            refundCrowdsale(
+                crowdsaleAddress,
+                pledgeDifference * -1,
+                tokenToAccept.decimals
+            );
+        }else if(pledgeDifference > 0){
+            joinCrowdsale(
+                crowdsaleAddress,
+                pledgeDifference,
+                tokenToAccept.decimals,
+                tokenToAcceptAddr
+            );
+        }
+        setOpenModal(true);
     };
 
-    handleSubmitPledge = () => {
-        const {
-            pledgeDifference
-        } = this.state;
-        const {
-            crowdsale,
-            joinCrowdsale,
-            refundCrowdsale,
-        } = this.props;
+    const handleSuccessfulPledge = () => {
+            piggyBankClose();
+    };
 
-        if(pledgeDifference < 0){ //we are asking for a refund
-            refundCrowdsale(crowdsale.crowdsaleID, pledgeDifference * -1, crowdsale.acceptedCoinDecimals);
-        }else if(pledgeDifference > 0){ //we are asking to join with more
-            joinCrowdsale(crowdsale.crowdsaleID, pledgeDifference, crowdsale.acceptedCoinDecimals);
-        }// pledge with a === 0 difference is not useful
+    const changePledgeClicked = type => {
+        if(type === "add"){
+            setCurrentReservation( parseFloat((currentReservation + acceptRatio).toFixed(2)) );
+            setpledgeDifference( parseFloat((currentReservation + acceptRatio - startingReservation).toFixed(2))  );
+        }else{
+            setCurrentReservation( parseFloat((currentReservation - acceptRatio).toFixed(2)) );
+            setpledgeDifference( parseFloat((currentReservation - acceptRatio - startingReservation).toFixed(2)) );
+        }
+    };
 
-        this.setState({
-            openModal: true
+    //current pledge message:
+    let pledgeText = t('currentPledge');
+    let pledgeValueClass = [classes.centeredPledgeValue, classes.unmodifiedPledgeValue].join(' ');
+
+    if(pledgeDifference > 0){
+        pledgeText = t('addingPledge', {
+           params: {
+               pledgeDifference,
+               acceptedCoin: crowdsale.tokenToAccept.symbol
+           }
         });
-    };
-
-    handleSuccessfulPledge = () => {
-        this.props.piggyBankClose();
-    };
-
-    changePledgeClicked = type => {
-        const {
-            crowdsale
-        } = this.props;
-
-
-        this.setState(prevState => {
-            const acceptRatio = parseFloat(crowdsale.acceptRatio);
-            const currentReservation = parseFloat(prevState.currentReservation);
-            const startingReservation = parseFloat(this.props.startingReservation);
-            logger.info('PiggyBank -> PLEDGE => acceptRatio, currentRes, startingRes', acceptRatio, currentReservation, startingReservation);
-            if(type === "add") {
-                return {
-                    // DO NOT ASK why - -, yes i want a sum, for some strange reasons it keeps returning a string even after parseFloat if using +... THIS WORKS ANYWAY
-                    currentReservation: parseFloat((currentReservation + acceptRatio).toFixed(2)),
-                    pledgeDifference: parseFloat((currentReservation + acceptRatio - startingReservation).toFixed(2))
-                };
-            }else{
-                return{
-                    currentReservation: parseFloat((currentReservation - acceptRatio).toFixed(2)),
-                    pledgeDifference: parseFloat((currentReservation - acceptRatio - startingReservation).toFixed(2))
-                }
+        pledgeValueClass = [classes.centeredPledgeValue, classes.positivePledgeValue].join(' ');
+    }else if(pledgeDifference < 0){
+        pledgeText = t('refundingPledge', {
+            params: {
+                pledgeDifference,
+                acceptedCoin: crowdsale.tokenToAccept.symbol,
             }
         });
-    };
-
-    render() {
-        const {
-            classes,
-            t,
-            crowdsale,
-            coinToJoinBalance
-        } = this.props;
-
-        //message current pledge
-        let pledgeText = t('currentPledge');
-        let pledgeValueClass = [classes.centeredPledgeValue, classes.unmodifiedPledgeValue].join(' ');
-        if(this.state.pledgeDifference > 0){
-            pledgeText = t('addingPledge', {
-                params: {
-                    pledgeDifference: this.state.pledgeDifference,
-                    acceptedCoin: crowdsale.acceptedCoin,
-                }
-            });
-            pledgeValueClass = [classes.centeredPledgeValue, classes.positivePledgeValue].join(' ');
-        }else if(this.state.pledgeDifference < 0){
-            pledgeText = t('refundingPledge', {
-                params: {
-                    pledgeDifference: this.state.pledgeDifference,
-                    acceptedCoin: crowdsale.acceptedCoin,
-                }
-            });
-            pledgeValueClass = [classes.centeredPledgeValue, classes.negativePledgeValue].join(' ');
-        }
-
-        return (
-            <div className={classes.center} style={{marginTop: '20px'}}>
-                <Typography align="center" variant="subtitle2">
-                    {t('acceptingFor')}: <strong style={{display: 'inline'}}>{crowdsale.acceptRatio + ' ' + crowdsale.acceptedCoin}</strong>
-                </Typography>
-                <Typography align="center" variant="subtitle2">
-                    {t('returningFor')}: <strong style={{display: 'inline'}}>{parseInt(crowdsale.giveRatio) + ' ' + crowdsale.coinToGive}</strong>
-                </Typography>
-                <Typography align="center" variant="body2">
-                    {t('acceptedCoinInWallet')}: <strong style={{display: 'inline'}}>{coinToJoinBalance + ' ' + crowdsale.acceptedCoin}</strong>
-                </Typography>
-                {/*<Typography align="left" variant="h6">*/}
-                {/*    {t('minPledge')}: 10 {crowdsale.coinToGive}*/}
-                {/*</Typography>*/}
-                <div style={{display: "flex", alignItems: "center", justifyContent: "center"}}>
-                    <IconButton
-                        onClick={() => this.changePledgeClicked( "sub")}
-                        disabled={
-                            (this.state.currentReservation === 0) //can't refund below 0 investment
-                        }
-                    >
-                        <Icon fontSize="large">remove_circle</Icon>
-                    </IconButton>
-                    <div
-                        style={{position: "relative", textAlign: "center"}}
-                    >
-                        <img
-                            width="260"
-                            src={maialino}
-                            alt="Piggy Bank"
-                        />
-                        <Typography
-                            variant="h3"
-                            display="inline"
-                            className={pledgeValueClass}>
-                            {this.state.currentReservation.toFixed(2)}
-                        </Typography>
-                    </div>
-                    <IconButton
-                        onClick={() => this.changePledgeClicked("add")}
-                        disabled={
-                            this.state.pledgeDifference + parseFloat(crowdsale.acceptRatio) > coinToJoinBalance || //cannot join anymore
-                            this.props.crowdsaleEnded || //if crowdsale is over joining is not allowed anymore
-                            ( parseFloat(this.props.maxJoinLeft) === parseFloat(this.state.pledgeDifference) )
-                        }
-                    >
-                        <Icon fontSize="large">add_circle</Icon>
-                    </IconButton>
-                </div>
-                <Typography paragraph={true} align="center" variant="subtitle1">
-                    {pledgeText}
-                </Typography>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    fullWidth
-                    disabled={this.state.pledgeDifference === 0}
-                    onClick={this.handleSubmitPledge}
-                >
-                    {t('pledge')}
-                </Button>
-
-                <PiggyBankModal
-                    closePiggyBank={this.handleSuccessfulPledge}
-                    openModal={this.state.openModal}
-                    acceptedCoin={crowdsale.acceptedCoin}
-                    refunded={this.props.refunded}
-                    joined={this.props.joined}
-                    pledgeDifference={this.state.pledgeDifference}
-                    closeModal={() => this.setState({openModal: false})}
-                />
-            </div>
-        );
+        pledgeValueClass = [classes.centeredPledgeValue, classes.negativePledgeValue].join(' ');
     }
+
+
+
+    return (
+        <div className={classes.center} style={{marginTop: '20px'}}>
+            <Typography align="center" variant="subtitle2">
+                {t('acceptingFor')}: <strong style={{display: 'inline'}}>{acceptRatio + ' ' + tokenToAccept.symbol}</strong>
+            </Typography>
+            <Typography align="center" variant="subtitle2">
+                {t('returningFor')}: <strong style={{display: 'inline'}}>{giveRatio + ' ' + tokenToGive.symbol}</strong>
+            </Typography>
+            <Typography align="center" variant="body2">
+                {t('acceptedCoinInWallet')}: <strong style={{display: 'inline'}}>{tokenToAcceptUserBalance + ' ' + tokenToAccept.symbol }</strong>
+            </Typography>
+            {/*<Typography align="left" variant="h6">*/}
+            {/*    {t('minPledge')}: 10 {crowdsale.coinToGive}*/}
+            {/*</Typography>*/}
+            <div style={{display: "flex", alignItems: "center", justifyContent: "center"}}>
+                <IconButton
+                    onClick={() => changePledgeClicked( "sub")}
+                    disabled={
+                        (currentReservation === 0) //can't refund below 0 investment
+                    }
+                >
+                    <Icon fontSize="large">remove_circle</Icon>
+                </IconButton>
+                <div
+                    style={{position: "relative", textAlign: "center"}}
+                >
+                    <img
+                        width="260"
+                        src={maialino}
+                        alt="Piggy Bank"
+                    />
+                    <Typography
+                        variant="h3"
+                        display="inline"
+                        className={pledgeValueClass}>
+                        {currentReservation.toFixed(2)}
+                    </Typography>
+                </div>
+                <IconButton
+                    onClick={() => changePledgeClicked("add")}
+                    disabled={
+                        pledgeDifference + parseFloat(acceptRatio) > tokenToAcceptUserBalance || //cannot join anymore
+                        crowdsaleEnded || //if crowdsale is over joining is not allowed anymore
+                        ( parseFloat(maxJoinLeft) === parseFloat(pledgeDifference) )
+                    }
+                >
+                    <Icon fontSize="large">add_circle</Icon>
+                </IconButton>
+            </div>
+            <Typography paragraph={true} align="center" variant="subtitle1">
+                {pledgeText}
+            </Typography>
+            <Button
+                variant="contained"
+                color="primary"
+                fullWidth
+                disabled={pledgeDifference === 0}
+                onClick={handleSubmitPledge}
+            >
+                {t('pledge')}
+            </Button>
+
+            <PiggyBankModal
+                closePiggyBank={handleSuccessfulPledge}
+                openModal={openModal}
+                tokenToAccept={tokenToAccept}
+                refunded={refunded}
+                joined={joined}
+                pledgeDifference={pledgeDifference}
+                closeModal={() => setOpenModal(false)}
+            />
+        </div>
+    );
 }
 
 const mapStateToProps = state => {
@@ -191,14 +184,12 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
     return{
-        joinCrowdsale: (crowdsaleId, amount, acceptedCoinDecimals) => dispatch(actions.crowdsaleJoin(crowdsaleId, amount, acceptedCoinDecimals)),
-        refundCrowdsale: (crowdsaleId, amount, acceptedCoinDecimals) => dispatch(actions.crowdsaleRefund(crowdsaleId, amount, acceptedCoinDecimals)),
+        joinCrowdsale: (crowdsaleAddress, amount, decimals, tokenToAcceptAddress) => dispatch(actions.crowdsaleJoin(crowdsaleAddress, amount, decimals, tokenToAcceptAddress)),
+        refundCrowdsale: (crowdsaleAddress, amount, decimals) => dispatch(actions.crowdsaleRefund(crowdsaleAddress, amount, decimals)),
     };
 };
 
 export default withStyles(PiggyBankStyle, {withTheme: true})(
-    withTranslation('PiggyBank')(
         connect(mapStateToProps, mapDispatchToProps)(PiggyBank)
-    )
 );
 
