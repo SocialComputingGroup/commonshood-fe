@@ -656,21 +656,19 @@ export const crowdsaleJoin = (crowdsaleAddress, amount, decimals, tokenToAcceptA
 
 };
 
-export const crowdsaleRefund = (crowdsaleId, amount, acceptedCoinDecimals) => {
-    return (dispatch) => {
+export const crowdsaleRefund = (crowdsaleAddress, amount, decimals) => {
+    return async (dispatch, getState) =>{
         dispatch(crowdsaleRefundReset());
+        const correctAmount = parseInt( assetDecimalRepresentationToInteger(amount, decimals) );
+        const web3Instance = getState().web3.web3Instance;
+        const userWalletAddress = getState().web3.currentAccount;
 
-        const url = `/Crowdsales/${crowdsaleId}/refund_me/${assetDecimalRepresentationToInteger(amount, acceptedCoinDecimals)}`;
-
-        return axios.post(url)
-            .then( (response) => {
-                logger.debug('[CROWDSALE REFUND] success', response);
-                dispatch(crowdsaleRefundSuccess())
-            })
-            .catch( (error) =>{
-                logger.error('[CROWDSALE REFUND] failure', error);
-                dispatch(crowdsaleRefundFail());
-            })
+        const refundCompleted = refundFromCrowdsale(web3Instance, userWalletAddress, crowdsaleAddress, correctAmount);
+        if(refundCompleted){
+            dispatch(crowdsaleRefundSuccess());
+        }else{
+            dispatch(crowdsaleRefundFail());
+        }
     }
 };
 

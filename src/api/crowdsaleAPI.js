@@ -131,6 +131,19 @@ export const joinCrowdsale = async (web3, accountAddress, crowdsaleAddress, toke
     }
 }
 
-export const refundFromCrowdsale = async (web3, accountAddress, crowdsaleAddress, token, amount) => {
+export const refundFromCrowdsale = async (web3, accountAddress, crowdsaleAddress, amount) => {
+    const crowdsaleContractInstance = new web3.eth.Contract(
+        config.smartContracts.TKN_CRWDSL_ABI,
+        crowdsaleAddress
+    );
 
+    try{
+        await crowdsaleContractInstance.methods.refundMe(
+            amount
+        ).send({from: accountAddress, gasPrice: '0'});
+
+        return true;
+    }catch(error){
+        return false;
+    }
 }
