@@ -104,12 +104,7 @@ export const unlockCrowdsale = async(web3, accountAddress, crowdsaleAddress) => 
 }
 
 
-export const joinCrowdsale = async (web3, accountAddress, crowdsaleAddress, tokenAddress, amount) => {
-
-    const crowdsaleContractInstance = new web3.eth.Contract(
-        config.smartContracts.TKN_CRWDSL_ABI,
-        crowdsaleAddress
-    );
+export const approveTransfer = async(web3, accountAddress, crowdsaleAddress, tokenAddress, amount) => {
     const tokenContractInstance =  new web3.eth.Contract(
         config.smartContracts.TKN_TMPLT_ABI,
         tokenAddress
@@ -120,7 +115,30 @@ export const joinCrowdsale = async (web3, accountAddress, crowdsaleAddress, toke
             crowdsaleAddress,
             amount
         ).send({from: accountAddress, gasPrice: '0'});
+        return true;
+    }catch(error){
+        return false;
+    };
+};
 
+/**
+ * NOTE: Careful, this method will always fail if it's not called after an approveTransfer
+ *          with correct amount and tokenAddress equal to that expected as tokenToAccept by the
+ *          crowdsale contract
+ * @param web3
+ * @param accountAddress
+ * @param crowdsaleAddress
+ * @param amount
+ * @returns {Promise<boolean>}
+ */
+export const joinCrowdsale = async (web3, accountAddress, crowdsaleAddress, amount) => {
+
+    const crowdsaleContractInstance = new web3.eth.Contract(
+        config.smartContracts.TKN_CRWDSL_ABI,
+        crowdsaleAddress
+    );
+
+    try{
         await crowdsaleContractInstance.methods.joinCrowdsale(
             amount
         ).send({from: accountAddress, gasPrice: '0'});
