@@ -140,14 +140,14 @@ const crowdsaleGetParticipantReservationDone = (state, action) => {
 
 const crowdsaleApprovalStarted = (state, action) => {
     return{
-        state,
+        ...state,
         approvalPending: true,
     };
 };
 
 const crowdsaleApprovalDone = (state, action) => {
     return{
-        state,
+        ...state,
         approvalPending: false,
     };
 };

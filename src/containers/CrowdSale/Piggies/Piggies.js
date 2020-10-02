@@ -90,7 +90,6 @@ class Piggies extends Component {
         const currentProfileId = this.props.currentProfile.id;
 
         logger.debug('[PIGGIES.js] crowdsales =>', crowdsales);
-        logger.info('[PIGGIES.js] crowdsales still loading =>', crowdsalesLoading.toString());
 
         //managing case of still loading crowdsales (if any)
         if(crowdsalesLoading){

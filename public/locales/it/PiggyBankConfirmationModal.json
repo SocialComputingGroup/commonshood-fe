@@ -1,11 +1,12 @@
 {
-  "baseTitle": "Conferma azione su Crowdsale",
-  "joinFailedTitle": "Richiesta di partecipazione rifiutata",
-  "joinFailedAlert": "Qualcosa è andato storto, richiesta di partecipazione rifiutata. Riprova più avanti",
-  "joinedSuccessfullyTitle": "Richiesta di partecipazione confermata",
-  "joinedSuccessfullyAlert": "La tua richiesta di partecipare alla crowdsale con {{params.value}} {{params.ticker}} è andata a buon fine",
-  "refundFailedTitle": "Richiesta di rimborso fallita",
-  "refundFailedAlert": "La tua richiesta di rimborso è stata rifiutata, riprova più avanti.",
-  "refundedSuccessfullyTitle": "Richiesta di rimborso confermata",
-  "refundedSuccessfullyAlert": "La tua richiesta di rimborso di {{params.value}} {{params.ticker}} da questa crowdsale è andata a buon fine"
+  "baseTitle": "Conferma di azione sulla Crowdsale",
+
+  "joinFailed": "Qualcosa è andato storto, i tuoi fondi non sono stati trasferiti. Riprova più tardi.",
+  "joinedSuccessfully": "Hai trasferito con successo {{params.value}} {{params.ticker}} alla crowdsale",
+
+  "refundFailed": "Qualcosa è andato storto, i tuoi fondi non sono stati ritirati. Riprova più tardi.",
+  "refundedSuccessfully": "La tua richiest per ottenere un rimborso di {{params.value}} {{params.ticker}} da questa crowdsale è stata completata con successo",
+
+  "waitingTransaction": "Attendi che la transazione sia completata dalla blockchain",
+  "waitingForApproval": "Stiamo attendendo che autorizzi la crowdsale a ritirare i tuoi token"
 }

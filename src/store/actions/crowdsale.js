@@ -646,13 +646,14 @@ export const crowdsaleJoin = (crowdsaleAddress, amount, decimals, tokenToAcceptA
         dispatch(crowdsaleApprovalDone());
         if(!approveCompleted){
             dispatch(crowdsaleJoinFail());
-        }
-
-        const joinCompleted = await joinCrowdsale(web3Instance, userWalletAddress, crowdsaleAddress, correctAmount);
-        if(joinCompleted){
-            dispatch(crowdsaleJoinSuccess());
-        }else{
-            dispatch(crowdsaleJoinFail());
+        }else {
+            //we are now authorized to join
+            const joinCompleted = await joinCrowdsale(web3Instance, userWalletAddress, crowdsaleAddress, correctAmount);
+            if (joinCompleted) {
+                dispatch(crowdsaleJoinSuccess());
+            } else {
+                dispatch(crowdsaleJoinFail());
+            }
         }
     }
 };

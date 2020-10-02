@@ -30,9 +30,8 @@ const PiggyBank = (props) => {
         tokenToAcceptUserBalance,
 
         //from redux:
-        joined,
+        crowdsalesReload,
         joinCrowdsale,
-        refunded,
         refundCrowdsale,
     } = props;
     const { crowdsaleAddress, acceptRatio, giveRatio, tokenToAccept, tokenToAcceptAddr, tokenToGive } = crowdsale;
@@ -62,8 +61,11 @@ const PiggyBank = (props) => {
         setOpenModal(true);
     };
 
-    const handleSuccessfulPledge = () => {
+    const handlePledgeDone = (successfull) => {
             piggyBankClose();
+            if(successfull){
+                crowdsalesReload();
+            }
     };
 
     const changePledgeClicked = type => {
@@ -163,12 +165,10 @@ const PiggyBank = (props) => {
             </Button>
 
             <PiggyBankModal
-                closePiggyBank={handleSuccessfulPledge}
+                closePiggyBank={successfully => handlePledgeDone(successfully)}
                 openModal={openModal}
-                tokenToAccept={tokenToAccept}
-                refunded={refunded}
-                joined={joined}
-                pledgeDifference={pledgeDifference}
+                ticker={tokenToAccept.symbol}
+                pledgeDifference={pledgeDifference < 0 ? ( pledgeDifference * -1 ) : pledgeDifference} //give absolute value for formatting purposes
                 closeModal={() => setOpenModal(false)}
             />
         </div>
@@ -186,6 +186,7 @@ const mapDispatchToProps = dispatch => {
     return{
         joinCrowdsale: (crowdsaleAddress, amount, decimals, tokenToAcceptAddress) => dispatch(actions.crowdsaleJoin(crowdsaleAddress, amount, decimals, tokenToAcceptAddress)),
         refundCrowdsale: (crowdsaleAddress, amount, decimals) => dispatch(actions.crowdsaleRefund(crowdsaleAddress, amount, decimals)),
+        crowdsalesReload: () => dispatch(actions.crowdsaleGetAll()),
     };
 };
 
