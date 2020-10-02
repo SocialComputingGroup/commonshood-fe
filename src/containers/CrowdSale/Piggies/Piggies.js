@@ -142,13 +142,15 @@ class Piggies extends Component {
                 //show only those which are fully loaded with coupons and unlocked
                 //or of which I am the owner
 
+                const epsilon = 0.001; //for float comparision
                 return (
                     (extendedCrowdsale.ownerAddress === userWalletAddress) ||
                     (
-                        ( extendedCrowdsale.tokenToGiveBalance.balance >=
-                            extendedCrowdsale.maxCap/extendedCrowdsale.acceptRatio ) // coupons loaded
+                        //careful: float comparision
+                        ( Math.abs( extendedCrowdsale.tokenToGiveBalance.balance -
+                            extendedCrowdsale.maxCap/extendedCrowdsale.acceptRatio ) <= epsilon ) // coupons loaded
                         &&
-                        ( extendedCrowdsale.status.localeCompare(config.crowdsaleStatus[0]) === 0 ) //running
+                        ( extendedCrowdsale.status === config.crowdsaleStatus[0] ) //running
                     )
                 );
             })
