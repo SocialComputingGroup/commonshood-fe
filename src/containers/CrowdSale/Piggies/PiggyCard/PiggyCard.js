@@ -126,7 +126,11 @@ const PiggyCard = (props) => {
     logger.info(`Crowdsale ${title} has a balance of ${tokenToGiveBalance.balance}`);
     logger.info("  \--> it requires: ", parseInt(maxCap/acceptRatio));
 
-    if(tokenToGiveBalance.balance < parseInt(maxCap/acceptRatio) ){ //this crowdsale has not enough coupons loaded yet
+    if(
+        ( tokenToGiveBalance.balance < parseInt(maxCap/acceptRatio) ) && //this crowdsale has not enough coupons loaded yet
+        ( status === config.crowdsaleStatus[2] ) //and it's in the correct state: LOCKED
+
+    ){
         iconButtons = (
                 <Grid container direction="column" justify="center" alignItems="center">
                     <Grid item>
