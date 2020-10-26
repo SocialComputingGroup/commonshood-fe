@@ -44,5 +44,4 @@ export const coinGetFullData = async (web3, accountAddress, tokenAddress) => {
         logoUrl,
         contractHash,
     }
-
 };

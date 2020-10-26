@@ -225,6 +225,7 @@ const mapDispatchToProps = dispatch => {
         onAuthFromServer: (type, data) => dispatch( actions.checkAuthOnServer(type,data) ),
         onAuthError: (error) => dispatch (actions.authFail(error)),
         onSocketAuth: (socket) => dispatch(actions.notificationSocketAuthentication(socket)),
+        onNotificationBlockchainListenMessages: (web3, currentAddress) => dispatch(actions.notificationListenToBlockchain(web3, currentAddress)),
         onNotificationSocketListenMessages: (socket) => dispatch(actions.notificationListenToSocket(socket)),
         onLoadUnreadNotifications: () => dispatch(actions.notificationGetAllMineUnread()),
         onWeb3CheckMetamask: () => dispatch(actions.web3CheckMetamaskPresence()),

@@ -100,6 +100,35 @@ const notificationSocketGotNewMessage = (state, action) => {
     };
 };
 
+const notificationWeb3Listening = (state, action) => {
+    return{
+        ...state,
+        notificationWeb3Listening: true,
+    };
+};
+
+const notificationWeb3NotListening = (state, action) => {
+    return{
+        ...state,
+        notificationWeb3Listening: false,
+    };
+};
+
+const notificationWeb3GotNewMessage = (state, action) => {
+    logger.info("notification, notificationsOfCurrentSession: ", state.notificationsOfCurrentSession);
+    let notifications = [...state.notificationsOfCurrentSession];
+    const newNotification = action.newNotification;
+    // FIXME: add event logic here
+    if(newNotification.id == null){
+       newNotification.id = newNotification._id; //to uniform to preexisting notifications
+    }
+    notifications.unshift(newNotification);
+    return {
+        ...state,
+        notificationsOfCurrentSession: notifications
+    };
+};
+
 const notificationRemoveFromCurrentlyListed = (state, action) => {
     let notifications = [...state.notificationsOfCurrentSession];
     notifications = notifications.filter(  (currentItem) => {
@@ -191,9 +220,15 @@ const reducer = (state = initialState, action) => {
 
         case actionTypes.NOTIFICATION_SOCKET_AUTHENTICATION_START: return notificationSocketAuthenticationStart(state, action);
         case actionTypes.NOTIFICATION_SOCKET_AUTHENTICATION_DONE: return notificationSocketAuthenticationDone(state, action);
+
         case actionTypes.NOTIFICATION_SOCKET_LISTENING: return notificationSocketListening(state, action);
         case actionTypes.NOTIFICATION_SOCKET_NOT_LISTENING: return notificationSocketNotListening(state,action);
         case actionTypes.NOTIFICATION_SOCKET_GOT_NEW_MESSAGE: return notificationSocketGotNewMessage(state,action);
+        
+        case actionTypes.NOTIFICATION_WEB3_LISTENING: return notificationWeb3Listening(state, action);
+        case actionTypes.NOTIFICATION_WEB3_NOT_LISTENING: return notificationWeb3NotListening(state,action);
+        case actionTypes.NOTIFICATION_WEB3_GOT_NEW_MESSAGE: return notificationWeb3GotNewMessage(state,action);
+
         case actionTypes.NOTIFICATION_REMOVE_FROM_CURRENTLY_LISTED: return notificationRemoveFromCurrentlyListed(state,action);
 
         case actionTypes.NOTIFICATION_SET_READ_START: return notificationsSetReadStart(state,action);
