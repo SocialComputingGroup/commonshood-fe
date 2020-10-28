@@ -1,4 +1,6 @@
 import * as actionTypes from './actionTypes';
+
+import { notificationListenToBlockchain } from "./notification"
 import {logger} from '../../utilities/winstonLogging/winstonInit';
 import config from '../../config';
 
@@ -35,7 +37,7 @@ export const web3Set = (isMetamaskInstalled, provider, web3Instance, metamaskSta
     };
 };
 
-export const  web3CheckMetamaskPresence = () => {
+export const  web3CheckMetamaskPresence = (subscribeWeb3Events) => {
     return async (dispatch, getState) => {
         try{
             dispatch(web3StartCheck());
@@ -51,6 +53,7 @@ export const  web3CheckMetamaskPresence = () => {
                 if( !metamaskStatus.locked && metamaskStatus.accounts.length > 0 && isCorrectNetwork){
                     await checkMetamaskBalance(web3, metamaskStatus.accounts[0]); //just checking one account for now!
                     dispatch(web3Set(true, provider, web3, metamaskStatus));
+                    if (subscribeWeb3Events) dispatch(notificationListenToBlockchain(web3, metamaskStatus.accounts[0]))
 
                     //getBackendBankForUser(getState().user.currentProfile.id);
                     setBackendWalletsForUser(getState().user.currentProfile.id, metamaskStatus.accounts[0]);

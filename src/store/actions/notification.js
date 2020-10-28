@@ -80,54 +80,129 @@ export const notificationWeb3NotListening = () => {
     };
 };
 
-export const notificationWeb3GotNewMessage = () => {
+export const notificationWeb3GotNewMessage = (msg) => {
     return {
         type: actionTypes.NOTIFICATION_WEB3_GOT_NEW_MESSAGE,
+        newNotification: msg
     };
 };
 
 export const notificationListenToBlockchain = (web3, currentAddress) => {
-    const daoFactoryContractInstance = new web3.eth.Contract(
-        config.smartContracts.DAO_FCTRY_ABI,
-        config.smartContracts.DAO_FCTRY_ADDRESS,
-    );
-
-    const tokenFactoryContractInstance = new web3.eth.Contract(
-        config.smartContracts.TKN_FCTRY_ABI,
-        config.smartContracts.TKN_FCTRY_ADDRESS,
-    );
-
-    const crowdsaleFactoryContractInstance = new web3.eth.Contract(
-        config.smartContracts.CRWDSL_FCTRY_ABI,
-        config.smartContracts.CRWDSL_FCTRY_ADDRESS,
-    );
-
     return async (dispatch) => {
+        const daoFactoryContractInstance = new web3.eth.Contract(
+            config.smartContracts.DAO_FCTRY_ABI,
+            config.smartContracts.DAO_FCTRY_ADDR,
+        );
+
+        const tokenFactoryContractInstance = new web3.eth.Contract(
+            config.smartContracts.TKN_FCTRY_ABI,
+            config.smartContracts.TKN_FCTRY_ADDR,
+        );
+
+        const crowdsaleFactoryContractInstance = new web3.eth.Contract(
+            config.smartContracts.CRWDSL_FCTRY_ABI,
+            config.smartContracts.CRWDSL_FCTRY_ADDR,
+        );
+
         logger.debug("notificationListenToBlockchain");
         const tokenAddresses = await tokenFactoryContractInstance.methods.getPossessedTokens(currentAddress).call({ from: currentAddress });
 
-        const handleAndDispatch = (error, event) => {
-            if (error) console.warn(error);
-            else dispatch(notificationWeb3GotNewMessage(event));
-        };
-
         try {
+            dispatch(notificationWeb3Listening());
+
             for (const address of tokenAddresses) {
                 const tokenTemplateContractInstance = new web3.eth.Contract(
                     config.smartContracts.TKN_TMPLT_ABI,
                     address,
                 );
 
+                const symbol = await tokenTemplateContractInstance.methods.symbol().call({ from: currentAddress });
+                const decimals = await tokenTemplateContractInstance.methods.decimals().call({ from: currentAddress });
+
                 tokenTemplateContractInstance.events.Transfer({
                     filter: { _from: currentAddress },
-                }, handleAndDispatch);
+                }, (error, event) => {
+                    if (error) console.warn(error);
+                    else {
+                        console.log(event)
+                        const notificationMessage = {
+                            id: event.id,
+                            type: "success",
+                            body: {
+                                message: {
+                                    message_key: messageKeys.COIN_SENT,
+                                    params: {
+                                        ticker: symbol,
+                                        decimals,
+                                        sender: {
+                                            fullname: currentAddress,
+                                        },
+                                        receiver: { // FIXME: we need to put name from some API here
+                                            fullname: event.returnValues.to,
+                                        },
+                                        amount: event.returnValues.value,
+                                    },
+                                },
+                            },
+                        };
+                        dispatch(notificationWeb3GotNewMessage(notificationMessage))
+                    }
+                });
 
                 tokenTemplateContractInstance.events.Transfer({
                     filter: { _to: currentAddress },
-                }, handleAndDispatch);
+                }, (error, event) => {
+                    if (error) console.warn(error);
+                    else {
+                        const notificationMessage = {
+                            id: event.id,
+                            type: "success",
+                            body: {
+                                message: {
+                                    message_key: messageKeys.COIN_RECEIVED,
+                                    params: {
+                                        ticker: symbol,
+                                        decimals,
+                                        receiver: { // FIXME: we need to put name from some API here
+                                            fullname: event.returnValues.from,
+                                        },
+                                        sender: { // FIXME: we need to put name from some API here
+                                            fullname: currentAddress,
+                                        },
+                                        amount: event.returnValues.value,
+                                    },
+                                },
+                            },
+                        };
+                        dispatch(notificationWeb3GotNewMessage(notificationMessage))
+                    }
+                });
+
+                tokenTemplateContractInstance.events.Mint({
+                    filter: { _from: currentAddress },
+                }, (error, event) => {
+                    if (error) console.warn(error);
+                    else {
+                        const notificationMessage = {
+                            id: event.id,
+                            type: "success",
+                            body: {
+                                message: {
+                                    message_key: messageKeys.COIN_MINTED,
+                                    params: {
+                                        ticker: symbol,
+                                        decimals,
+                                        amount: event.returnValues.value,
+                                    },
+                                },
+                            },
+                        };
+                        dispatch(notificationWeb3GotNewMessage(notificationMessage))
+                    }
+                })
             }
         } catch {
-            dispatch(notificationSocketNotListening());
+            dispatch(notificationWeb3NotListening());
         }
     }
 }

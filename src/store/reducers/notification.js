@@ -14,6 +14,8 @@ const initialState = {
     notificationSocketListening: false,
     notificationsOfCurrentSession: [],
 
+    notificationWeb3Listening: false,
+
     unreadNotificationsLoading: false,
     unreadNotificationsLoaded: false,
 
@@ -115,17 +117,13 @@ const notificationWeb3NotListening = (state, action) => {
 };
 
 const notificationWeb3GotNewMessage = (state, action) => {
-    logger.info("notification, notificationsOfCurrentSession: ", state.notificationsOfCurrentSession);
     let notifications = [...state.notificationsOfCurrentSession];
-    const newNotification = action.newNotification;
-    // FIXME: add event logic here
-    if(newNotification.id == null){
-       newNotification.id = newNotification._id; //to uniform to preexisting notifications
-    }
-    notifications.unshift(newNotification);
+    const { newNotification } = action;
+    
+    if (!notifications.some(item => item.id === newNotification.id)) notifications.unshift(newNotification);
     return {
         ...state,
-        notificationsOfCurrentSession: notifications
+        notificationsOfCurrentSession: notifications,
     };
 };
 

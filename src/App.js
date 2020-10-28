@@ -44,14 +44,6 @@ class App extends Component {
     componentDidMount(){
         const {
             isAuthenticated,
-            notificationSocketAuthenticating,
-            notificationSocketAuthenticated,
-            onSocketAuth,
-            notificationSocketListening,
-            onNotificationSocketListenMessages,
-            unreadNotificationsLoaded,
-            unreadNotificationsLoading,
-            onLoadUnreadNotifications,
             onWeb3CheckMetamask
         } = this.props;
 
@@ -59,72 +51,35 @@ class App extends Component {
             isAuthenticated 
         ) {
             onWeb3CheckMetamask();
-            // if (!socket) {
-            //     socket = io(config.network.socketserver['url']);
-            //     socket.on('connect', () => {
-            //         logger.debug('socket connected');
-            //         if(!unreadNotificationsLoading && !unreadNotificationsLoaded){
-            //             onLoadUnreadNotifications();
-            //         }
-        
-            //         if (socket && !notificationSocketAuthenticating) {
-            //             if (!notificationSocketAuthenticated) { //Socket not authenticated
-            //                     onSocketAuth(socket);
-            //             } else {
-            //                 if(!notificationSocketListening){
-            //                     onNotificationSocketListenMessages(socket)
-            //                 }
-            //             }
-            //         }
-            //     });
-            // }
+            this.setState({
+                hasCheckedMetamask: true,
+            });
         }
     }
 
     componentDidUpdate () {
         const {
             isAuthenticated,
-            notificationSocketAuthenticating,
-            notificationSocketAuthenticated,
-            onSocketAuth,
-            notificationSocketListening,
-            onNotificationSocketListenMessages,
             unreadNotificationsLoaded,
             unreadNotificationsLoading,
 
-            onWeb3CheckMetamask,
+            onWeb3CheckAndSubscribeMetamask,
             web3Instance,
-            isMetamaskInstalled,
-            isMetamaskChecking,
+
+            notificationWeb3Listening,
         } = this.props;
 
         if( isAuthenticated ) {
-            if( this.state.hasCheckedMetamask == false && web3Instance == null){
-                onWeb3CheckMetamask();
+            if( !notificationWeb3Listening && this.state.hasCheckedMetamask == false && web3Instance == null){
+                onWeb3CheckAndSubscribeMetamask();
                 this.setState({
                     hasCheckedMetamask: true,
                 });
             }
-            // if (!socket) {
-            //     socket = io(config.network.socketserver['url']);
-            //     socket.on('connect', () => {
-            //         logger.debug('socket connected');
-            //     });
-            // }
 
-            // if(!unreadNotificationsLoading && !unreadNotificationsLoaded){
-            //     this.props.onLoadUnreadNotifications();
-            // }
-
-            // if (socket && !notificationSocketAuthenticating) {
-            //     if (!notificationSocketAuthenticated) { //Socket not authenticated
-            //             onSocketAuth(socket);
-            //     } else {
-            //         if(!notificationSocketListening){
-            //             onNotificationSocketListenMessages(socket)
-            //         }
-            //     }
-            // }
+            if(!unreadNotificationsLoading && !unreadNotificationsLoaded){
+                this.props.onLoadUnreadNotifications();
+            }
         }
     }
 
@@ -210,7 +165,7 @@ const mapStateToProps = state => {
         isAuthenticated: state.auth.idToken !== null,
         notificationSocketAuthenticating: state.notification.notificationSocketAuthenticating,
         notificationSocketAuthenticated: state.notification.notificationSocketAuthenticated,
-        notificationSocketListening: state.notification.notificationSocketListening,
+        notificationWeb3Listening: state.notification.notificationWeb3Listening,
         unreadNotificationsLoaded: state.notification.unreadNotificationsLoaded,
         unreadNotificationsLoading: state.notification.unreadNotificationsLoading,
         web3Instance: state.web3.web3Instance,
@@ -225,10 +180,10 @@ const mapDispatchToProps = dispatch => {
         onAuthFromServer: (type, data) => dispatch( actions.checkAuthOnServer(type,data) ),
         onAuthError: (error) => dispatch (actions.authFail(error)),
         onSocketAuth: (socket) => dispatch(actions.notificationSocketAuthentication(socket)),
-        onNotificationBlockchainListenMessages: (web3, currentAddress) => dispatch(actions.notificationListenToBlockchain(web3, currentAddress)),
         onNotificationSocketListenMessages: (socket) => dispatch(actions.notificationListenToSocket(socket)),
         onLoadUnreadNotifications: () => dispatch(actions.notificationGetAllMineUnread()),
-        onWeb3CheckMetamask: () => dispatch(actions.web3CheckMetamaskPresence()),
+        onWeb3CheckMetamask: () => dispatch(actions.web3CheckMetamaskPresence(false)),
+        onWeb3CheckAndSubscribeMetamask: () => dispatch(actions.web3CheckMetamaskPresence(true)),
     }
 };
 

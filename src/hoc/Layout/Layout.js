@@ -1,10 +1,10 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 //routing
 import { withRouter } from 'react-router-dom';
 //i18n
-import {withTranslation} from "react-i18next";
+import { withTranslation } from "react-i18next";
 
-import {logger} from '../../utilities/winstonLogging/winstonInit';
+import { logger } from '../../utilities/winstonLogging/winstonInit';
 
 //Redux connector
 import { connect } from 'react-redux';
@@ -86,7 +86,7 @@ class Layout extends Component {
 
     navHandler = (path) => {
         this.drawerCloseHandler();
-        setTimeout(()=>this.props.history.push(path),200);
+        setTimeout(() => this.props.history.push(path), 200);
     };
 
     // homeClickedHandler = () => {
@@ -95,12 +95,12 @@ class Layout extends Component {
 
     // Drawer Handlers
     drawerOpenHandler = () => {
-        this.setState({drawerOpen: true})
+        this.setState({ drawerOpen: true })
     };
 
-    drawerCloseHandler = () => this.setState({drawerOpen: false });
+    drawerCloseHandler = () => this.setState({ drawerOpen: false });
 
-    helpCloseHandler = () =>this.setState({helpOpen: false});
+    helpCloseHandler = () => this.setState({ helpOpen: false });
 
 
     componentDidMount() {
@@ -115,15 +115,15 @@ class Layout extends Component {
         } = this.state;
 
         // IF there is an already stored profile, it is put in current Profile store
-         if (!currentProfile && storedProfile) {
-             this.setState({currentProfile: {...storedProfile}});
-         }
+        if (!currentProfile && storedProfile) {
+            this.setState({ currentProfile: { ...storedProfile } });
+        }
 
         //Verify help modal opening
         //const { helpOpen } = this.state;
         const queryUrlParams = new URLSearchParams(new URL(document.location).searchParams);
         if (queryUrlParams.has('help')) {
-            this.setState({helpOpen: true});
+            this.setState({ helpOpen: true });
         }
 
     }
@@ -137,8 +137,8 @@ class Layout extends Component {
             userData,
             //daoList,
             enqueueSnackbar,
-            socketListening,
-            socketMsgList,
+            web3Listening,
+            web3EventsList,
             walletData,
             walletLoading,
             storedProfile,
@@ -159,8 +159,8 @@ class Layout extends Component {
         ) {
             //first load
             //const userObject = {...userData, coins: walletData.coins ? walletData.coins.slice() : null};
-            const userObject = {...userData};
-            this.setState({currentProfile: {...userObject}});
+            const userObject = { ...userData };
+            this.setState({ currentProfile: { ...userObject } });
         } else if (currentProfile && prevState.currentProfile && isProfileChanged(prevState.currentProfile, currentProfile)) {
             logger.debug("[CURRENT PROFILE CHANGED]", currentProfile);
             onSetStoredProfile(currentProfile);
@@ -169,7 +169,7 @@ class Layout extends Component {
         //When component is updated, check if there is not a stored profile, if so, update current and stored profile
         if (!storedProfile &&
             !userLoading &&
-            userData ) {
+            userData) {
             // const userObject = {...userData, coins: walletData.coins ? walletData.coins.slice() : null }
 
             // onSetStoredProfile(userObject);
@@ -182,10 +182,10 @@ class Layout extends Component {
             userData //&&
             // !daoLoading &&
             // daoList
-            ) {
+        ) {
             // const firstProfile = {...userData, coins: walletData.coins ? walletData.coins.slice() : null}
             // newProfiles.push(firstProfile);
-            newProfiles.push({...userData});
+            newProfiles.push({ ...userData });
 
             // if (daoList.length !== 0){
             //     daoList.forEach((item) => {
@@ -200,21 +200,19 @@ class Layout extends Component {
             onSetAllProfiles(newProfiles.slice());
         }
 
-
         //Notification Updates
-        // if (socketListening) {
+        if (web3Listening) {
+            if (
+                web3EventsList.length > prevProps.web3EventsList.length &&
+                web3EventsList.length !== 0) {
+                const msgItem = web3EventsList[0].body.message;
+                const type = web3EventsList[0].type;
+                notificationManager(web3EventsList[0]);
+                const messageString = getNotificationText(msgItem.message_key, msgItem.params, type, t);
 
-        //     if ( 
-        //         socketMsgList.length > prevProps.socketMsgList.length && 
-        //         socketMsgList.length !== 0) {
-        //         const msgItem = socketMsgList[0].body.message;
-        //         const type = socketMsgList[0].type;
-        //         notificationManager(socketMsgList[0]);
-        //         const messageString = getNotificationText(msgItem.message_key, msgItem.params, type, t);
-
-        //         enqueueSnackbar(messageString, {variant: socketMsgList[0].type})
-        //     }
-        // }
+                enqueueSnackbar(messageString, { variant: web3EventsList[0].type })
+            }
+        }
     }
 
     render() {
@@ -243,7 +241,7 @@ class Layout extends Component {
         let mainLayout = (
             <Grid container spacing={2}>
                 <Grid item xs={12} className={classes.mainContainer}>
-                   <Loading withLoader title={"Reaching Blockchain..."}/>
+                    <Loading withLoader title={"Reaching Blockchain..."} />
                 </Grid>
             </Grid>
         );
@@ -258,20 +256,20 @@ class Layout extends Component {
                     >
                         {menuConfig(t).menu.items}
                     </ListMenu>
-                    <LanguageFlags i18n={i18n}/>
+                    <LanguageFlags i18n={i18n} />
                     <Divider />
                     <Link href="http://www.comune.torino.it/benicomuni/co-city/index.shtml" target="_blank">
-                        <Avatar src={logo_cocity} className={classes.logo}/>
+                        <Avatar src={logo_cocity} className={classes.logo} />
                     </Link>
                 </React.Fragment>
             );
 
 
-            mainLayout= (
+            mainLayout = (
 
                 <div className={classes.root} >
                     <MainAppBar
-                        drawerHandler = {this.drawerOpenHandler}
+                        drawerHandler={this.drawerOpenHandler}
                         title={title}
                         profile={currentProfile}
                     />
@@ -283,18 +281,19 @@ class Layout extends Component {
                         userDataComponent={(
                             <Select
                                 disabled={coinLoading}
-                                style={{width: "100%"}}
-                                onChange={(event)=>this.setState({
+                                style={{ width: "100%" }}
+                                onChange={(event) => this.setState({
                                     currentProfile: profiles[event.target.value],
-                                    selectedProfile: event.target.value})}
+                                    selectedProfile: event.target.value
+                                })}
                                 value={selectedProfile}
-                                renderValue = { () => (<ContactSelectItem
-                                        disabled={coinLoading}
-                                        contact={currentProfile}
-                                        value={selectedProfile}/>
-                                    )}
-                                >
-                                {profiles.map((item, key)=> {
+                                renderValue={() => (<ContactSelectItem
+                                    disabled={coinLoading}
+                                    contact={currentProfile}
+                                    value={selectedProfile} />
+                                )}
+                            >
+                                {profiles.map((item, key) => {
                                     return <ContactSelectItem
                                         showEmail={true}
                                         contact={item}
@@ -316,7 +315,7 @@ class Layout extends Component {
                         </Grid>
                         <Grid container item xs={12}>
                             <Grid item>
-                                <BottomMenuBar/>
+                                <BottomMenuBar />
                             </Grid>
                         </Grid>
                     </Grid>
@@ -325,7 +324,7 @@ class Layout extends Component {
                     <HelpModal
                         open={helpOpen}
                         handleClose={this.helpCloseHandler}
-                        tutorialSteps= {[]}
+                        tutorialSteps={[]}
                     />
                 </div>
             );
@@ -343,8 +342,8 @@ const mapStateToProps = state => {
         userLoading: state.user.loading,
         userData: state.user.user,
         walletData: state.wallet.walletData,
-        socketListening: state.notification.notificationSocketListening,
-        socketMsgList: state.notification.notificationsOfCurrentSession,
+        web3Listening: state.notification.notificationWeb3Listening,
+        web3EventsList: state.notification.notificationsOfCurrentSession,
         //daoLoading: state.dao.loading,
         //daoList: state.dao.daoList,
         storedProfile: state.user.currentProfile,
@@ -379,12 +378,12 @@ Layout.propTypes = {};
 //     isTablet: width < 840
 // })};
 
-export default connect(mapStateToProps,mapDispatchToProps)(
-                    withSnackbar (
-                        withRouter(
-                            withTranslation(['NotificationMessages', 'Menu', 'Common'])(
-                                withStyles(layoutStyle, {withTheme: true})(Layout)
-                            )
-                        )
-                    )
+export default connect(mapStateToProps, mapDispatchToProps)(
+    withSnackbar(
+        withRouter(
+            withTranslation(['NotificationMessages', 'Menu', 'Common'])(
+                withStyles(layoutStyle, { withTheme: true })(Layout)
+            )
+        )
+    )
 );

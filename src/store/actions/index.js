@@ -80,6 +80,7 @@ export {
     notificationGetAllMine,
     notificationGetAllMyCoinSentOrReceived,
     notificationListenToSocket,
+    notificationListenToBlockchain,
     notificationRemoveFromCurrentlyListed,
     notificationGetAllMineUnread,
     notificationSetRead,
