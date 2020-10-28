@@ -1,4 +1,4 @@
-const notificationKeys = {
+const notificationKeys = Object.freeze({
     COIN_CREATED: 'COIN_CREATED',
     COIN_SENT: 'COIN_SENT',
     COIN_RECEIVED: 'COIN_RECEIVED',
@@ -20,9 +20,9 @@ const notificationKeys = {
     CROWDSALE_JOINED: 'CROWDSALE_JOINED',
     CROWDSALE_REFUNDED: 'CROWDSALE_REFUNDED',
     CROWDSALE_STOPPED: 'CROWDSALE_STOPPED',
+    CROWDSALE_CAP_REACH: 'CROWDSALE_CAP_REACH',
     DAO_CROWDSALE_STOPPED: 'DAO_CROWDSALE_STOPPED',
     WALLET_READY: 'WALLET_READY',
-
-};
+});
 
 export default notificationKeys;

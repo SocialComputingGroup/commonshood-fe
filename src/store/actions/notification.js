@@ -105,104 +105,116 @@ export const notificationListenToBlockchain = (web3, currentAddress) => {
         );
 
         logger.debug("notificationListenToBlockchain");
-        const tokenAddresses = await tokenFactoryContractInstance.methods.getPossessedTokens(currentAddress).call({ from: currentAddress });
 
         try {
             dispatch(notificationWeb3Listening());
 
-            for (const address of tokenAddresses) {
-                const tokenTemplateContractInstance = new web3.eth.Contract(
-                    config.smartContracts.TKN_TMPLT_ABI,
-                    address,
-                );
-
-                const symbol = await tokenTemplateContractInstance.methods.symbol().call({ from: currentAddress });
-                const decimals = await tokenTemplateContractInstance.methods.decimals().call({ from: currentAddress });
-
-                tokenTemplateContractInstance.events.Transfer({
-                    filter: { _from: currentAddress },
-                }, (error, event) => {
-                    if (error) console.warn(error);
-                    else {
-                        console.log(event)
-                        const notificationMessage = {
-                            id: event.id,
-                            type: "success",
-                            body: {
-                                message: {
-                                    message_key: messageKeys.COIN_SENT,
-                                    params: {
-                                        ticker: symbol,
-                                        decimals,
-                                        sender: {
-                                            fullname: currentAddress,
-                                        },
-                                        receiver: { // FIXME: we need to put name from some API here
-                                            fullname: event.returnValues.to,
-                                        },
-                                        amount: event.returnValues.value,
-                                    },
-                                },
-                            },
-                        };
-                        dispatch(notificationWeb3GotNewMessage(notificationMessage))
-                    }
-                });
-
-                tokenTemplateContractInstance.events.Transfer({
-                    filter: { _to: currentAddress },
-                }, (error, event) => {
-                    if (error) console.warn(error);
-                    else {
-                        const notificationMessage = {
-                            id: event.id,
-                            type: "success",
-                            body: {
-                                message: {
-                                    message_key: messageKeys.COIN_RECEIVED,
-                                    params: {
-                                        ticker: symbol,
-                                        decimals,
-                                        receiver: { // FIXME: we need to put name from some API here
-                                            fullname: event.returnValues.from,
-                                        },
-                                        sender: { // FIXME: we need to put name from some API here
-                                            fullname: currentAddress,
-                                        },
-                                        amount: event.returnValues.value,
-                                    },
-                                },
-                            },
-                        };
-                        dispatch(notificationWeb3GotNewMessage(notificationMessage))
-                    }
-                });
-
-                tokenTemplateContractInstance.events.Mint({
-                    filter: { _from: currentAddress },
-                }, (error, event) => {
-                    if (error) console.warn(error);
-                    else {
-                        const notificationMessage = {
-                            id: event.id,
-                            type: "success",
-                            body: {
-                                message: {
-                                    message_key: messageKeys.COIN_MINTED,
-                                    params: {
-                                        ticker: symbol,
-                                        decimals,
-                                        amount: event.returnValues.value,
-                                    },
-                                },
-                            },
-                        };
-                        dispatch(notificationWeb3GotNewMessage(notificationMessage))
-                    }
-                })
-            }
+            await subscribeTokenEvents(dispatch, web3, tokenFactoryContractInstance, currentAddress);
+            await subscribeCrowdsaleEvents(dispatch, web3, crowdsaleFactoryContractInstance, currentAddress);
         } catch {
             dispatch(notificationWeb3NotListening());
+        }
+    }
+}
+
+const notifyEventCallback = (dispatch, type, message_key, paramsBuilderCallback) => (error, event) => {
+    if (error) return { error };
+
+    const notificationMessage = {
+        id: event.id,
+        type,
+        body: {
+            message: {
+                message_key,
+                params: paramsBuilderCallback(event),
+            },
+        },
+    };
+    dispatch(notificationWeb3GotNewMessage(notificationMessage))
+}
+
+const subscribeTokenEvents = async (dispatch, web3, tokenFactoryContractInstance, currentAddress) => {
+    tokenFactoryContractInstance.events.TokenAdded({
+        filter: { _from: currentAddress },
+    }, notifyEventCallback(dispatch, "success", messageKeys.COIN_CREATED, (event) => ({
+        owner: currentAddress,
+        ticker: event.returnValues.symbol,
+    })));
+
+    const tokenAddresses = await tokenFactoryContractInstance.methods.getPossessedTokens(currentAddress).call({ from: currentAddress });
+
+    for (const address of tokenAddresses) {
+        const tokenTemplateContractInstance = new web3.eth.Contract(
+            config.smartContracts.TKN_TMPLT_ABI,
+            address,
+        );
+
+        const symbol = await tokenTemplateContractInstance.methods.symbol().call({ from: currentAddress });
+        const decimals = await tokenTemplateContractInstance.methods.decimals().call({ from: currentAddress });
+
+        tokenTemplateContractInstance.events.Transfer({
+            filter: { _from: currentAddress },
+        }, notifyEventCallback(dispatch, "success", messageKeys.COIN_SENT, (event) => ({
+            ticker: symbol,
+            decimals,
+            sender: { // FIXME: we need to put name from some API here
+                fullname: currentAddress,
+            },
+            receiver: { // FIXME: we need to put name from some API here
+                fullname: event.returnValues.to,
+            },
+            amount: event.returnValues.value,
+        })));
+
+        tokenTemplateContractInstance.events.Transfer({
+            filter: { _to: currentAddress },
+        }, notifyEventCallback(dispatch, "success", messageKeys.COIN_RECEIVED, (event) => ({
+            ticker: symbol,
+            decimals,
+            sender: {
+                fullname: event.returnValues.to,
+            },
+            receiver: { // FIXME: we need to put name from some API here
+                fullname: currentAddress,
+            },
+            amount: event.returnValues.value,
+        })));
+
+        tokenTemplateContractInstance.events.Mint({
+            filter: { _from: currentAddress },
+        }, notifyEventCallback(dispatch, "success", messageKeys.COIN_MINTED, (event) => ({
+            ticker: symbol,
+            decimals,
+            amount: event.returnValues.value,
+        })));
+    }
+}
+
+const subscribeCrowdsaleEvents = async (dispatch, web3, crowdsaleFactoryContractInstance, currentAddress) => {
+    const crowdsaleAddresses = await crowdsaleFactoryContractInstance.methods.getAllCrowdsalesAddresses().call({ from: currentAddress });
+
+    for (const crowdsaleAddress of crowdsaleAddresses) {
+        const crowdsaleContractInstance = new web3.eth.Contract(
+            config.smartContracts.TKN_CRWDSL_ABI,
+            crowdsaleAddress,
+        );
+
+        const status = await crowdsaleContractInstance.methods.getStatus().call({ from : currentAddress });
+
+        const statuses = Object.freese({ RUNNING: 0, STOPPED: 1, LOCKED: 2 });
+
+        if (status !== statuses.RUNNING) continue;
+        
+        const currentReservation = await crowdsaleContractInstance.methods.getMyReservation().call({ from : currentAddress });
+
+        if (currentReservation > 0) {
+            // I contributed to this, I need to know when it reaches the cap
+            crowdsaleContractInstance.events.CapReached(
+                {},
+                notifyEventCallback(dispatch, "success", messageKeys.CROWDSALE_CAP_REACH, _ => ({
+                    crowdsaleAddress,
+                }))
+            );
         }
     }
 }
@@ -487,6 +499,6 @@ export const notificationSetReadStart = () => {
 export const notificationSetReadDone = (error) => {
     return {
         type: actionTypes.NOTIFICATION_SET_READ_DONE,
-        error
-    }
+        error,
+    };
 };
