@@ -121,6 +121,7 @@ const notificationWeb3GotNewMessage = (state, action) => {
     const { newNotification } = action;
     
     if (!notifications.some(item => item.id === newNotification.id)) notifications.unshift(newNotification);
+    console.log(notifications)
     return {
         ...state,
         notificationsOfCurrentSession: notifications,

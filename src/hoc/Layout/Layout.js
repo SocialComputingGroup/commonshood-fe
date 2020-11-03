@@ -209,7 +209,6 @@ class Layout extends Component {
                 const type = web3EventsList[0].type;
                 notificationManager(web3EventsList[0]);
                 const messageString = getNotificationText(msgItem.message_key, msgItem.params, type, t);
-
                 enqueueSnackbar(messageString, { variant: web3EventsList[0].type })
             }
         }

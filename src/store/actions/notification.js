@@ -110,8 +110,9 @@ export const notificationListenToBlockchain = (web3, currentAddress) => {
             dispatch(notificationWeb3Listening());
 
             await subscribeTokenEvents(dispatch, web3, tokenFactoryContractInstance, currentAddress);
-            await subscribeCrowdsaleEvents(dispatch, web3, crowdsaleFactoryContractInstance, currentAddress);
-        } catch {
+            //await subscribeCrowdsaleEvents(dispatch, web3, crowdsaleFactoryContractInstance, currentAddress);
+        } catch (error) {
+            console.error(error)
             dispatch(notificationWeb3NotListening());
         }
     }
@@ -119,7 +120,7 @@ export const notificationListenToBlockchain = (web3, currentAddress) => {
 
 const notifyEventCallback = (dispatch, type, message_key, paramsBuilderCallback) => (error, event) => {
     if (error) return { error };
-
+    console.log(event)
     const notificationMessage = {
         id: event.id,
         type,
@@ -172,7 +173,7 @@ const subscribeTokenEvents = async (dispatch, web3, tokenFactoryContractInstance
             ticker: symbol,
             decimals,
             sender: {
-                fullname: event.returnValues.to,
+                fullname: event.returnValues.from,
             },
             receiver: { // FIXME: we need to put name from some API here
                 fullname: currentAddress,
@@ -180,8 +181,8 @@ const subscribeTokenEvents = async (dispatch, web3, tokenFactoryContractInstance
             amount: event.returnValues.value,
         })));
 
-        tokenTemplateContractInstance.events.Mint({
-            filter: { _from: currentAddress },
+        tokenTemplateContractInstance.events.Transfer({
+            filter: { _from: 0, to: currentAddress },
         }, notifyEventCallback(dispatch, "success", messageKeys.COIN_MINTED, (event) => ({
             ticker: symbol,
             decimals,
