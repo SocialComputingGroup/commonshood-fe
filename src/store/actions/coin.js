@@ -1,9 +1,7 @@
 import {assetDecimalRepresentationToInteger, assetIntegerToDecimalRepresentation} from '../../utilities/decimalsHandler/decimalsHandler';
 //Import axios HOC for REST Call to strongloop
-import axios from '../../utilities/backend/axios-strongloop'
-import axios_helper from 'axios';
+import axios from '../../utilities/backend/axios-strongloop';
 import {logger} from '../../utilities/winstonLogging/winstonInit';
-import multihashes from 'multihashes';
 import config from '../../config';
 
 import {assetsType} from '../../config/assets';
@@ -11,9 +9,6 @@ import {assetsType} from '../../config/assets';
 // Import action types
 import * as actionTypes from './actionTypes';
 //import {authSuccess} from "./auth";
-
-//Update objects utility
-import { updateObject } from '../../utilities/utilities';
 
 //logo for resources which are missing one
 import roundQuestionMark from '../../assets/img/iconMissing/roundQuestionMark.png';
@@ -443,7 +438,7 @@ export const coinGetList = (type, withBalance=true, onlyOwned=false, forPiggies,
                         try{
                             const balance = await tokenInstance.methods.balanceOf(accountAddress).call({from: accountAddress});
                             computedBalance = assetIntegerToDecimalRepresentation(balance, decimals);
-                            if(decimals == 0){
+                            if(decimals === 0){
                                 computedBalance = parseInt(computedBalance);
                             }
                             logger.info(`metamask Balance for ${symbol} is ${computedBalance} with ${decimals} decimals`);
@@ -472,7 +467,7 @@ export const coinGetList = (type, withBalance=true, onlyOwned=false, forPiggies,
                 };
             }
 
-            if(coinsList.length != 0 && type != null){
+            if(coinsList.length !== 0 && type !== null){
                 //filter on type
                 //const expectedDecimals = getDecimalsByCoinType(type);
                 //coinsList = coinsList.filter( coin => coin.decimals === expectedDecimals );
@@ -517,7 +512,7 @@ export const coinGetBalance = (symbol, coinAddress, forPiggies) => {
             logger.info(`metamask Balance for ${symbol} is ${tickerBalance} with ${decimals} decimals`);
 
             let balance = assetIntegerToDecimalRepresentation(tickerBalance, decimals);
-            if(decimals == 0){
+            if(decimals === 0){
                 balance = parseInt(balance);
             }
 

@@ -6,7 +6,6 @@ import Home from '@material-ui/icons/Home';
 import ExitToApp from '@material-ui/icons/ExitToApp';
 import HowToVote from "@material-ui/icons/HowToVote";
 import Info from '@material-ui/icons/Info';
-import Notifications from '@material-ui/icons/Notifications';
 //import SelectAll from '@material-ui/icons/SelectAll';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faCoins} from "@fortawesome/free-solid-svg-icons/faCoins";

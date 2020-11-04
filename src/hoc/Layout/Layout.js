@@ -26,7 +26,6 @@ import getNotificationText from '../../utilities/notification/notification-messa
 import MainAppBar from '../../components/UI/NavBar/MainAppBar/MainAppBar';
 import LanguageFlags from '../../components/UI/LanguageFlags/LanguageFlags';
 import BottomMenuBar from "../../components/BottomMenuBar/BottomMenuBar";
-import QrFab from '../../components/UI/QrFab/QrFab';
 import ListMenu from "../../components/UI/Menu/ListMenu/ListMenu";
 import Loading from "../../components/UI/Loading/Loading";
 import ResponsiveDrawer from '../../components/UI/Drawer/ResponsiveDrawer';
@@ -67,10 +66,7 @@ class Layout extends Component {
 
         const {
             userLoading,
-            daoLoading,
             onGetUserData,
-            onGetWalletData,
-            onGetDaoList,
         } = props;
         // Get user information from backend
         // When layout is mounting user is already authenticated, so userId should be instantiated
@@ -133,14 +129,10 @@ class Layout extends Component {
         const {
             t, //i18n
             userLoading,
-            //daoLoading,
             userData,
-            //daoList,
             enqueueSnackbar,
             web3Listening,
             web3EventsList,
-            walletData,
-            walletLoading,
             storedProfile,
             onSetStoredProfile,
             onSetAllProfiles,
@@ -179,9 +171,7 @@ class Layout extends Component {
         //populate PROFILES
         if (!profiles &&
             !userLoading &&
-            userData //&&
-            // !daoLoading &&
-            // daoList
+            userData 
         ) {
             // const firstProfile = {...userData, coins: walletData.coins ? walletData.coins.slice() : null}
             // newProfiles.push(firstProfile);
@@ -224,7 +214,6 @@ class Layout extends Component {
             title,
             children,
             profiles,
-            coords,
             isMetamaskChecking,
             web3Instance
         } = this.props;
@@ -234,7 +223,6 @@ class Layout extends Component {
             selectedProfile,
             helpOpen,
             drawerOpen,
-            mapModalOpened
         } = this.state;
 
         let mainLayout = (
@@ -343,8 +331,6 @@ const mapStateToProps = state => {
         walletData: state.wallet.walletData,
         web3Listening: state.notification.notificationWeb3Listening,
         web3EventsList: state.notification.notificationsOfCurrentSession,
-        //daoLoading: state.dao.loading,
-        //daoList: state.dao.daoList,
         storedProfile: state.user.currentProfile,
         profiles: state.user.profilesList,
         isMetamaskChecking: state.web3.isMetamaskChecking,

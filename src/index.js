@@ -1,4 +1,4 @@
-import React, {Suspense} from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
 
 import {loadToken} from "./utilities/backend/axios-strongloop";
@@ -44,8 +44,6 @@ import config from './config';
 //Main MuiTheme
 import {ThemeProvider as MuiThemeProvider} from '@material-ui/core/styles';
 import theme from './theme/theme'
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Loading from './components/UI/Loading/Loading';
 
 //Date utilities for datepickers
 import { MuiPickersUtilsProvider } from 'material-ui-pickers';

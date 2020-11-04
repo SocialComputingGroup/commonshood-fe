@@ -55,7 +55,7 @@ export const getCrowdsaleWalletBalanceOfTokenToGive = async (web3, accountAddres
     const decimals = await coinContractInstance.methods.decimals().call();
 
     let balance =  parseFloat(assetIntegerToDecimalRepresentation(tickerBalance, decimals));
-    if(decimals == 0){
+    if(decimals === 0){
         balance = parseInt(balance);
     }
 

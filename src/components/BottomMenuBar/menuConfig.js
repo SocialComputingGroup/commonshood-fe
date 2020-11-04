@@ -1,5 +1,4 @@
 import React from 'react';
-import asyncComponent from '../../hoc/AsyncComponent/AsyncComponent';
 
 import {constantCase} from 'change-case';
 

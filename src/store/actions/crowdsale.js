@@ -1,7 +1,7 @@
 import axios from '../../utilities/backend/axios-strongloop'
-import axiosFl from '../../utilities/backend/axios-firstlife'
+//import axiosFl from '../../utilities/backend/axios-firstlife'
 import {assetDecimalRepresentationToInteger, assetIntegerToDecimalRepresentation} from '../../utilities/decimalsHandler/decimalsHandler';
-import {userAddCrowdsaleToWaitingTransactionConfirmation} from './user';
+//import {userAddCrowdsaleToWaitingTransactionConfirmation} from './user';
 import config from '../../config';
 
 import * as actionTypes from './actionTypes';
@@ -9,7 +9,7 @@ import * as actionTypes from './actionTypes';
 import {coinGetFullData} from '../../api/coinAPI';
 import {getCrowdsaleWalletBalanceOfTokenToGive, approveTransfer, joinCrowdsale, refundFromCrowdsale} from '../../api/crowdsaleAPI';
 import {logger} from '../../utilities/winstonLogging/winstonInit';
-import {CROWDSALE_PLEDGE_APPROVAL_STARTED} from "./actionTypes";
+//import {CROWDSALE_PLEDGE_APPROVAL_STARTED} from "./actionTypes";
 
 export const crowdsaleCreateStart = () => {
     return {

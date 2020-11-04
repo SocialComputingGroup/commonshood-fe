@@ -1,5 +1,5 @@
 import config from "../config";
-import {assetDecimalRepresentationToInteger, assetIntegerToDecimalRepresentation} from '../utilities/decimalsHandler/decimalsHandler';
+import {assetIntegerToDecimalRepresentation} from '../utilities/decimalsHandler/decimalsHandler';
 
 export const coinGetBalance = async (web3, accountAddress, tokenAddress) => {
     const coinContractInstance = new web3.eth.Contract(
@@ -11,7 +11,7 @@ export const coinGetBalance = async (web3, accountAddress, tokenAddress) => {
     const decimals = await coinContractInstance.methods.decimals().call();
 
     let balance =  parseFloat(assetIntegerToDecimalRepresentation(tickerBalance, decimals));
-    if(decimals == 0){
+    if(decimals === 0){
         balance = parseInt(balance);
     }
 

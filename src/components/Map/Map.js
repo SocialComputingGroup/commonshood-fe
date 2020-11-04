@@ -22,8 +22,6 @@ import SimpleCard from './SimpleCard';
 import moment from 'moment';
 import 'ol/ol.css';
 import { withStyles } from "@material-ui/core/styles";
-import { classes } from 'istanbul-lib-coverage';
-import { daosGet } from '../../store/actions/place';
 
 import {logger} from '../../utilities/winstonLogging/winstonInit';
 import config from '../../config';
@@ -59,8 +57,6 @@ const styles = {
 };
 
 class MapComponent extends Component {
-  
-
     constructor (props) {
         super(props);
         this.mapRef = null;
@@ -80,12 +76,12 @@ class MapComponent extends Component {
     stringDivider(str, width, spaceReplacer) {
       if (str.length > width) {
         var p = width;
-        while (p > 0 && (str[p] != ' ' && str[p] != '-')) {
+        while (p > 0 && (str[p] !== ' ' && str[p] !== '-')) {
           p--;
         }
         if (p > 0) {
           var left;
-          if (str.substring(p, p + 1) == '-') {
+          if (str.substring(p, p + 1) === '-') {
             left = str.substring(0, p + 1);
           } else {
             left = str.substring(0, p);
@@ -104,19 +100,19 @@ class MapComponent extends Component {
     }
 
     initialCard(allFeatures){
-      if(allFeatures.length != 0){
+      if(allFeatures.length !== 0){
           var numberCard = 1;
           const listPop = [];
-          for(var i=0; i<allFeatures.length; i++){
+          for(let i=0; i<allFeatures.length; i++){
               listPop[i] = {
                   'id': allFeatures[i].id_,
                   'name': allFeatures[i].values_.name,
                   'type': allFeatures[i].values_.entity_type,
-                  'img': (allFeatures[i].values_.images == null || allFeatures[i].values_.images.length == 0) ? icon : 'https://storage.firstlife.org/files/thumb/' + allFeatures[i].values_.images[0]._id,
+                  'img': (allFeatures[i].values_.images === null || allFeatures[i].values_.images.length === 0) ? icon : 'https://storage.firstlife.org/files/thumb/' + allFeatures[i].values_.images[0]._id,
                   'url': '',
                   'address': allFeatures[i].values_.address,
-                  'date_from': (allFeatures[i].values_.valid_from == null) ? '' : moment(allFeatures[i].values_.valid_from).format('DD')+'/'+ moment(allFeatures[i].values_.valid_from).format('MM')+'/'+moment(allFeatures[i].values_.valid_from).format('YYYY'),
-                  'date_to': (allFeatures[i].values_.valid_to == null) ? '' : moment(allFeatures[i].values_.valid_to).format('DD')+'/'+ moment(allFeatures[i].values_.valid_to).format('MM')+'/'+moment(allFeatures[i].values_.valid_to).format('YYYY'),
+                  'date_from': (allFeatures[i].values_.valid_from === null) ? '' : moment(allFeatures[i].values_.valid_from).format('DD')+'/'+ moment(allFeatures[i].values_.valid_from).format('MM')+'/'+moment(allFeatures[i].values_.valid_from).format('YYYY'),
+                  'date_to': (allFeatures[i].values_.valid_to === null) ? '' : moment(allFeatures[i].values_.valid_to).format('DD')+'/'+ moment(allFeatures[i].values_.valid_to).format('MM')+'/'+moment(allFeatures[i].values_.valid_to).format('YYYY'),
                   'numberCard': numberCard
               };
               numberCard++;
@@ -134,7 +130,7 @@ class MapComponent extends Component {
               return 0;
           });
       
-          for(var i=0; i<listPropOrder.length; i++){
+          for(let i=0; i<listPropOrder.length; i++){
               listPropOrder[i].numberCard = i+1;
           }
 
@@ -418,7 +414,7 @@ class MapComponent extends Component {
                             vectorSource.addFeatures(allFeatures);
                             this.refs.scroller.scrollLeft-=10000000
                         }
-                        if(allFeatures.length == 0) {
+                        if(allFeatures.length === 0) {
                           this.refs.cards.style.display = 'none';
                         }
 

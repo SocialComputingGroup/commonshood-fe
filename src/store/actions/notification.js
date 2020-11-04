@@ -14,60 +14,6 @@ import { coinGetListReset } from "./coin";
 import { crowdsaleGetAll } from "./crowdsale";
 
 // NOTIFICATION SOCKET =================================================================================================
-export const notificationSocketAuthentication = (socket) => {
-    return dispatch => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            dispatch(notificationSocketAuthenticationStart());
-            logger.info('SOCKET Authentication STARTED');
-            socket.on('authentication.start', (data) => {
-                socket.emit('authentication', { Authentication: token });
-                socket.on('authenticated', (resp) => {
-                    if (resp.authentication === 'completed') {
-                        dispatch(notificationSocketAuthenticationDone(null));
-                    } else { //fail
-                        dispatch(notificationSocketAuthenticationDone(resp.authentication))
-                    }
-                });
-            });
-        } else {
-            dispatch(notificationSocketAuthenticationDone('No Valid Token'))
-        }
-    }
-};
-
-export const notificationSocketAuthenticationStart = () => {
-    return {
-        type: actionTypes.NOTIFICATION_SOCKET_AUTHENTICATION_START
-    };
-};
-
-export const notificationSocketAuthenticationDone = (error) => {
-    return {
-        type: actionTypes.NOTIFICATION_SOCKET_AUTHENTICATION_DONE,
-        error
-    };
-};
-
-export const notificationSocketListening = () => {
-    return {
-        type: actionTypes.NOTIFICATION_SOCKET_LISTENING,
-    };
-};
-
-export const notificationSocketNotListening = () => {
-    return {
-        type: actionTypes.NOTIFICATION_SOCKET_NOT_LISTENING,
-    };
-};
-
-export const notificationSocketGotNewMessage = (msg) => {
-    return {
-        type: actionTypes.NOTIFICATION_SOCKET_GOT_NEW_MESSAGE,
-        newNotification: msg
-    };
-};
-
 export const notificationWeb3Listening = () => {
     return {
         type: actionTypes.NOTIFICATION_WEB3_LISTENING,
@@ -143,7 +89,6 @@ const subscribeTokenEvents = async (dispatch, web3, tokenFactoryContractInstance
     })));
 
     const tokenAddresses = await tokenFactoryContractInstance.methods.getPossessedTokens(currentAddress).call({ from: currentAddress });
-
     for (const address of tokenAddresses) {
         const tokenTemplateContractInstance = new web3.eth.Contract(
             config.smartContracts.TKN_TMPLT_ABI,
@@ -207,7 +152,6 @@ const subscribeCrowdsaleEvents = async (dispatch, web3, crowdsaleFactoryContract
         if (status !== statuses.RUNNING) continue;
         
         const currentReservation = await crowdsaleContractInstance.methods.getMyReservation().call({ from : currentAddress });
-
         if (currentReservation > 0) {
             // I contributed to this, I need to know when it reaches the cap
             crowdsaleContractInstance.events.CapReached(
@@ -219,22 +163,6 @@ const subscribeCrowdsaleEvents = async (dispatch, web3, crowdsaleFactoryContract
         }
     }
 }
-
-export const notificationListenToSocket = (socket) => {
-    return (dispatch) => {
-
-        dispatch(notificationSocketListening());
-        logger.debug("notificationListenToSocket, socket =>", socket);
-        try {
-            socket.on('notification.new', (msg) => {
-                logger.debug("notificationListenToSocket => got new message: ", msg);
-                dispatch(notificationSocketGotNewMessage(msg));
-            });
-        } catch {
-            dispatch(notificationSocketNotListening());
-        }
-    }
-};
 
 export const notificationRemoveFromCurrentlyListed = (messageId) => {
     logger.debug('[notification.js - notificationRemoveFromCurrentlyListed, id:', messageId);

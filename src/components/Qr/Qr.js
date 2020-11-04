@@ -17,7 +17,6 @@ import place_placeholder from "../../assets/img/home-green.png";
 import {logger} from '../../utilities/winstonLogging/winstonInit';
 import {connect} from "react-redux";
 import * as actions from "../../store/actions";
-import {error} from "winston";
 
 const Qr = (props) => {
     const {

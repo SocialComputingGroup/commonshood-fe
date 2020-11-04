@@ -68,7 +68,6 @@ class CoinDetails extends Component  {
             iconData,
             userName,
             downloadContract,
-            theme,
             transactionsList,
             t,
             web3account
@@ -113,7 +112,7 @@ class CoinDetails extends Component  {
 
         const coinPayButton = (
             <Grid item xs={12} align="center">
-                <Button variant="contained" color="primary" onClick={this.handlePay} disabled={parseFloat(balance) == 0}>
+                <Button variant="contained" color="primary" onClick={this.handlePay} disabled={parseFloat(balance) === 0}>
                     {t('Common:pay')}
                 </Button>
             </Grid>
@@ -146,7 +145,7 @@ class CoinDetails extends Component  {
                             }
                         </Grid>
                         <Grid item xs={6} align="center">
-                            <Typography variant="subtitle2" color={ parseFloat(balance) == 0 ? "error" : "initial"}>
+                            <Typography variant="subtitle2" color={ parseFloat(balance) === 0 ? "error" : "initial"}>
                                 {t('balance')} {children.balance}
                             </Typography>
                             <Typography variant="subtitle2">

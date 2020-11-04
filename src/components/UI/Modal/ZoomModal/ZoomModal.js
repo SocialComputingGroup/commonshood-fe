@@ -3,7 +3,6 @@ import React from 'react';
 // Inject local styles
 import withStyles from '@material-ui/core/styles/withStyles';
 import ZoomModalStyle from './ZoomModalStyle';
-import {logger} from "../../../../utilities/winstonLogging/winstonInit";
 
 import {
     Dialog,
@@ -19,7 +18,6 @@ import FeatureCard from '../../Card/FeaturedCard/FeaturedCard'
 //const _transition = props => (<Zoom {...props}/>);
 
 const zoomModal = props => {
-
     const {
         classes,
         title,

@@ -55,9 +55,9 @@ class MyWalletDetails extends Component {
     componentDidMount () {
         const {
             selectedCoin,
-            onUserGetData,
+            //onUserGetData,
             onContractGetData,
-            onDaoGetData
+            //onDaoGetData
         } = this.props;
 
         const { coinUserName, coinContract } = this.state;
@@ -86,13 +86,13 @@ class MyWalletDetails extends Component {
     componentDidUpdate () {
 
         const {
-            userData,
-            daoData,
+            //userData,
+            //daoData,
             contractData
         } = this.props;
 
         const {
-            coinUserName,
+            //coinUserName,
             coinContract
         } = this.state;
 

@@ -74,7 +74,7 @@ export const  web3CheckMetamaskPresence = (subscribeWeb3Events) => {
 
 const isMetamaskNetworkCorrect = async (web3) => {
     const networkId = await web3.eth.net.getId();
-    if(networkId  != ETH_POA_NETWORK_ID){
+    if(networkId !== ETH_POA_NETWORK_ID){
         logger.debug(`metamask network id: ${networkId}, expected ${ETH_POA_NETWORK_ID}`);
         return false;
     }else{

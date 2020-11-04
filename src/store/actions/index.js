@@ -79,12 +79,10 @@ export {
     notificationManager,
     notificationGetAllMine,
     notificationGetAllMyCoinSentOrReceived,
-    notificationListenToSocket,
     notificationListenToBlockchain,
     notificationRemoveFromCurrentlyListed,
     notificationGetAllMineUnread,
     notificationSetRead,
-    notificationSocketAuthentication
 } from './notification';
 
 export {

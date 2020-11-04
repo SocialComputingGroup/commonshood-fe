@@ -1,7 +1,5 @@
 import React, {Component} from 'react';
 
-import io from 'socket.io-client';
-
 import {logger} from './utilities/winstonLogging/winstonInit';
 
 
@@ -31,9 +29,6 @@ import Auth from './containers/Auth/Auth'
 import Logout from './containers/Auth/Logout/Logout';
 import MetamaskHelper from './views/MetamaskHelper/MetamaskHelper';
 //import socket from "./utilities/backend/socketio-helper";
-
-// Global socket connection
-let socket;
 
 class App extends Component {
 
@@ -163,8 +158,6 @@ const mapStateToProps = state => {
     return {
         loading: state.auth.loading,
         isAuthenticated: state.auth.idToken !== null,
-        notificationSocketAuthenticating: state.notification.notificationSocketAuthenticating,
-        notificationSocketAuthenticated: state.notification.notificationSocketAuthenticated,
         notificationWeb3Listening: state.notification.notificationWeb3Listening,
         unreadNotificationsLoaded: state.notification.unreadNotificationsLoaded,
         unreadNotificationsLoading: state.notification.unreadNotificationsLoading,
@@ -179,8 +172,6 @@ const mapDispatchToProps = dispatch => {
         onCheckAuth: () => dispatch( actions.checkAuthOnClient()),
         onAuthFromServer: (type, data) => dispatch( actions.checkAuthOnServer(type,data) ),
         onAuthError: (error) => dispatch (actions.authFail(error)),
-        onSocketAuth: (socket) => dispatch(actions.notificationSocketAuthentication(socket)),
-        onNotificationSocketListenMessages: (socket) => dispatch(actions.notificationListenToSocket(socket)),
         onLoadUnreadNotifications: () => dispatch(actions.notificationGetAllMineUnread()),
         onWeb3CheckMetamask: () => dispatch(actions.web3CheckMetamaskPresence(false)),
         onWeb3CheckAndSubscribeMetamask: () => dispatch(actions.web3CheckMetamaskPresence(true)),
