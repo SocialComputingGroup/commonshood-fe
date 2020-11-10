@@ -50,6 +50,8 @@
   "crowdsaleJoined": "You joined the Crowdsale '{{params.title}}' with {{params.amount}} {{params.ticker}}",
   "crowdsaleJoinedFail": "You could not join the Crowdsale '{{params.title}}'. Try Later",
 
+  "crowdsaleCapReached": "Crowdsale {{params.crowdsaleName}} reached the maximum cap",
+
   "crowdsaleRefunded": "You got a refund of {{params.amount}} {{params.ticker}} from the Crowdsale '{{params.title}}'",
   "crowdsaleRefundedFail": "We could not complete the refund request from the Crowdsale '{{params.title}}'. Try Later",
 

@@ -56,7 +56,7 @@ export const notificationListenToBlockchain = (web3, currentAddress) => {
             dispatch(notificationWeb3Listening());
 
             await subscribeTokenEvents(dispatch, web3, tokenFactoryContractInstance, currentAddress);
-            //await subscribeCrowdsaleEvents(dispatch, web3, crowdsaleFactoryContractInstance, currentAddress);
+            await subscribeCrowdsaleEvents(dispatch, web3, crowdsaleFactoryContractInstance, currentAddress);
         } catch (error) {
             console.error(error)
             dispatch(notificationWeb3NotListening());
@@ -145,9 +145,9 @@ const subscribeCrowdsaleEvents = async (dispatch, web3, crowdsaleFactoryContract
             crowdsaleAddress,
         );
 
-        const status = await crowdsaleContractInstance.methods.getStatus().call({ from : currentAddress });
+        const status = await crowdsaleContractInstance.methods.status().call({ from : currentAddress });
 
-        const statuses = Object.freese({ RUNNING: 0, STOPPED: 1, LOCKED: 2 });
+        const statuses = Object.freeze({ RUNNING: 0, STOPPED: 1, LOCKED: 2 });
 
         if (status !== statuses.RUNNING) continue;
         
