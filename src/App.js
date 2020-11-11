@@ -22,7 +22,6 @@ import Layout from './hoc/Layout/Layout';
 
 //Global app config
 import mainConfig from './config/mainConfig'
-import config from './config';
 
 //Auth flow components
 import Auth from './containers/Auth/Auth'
@@ -89,9 +88,9 @@ class App extends Component {
         let routes = null;
 
         if( isAuthenticated && 
-            web3Instance == null && 
-            isMetamaskChecking == false && 
-            this.state.hasCheckedMetamask == true){
+            web3Instance === null && 
+            isMetamaskChecking === false && 
+            this.state.hasCheckedMetamask === true){
             logger.info("metamask helper page");
             routes = (
                 <Switch>

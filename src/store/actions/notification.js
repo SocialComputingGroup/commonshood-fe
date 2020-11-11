@@ -147,20 +147,23 @@ const subscribeCrowdsaleEvents = async (dispatch, web3, crowdsaleFactoryContract
             crowdsaleAddress,
         );
 
-        const status = await crowdsaleContractInstance.methods.status().call({ from: currentAddress });
+        const status = parseInt(await crowdsaleContractInstance.methods.status().call({ from: currentAddress }));
 
         const statuses = Object.freeze({ RUNNING: 0, STOPPED: 1, LOCKED: 2 });
         if (status !== statuses.RUNNING) continue;
 
-        const currentReservation = await crowdsaleContractInstance.methods.getMyReservation().call({ from: currentAddress });
-        if (currentReservation === 0) continue;
+        const owner = await crowdsaleContractInstance.methods.owner().call({ from: currentAddress });
+        const currentReservation = parseInt(await crowdsaleContractInstance.methods.getMyReservation().call({ from: currentAddress }));
+        if (currentReservation === 0 && owner !== currentAddress) continue;
 
         // I contributed to this, I need to know when it reaches the cap
         crowdsaleContractInstance.events.CapReached(
             {},
-            notifyEventCallback(dispatch, messageKeys.CROWDSALE_CAP_REACH, _ => ({
-                crowdsalename: crowdsaleAddress,
-            })),
+            notifyEventCallback(dispatch, messageKeys.CROWDSALE_CAP_REACH, _ => {
+                return ({
+                    crowdsalename: crowdsaleAddress,
+                })
+            }),
         );
     }
 }

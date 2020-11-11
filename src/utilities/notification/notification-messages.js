@@ -152,10 +152,15 @@ const getNotificationText = (messageKey, params, type, t) => {
             }
             notificationText = t(getTypedTranslation(type, 'NotificationMessages:crowdsaleStopped'));
             break;
+        case messageKeys.CROWDSALE_CAP_REACH:
+            if (!params.crowdsalename){
+                throw new Error('missing a required parameter for ' + messageKey);
+            }
+            notificationText = t(getTypedTranslation(type, 'NotificationMessages:crowdsaleCapReached'));
+            break;
         case messageKeys.WALLET_READY: //no params
             notificationText = t(getTypedTranslation(type, 'NotificationMessages:walletReady'));
             break;
-        
         default:
             //notificationText = 'Something went wrong - unrecognized messageKey for notification';
             throw new Error('Something went wrong - unrecognized messageKey for notification. Given: ' + messageKey);
