@@ -64,12 +64,12 @@ export const notificationListenToBlockchain = (web3, currentAddress) => {
     }
 }
 
-const notifyEventCallback = (dispatch, type, message_key, paramsBuilderCallback) => (error, event) => {
+const notifyEventCallback = (dispatch, message_key, paramsBuilderCallback) => (error, event) => {
     if (error) return { error };
     console.log(event)
     const notificationMessage = {
         id: event.id,
-        type,
+        type: "success",
         body: {
             message: {
                 message_key,
@@ -83,9 +83,11 @@ const notifyEventCallback = (dispatch, type, message_key, paramsBuilderCallback)
 const subscribeTokenEvents = async (dispatch, web3, tokenFactoryContractInstance, currentAddress) => {
     tokenFactoryContractInstance.events.TokenAdded({
         filter: { _from: currentAddress },
-    }, notifyEventCallback(dispatch, "success", messageKeys.COIN_CREATED, (event) => ({
-        owner: currentAddress,
-        ticker: event.returnValues.symbol,
+    }, notifyEventCallback(dispatch, messageKeys.COIN_CREATED, (event) => ({
+        owner: {
+            fullname: currentAddress,
+        },
+        ticker: event.returnValues._symbol,
     })));
 
     const tokenAddresses = await tokenFactoryContractInstance.methods.getPossessedTokens(currentAddress).call({ from: currentAddress });
@@ -100,7 +102,7 @@ const subscribeTokenEvents = async (dispatch, web3, tokenFactoryContractInstance
 
         tokenTemplateContractInstance.events.Transfer({
             filter: { _from: currentAddress },
-        }, notifyEventCallback(dispatch, "success", messageKeys.COIN_SENT, (event) => ({
+        }, notifyEventCallback(dispatch, messageKeys.COIN_SENT, (event) => ({
             ticker: symbol,
             decimals,
             sender: { // FIXME: we need to put name from some API here
@@ -114,7 +116,7 @@ const subscribeTokenEvents = async (dispatch, web3, tokenFactoryContractInstance
 
         tokenTemplateContractInstance.events.Transfer({
             filter: { _to: currentAddress },
-        }, notifyEventCallback(dispatch, "success", messageKeys.COIN_RECEIVED, (event) => ({
+        }, notifyEventCallback(dispatch, messageKeys.COIN_RECEIVED, (event) => ({
             ticker: symbol,
             decimals,
             sender: {
@@ -128,7 +130,7 @@ const subscribeTokenEvents = async (dispatch, web3, tokenFactoryContractInstance
 
         tokenTemplateContractInstance.events.Transfer({
             filter: { _from: 0, to: currentAddress },
-        }, notifyEventCallback(dispatch, "success", messageKeys.COIN_MINTED, (event) => ({
+        }, notifyEventCallback(dispatch, messageKeys.COIN_MINTED, (event) => ({
             ticker: symbol,
             decimals,
             amount: event.returnValues.value,
@@ -145,22 +147,21 @@ const subscribeCrowdsaleEvents = async (dispatch, web3, crowdsaleFactoryContract
             crowdsaleAddress,
         );
 
-        const status = await crowdsaleContractInstance.methods.status().call({ from : currentAddress });
+        const status = await crowdsaleContractInstance.methods.status().call({ from: currentAddress });
 
         const statuses = Object.freeze({ RUNNING: 0, STOPPED: 1, LOCKED: 2 });
-
         if (status !== statuses.RUNNING) continue;
-        
-        const currentReservation = await crowdsaleContractInstance.methods.getMyReservation().call({ from : currentAddress });
-        if (currentReservation > 0) {
-            // I contributed to this, I need to know when it reaches the cap
-            crowdsaleContractInstance.events.CapReached(
-                {},
-                notifyEventCallback(dispatch, "success", messageKeys.CROWDSALE_CAP_REACH, _ => ({
-                    crowdsaleAddress,
-                }))
-            );
-        }
+
+        const currentReservation = await crowdsaleContractInstance.methods.getMyReservation().call({ from: currentAddress });
+        if (currentReservation === 0) continue;
+
+        // I contributed to this, I need to know when it reaches the cap
+        crowdsaleContractInstance.events.CapReached(
+            {},
+            notifyEventCallback(dispatch, messageKeys.CROWDSALE_CAP_REACH, _ => ({
+                crowdsalename: crowdsaleAddress,
+            })),
+        );
     }
 }
 
