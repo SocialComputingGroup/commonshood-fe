@@ -21,7 +21,7 @@
     "i18next": "^17.0.0",
     "i18next-browser-languagedetector": "^3.0.1",
     "i18next-xhr-backend": "^2.0.1",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "material-ui-pickers": "^2.2.1",
     "md5": "^2.2.1",
     "mdi-material-ui": "^5.9.0",
