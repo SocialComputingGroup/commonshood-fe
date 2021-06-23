@@ -44,11 +44,9 @@ import config from './config';
 //Main MuiTheme
 import {ThemeProvider as MuiThemeProvider} from '@material-ui/core/styles';
 import theme from './theme/theme'
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Loading from './components/UI/Loading/Loading';
 
 //Date utilities for datepickers
-import { MuiPickersUtilsProvider } from 'material-ui-pickers';
+import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
 
 //Snackbar Provider
