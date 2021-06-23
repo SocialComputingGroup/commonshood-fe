@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactPropTypes } from 'react';
 
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
@@ -9,7 +9,7 @@ import metamask1 from '../../assets/img/metamaskScreenshoots/metamask1.png';
 import metamask2 from '../../assets/img/metamaskScreenshoots/metamask2.png';
 import metamask3 from '../../assets/img/metamaskScreenshoots/metamask3.png';
 
-const MetamaskHelper = (props) => {
+const MetamaskHelper = () => {
 
     return ( 
         <Grid container 
