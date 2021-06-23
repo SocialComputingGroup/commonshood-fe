@@ -12,8 +12,12 @@ const initialState = {
     participantCoinToJoinLoaded: false,
     participantReservationValue: 0,
     participantReservationLoaded: false,
+
+    approvalPending: false, //describe if the user is currently waiting for a request of "transfer approval" to complete
+    pledgePending: false, //describe if the user is currently waiting for a join or a refund to complete
     joined: undefined,
     refunded: undefined,
+
     crowdsaleStatus: undefined,
     partialReservation: undefined,
     totalReservation: undefined,
@@ -73,7 +77,7 @@ const crowdsaleGetAllReset = (state, action) => {
     return {
         ...state,
         loading: false,
-        crowdasales: []
+        crowdsales: []
     }
 };
 
@@ -133,10 +137,27 @@ const crowdsaleGetParticipantReservationDone = (state, action) => {
     };
 };
 
+
+const crowdsaleApprovalStarted = (state, action) => {
+    return{
+        ...state,
+        approvalPending: true,
+    };
+};
+
+const crowdsaleApprovalDone = (state, action) => {
+    return{
+        ...state,
+        approvalPending: false,
+    };
+};
+
 const crowdsaleJoinReset = (state, action) => {
     return {
         ...state,
         joined: undefined,
+        pledgePending: true,
+        approvalPending: false,
     }
 };
 
@@ -144,6 +165,7 @@ const crowdsaleJoinDone = (state, action) => {
     return{
         ...state,
         joined: action.joinedSuccessfully,
+        pledgePending: false,
     }
 };
 
@@ -151,6 +173,8 @@ const crowdsaleRefundReset = (state, action) => {
     return {
         ...state,
         refunded: undefined,
+        pledgePending: true,
+        approvalPending: false,
     }
 };
 
@@ -158,8 +182,12 @@ const crowdsaleRefundDone = (state, action) => {
     return{
         ...state,
         refunded: action.refundedSuccessfully,
+        pledgePending: false,
     }
 };
+
+
+
 
 const crowdsaleGetStateReset = (state, action) => {
     return{
@@ -219,6 +247,8 @@ const reducer = (state = initialState, action) => {
         case actionTypes.CROWDSALE_GET_PARTICIPANT_RESERVATION_START: return crowdsaleGetParticipantReservationStart(state, action);
         case actionTypes.CROWDSALE_GET_PARTICIPANT_RESERVATION_DONE: return crowdsaleGetParticipantReservationDone(state, action);
 
+        case actionTypes.CROWDSALE_PLEDGE_APPROVAL_STARTED: return crowdsaleApprovalStarted(state, action);
+        case actionTypes.CROWDSALE_PLEDGE_APPROVAL_DONE: return crowdsaleApprovalDone(state, action);
         case actionTypes.CROWDSALE_REFUND_RESET: return crowdsaleRefundReset(state, action);
         case actionTypes.CROWDSALE_REFUND_DONE: return crowdsaleRefundDone(state, action);
         case actionTypes.CROWDSALE_JOIN_RESET: return crowdsaleJoinReset(state, action);

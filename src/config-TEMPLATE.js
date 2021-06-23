@@ -34,6 +34,11 @@ const config = {
         level: "debug", //"error" for production
         //std levels in priority order:   error: 0, warn: 1, info: 2, http: 3, verbose: 4, debug: 5, silly: 6
     },
+    crowdsaleStatus: {
+        0: "RUNNING",
+        1: "STOPPED",
+        2: "LOCKED"
+    },
     blockchain: {
         networkID: 456719,
         rpcEndpoint: "https://eth-dapp.commonshood.eu",
@@ -56,8 +61,11 @@ const config = {
         TKN_CRWDSL_ABI: [],
 
         CCDAO_ABI: [],
-    },  
-  
+    },
+    defaultGeoCoordinates: { //these below are centered on Turin
+        longitude: 7.686856,
+        latitude: 45.070312,
+    }
   
 
 };

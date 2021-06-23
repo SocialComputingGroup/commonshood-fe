@@ -6,6 +6,8 @@ import {logger} from '../../utilities/winstonLogging/winstonInit';
 import multihashes from 'multihashes';
 import config from '../../config';
 
+import {assetsType} from '../../config/assets';
+
 // Import action types
 import * as actionTypes from './actionTypes';
 //import {authSuccess} from "./auth";
@@ -249,15 +251,15 @@ export const coinAddIconToCache = (symbol, icon) => {
 
 const getCoinType = (decimals) => {
     if(decimals === 0){
-        return 'goods';
+        return assetsType.goods.name;
     }
-    return 'token';
+    return assetsType.token.name;
 };
 
 const getDecimalsByCoinType = (type) => {
-    if(type === 'goods')
-        return 0;
-    return 2;
+    if(type === assetsType.goods.name)
+        return assetsType.goods.decimals;
+    return assetsType.token.decimals;
 };
 
 // Async Actions

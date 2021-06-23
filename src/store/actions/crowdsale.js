@@ -1,12 +1,15 @@
 import axios from '../../utilities/backend/axios-strongloop'
 import axiosFl from '../../utilities/backend/axios-firstlife'
 import {assetDecimalRepresentationToInteger, assetIntegerToDecimalRepresentation} from '../../utilities/decimalsHandler/decimalsHandler';
-
 import {userAddCrowdsaleToWaitingTransactionConfirmation} from './user';
+import config from '../../config';
 
 import * as actionTypes from './actionTypes';
 
+import {coinGetFullData} from '../../api/coinAPI';
+import {getCrowdsaleWalletBalanceOfTokenToGive, approveTransfer, joinCrowdsale, refundFromCrowdsale} from '../../api/crowdsaleAPI';
 import {logger} from '../../utilities/winstonLogging/winstonInit';
+import {CROWDSALE_PLEDGE_APPROVAL_STARTED} from "./actionTypes";
 
 export const crowdsaleCreateStart = () => {
     return {
@@ -194,6 +197,8 @@ const mongoObjectId = () => {
     }).toLowerCase();
 };
 
+
+
 const saveCrowdSaleData = (crowdsaleData, address, firsLifePointId, dispatch, getState) => {
         const configFileHeader = {
             headers: {
@@ -290,60 +295,140 @@ const saveCrowdSaleData = (crowdsaleData, address, firsLifePointId, dispatch, ge
 export const crowdsaleCreate = (crowdsaleData) => {
     logger.info('[CROWDSALE CREATE] called', crowdsaleData);
 
-    return ( (dispatch, getState) => {
+    return ( async (dispatch, getState) => {
         dispatch(crowdsaleCreateStart());
+        const configFileHeader = {
+            headers: {
+                'content-type': 'multipart/form-data',
+                'Access-Control-Allow-Origin': '*'
+            }
+        };
 
-        let lat = null, lon= null, address = null;
-        //obtain point coordinates from here api
-        if(crowdsaleData.locationSelectedId != null) {
-            fetch("https://geocoder.ls.hereapi.com/6.2/geocode.json?apikey=VvXjx14bJOpsdA5WMO_PTLd5Hgia1wYAlb5vO7Oa8kk&locationid="+crowdsaleData.locationSelectedId)
-                .then(result => {
-                        if(result.ok) {
-                            return result.json()
-                        }
-                        else {
-                            throw new Error("HERE API BROKEN...")
-                        }
-                    })
-                    .then(data => {
-                        address = data.Response.View[0].Result[0].Location.Address.Label;
-                        lat = data.Response.View[0].Result[0].Location.DisplayPosition.Latitude;
-                        lon = data.Response.View[0].Result[0].Location.DisplayPosition.Longitude;
-                        const payload = {
-                            type: "Feature",
-                            properties: {
-                                address,
-                                valid_from: "1900-12-4T09:01:30.516Z",
-                                user: localStorage.getItem('member_id'),
-                                name: crowdsaleData.bigTitle,
-                                entity_type: "CC_CROWDFUNDING",
-                                type: "CC_CROWDFUNDING",
-                                domain_id: 35,
-                                zoom_level: 18,
-                                categories: []
-                            },
-                            geometry: {
-                                type: "Point",
-                                coordinates: [lon,lat]
-                            }
-                        }
-                        const flCreateHeader = {
-                            headers: {
-                                'Authorization' : 'Bearer '+localStorage.getItem("token")
-                            }
-                        };
-                    
-                        axiosFl.post('Things',payload, flCreateHeader).then(response => {
-                            logger.info("RESPONSE",response.data)
-                            saveCrowdSaleData(crowdsaleData, address, response.data.id,dispatch,getState)
-                        })
-                    })
-                    .catch(error => {dispatch(crowdsaleCreateFail(error));})
+        let contractHash, imageHash;
+        try {
+            let formData = new FormData();
+            formData.append('file', crowdsaleData.contract);
+            const contractResponse = await axios.post('/Resources/upload', formData, configFileHeader);
+            contractHash = contractResponse.data.file.hash;
+
+            formData = new FormData();
+            formData.append('file', crowdsaleData.mainImage);
+            const imageResponse = await axios.post('/Resources/upload', formData, configFileHeader);
+            imageHash = imageResponse.data.file.hash;
+        }catch(error){
+            dispatch(crowdsaleCreateFail("Something went wrong while loading image or TOS in backend"));
+            return;
         }
-        else {
-            saveCrowdSaleData(crowdsaleData, address,null,null,getState)
+
+        const data = {
+            tokenToGiveAddr: crowdsaleData.emittedCoin.address,
+            tokenToAccept: crowdsaleData.acceptedCoin.address,
+            start: Math.floor( new Date(crowdsaleData.startDate).getTime() / 1000 ),
+            end: Math.floor( new Date(crowdsaleData.endDate).getTime() / 1000),
+            acceptRatio: parseInt(assetDecimalRepresentationToInteger(crowdsaleData.acceptedCoinRatio, crowdsaleData.acceptedCoin.decimals)),
+            giveRatio: parseInt(assetDecimalRepresentationToInteger(crowdsaleData.forEachEmittedCoin, crowdsaleData.emittedCoin.decimals)),
+            maxCap: parseInt(assetDecimalRepresentationToInteger(crowdsaleData.totalAcceptedCoin, crowdsaleData.acceptedCoin.decimals)),
+            metadata: [
+                crowdsaleData.bigTitle,
+                crowdsaleData.details,
+                imageHash,
+                contractHash,
+            ]
         }
+        console.log("prepared data ", data);
+        const web3 = getState().web3.web3Instance;
+        try{
+            const accountAddress = getState().web3.currentAccount;
+
+                const crowdsaleFactoryInstance = new web3.eth.Contract(
+                    config.smartContracts.CRWDSL_FCTRY_ABI,
+                    config.smartContracts.CRWDSL_FCTRY_ADDR,
+                );
+                const creationResponse = await crowdsaleFactoryInstance.methods.createCrowdsale(
+                    data.tokenToGiveAddr,
+                    data.tokenToAccept,
+                    data.start,
+                    data.end,
+                    data.acceptRatio,
+                    data.giveRatio,
+                    data.maxCap,
+                    data.metadata,
+                ).send({from: accountAddress, gasPrice: "0"});
+                logger.info('metamask succesfully created res: ', creationResponse); 
+                dispatch(crowdsaleCreateSuccess());
+        }catch(error){
+            console.log("ERROR: ", error);
+            dispatch(crowdsaleCreateFail("something went wrong with metamask"));
+        }
+
     });
+    // return ( async (dispatch, getState) => {
+    //     let geoLocationAddress;
+    //     dispatch(crowdsaleCreateStart());
+    //     if(crowdsaleData.locationSelectedId != null) { // the user gave this crowdsale an exact geolocation
+    //         let data;
+    //         try{
+    //             const result = await fetch(`https://geocoder.ls.hereapi.com/6.2/geocode.json?apikey=VvXjx14bJOpsdA5WMO_PTLd5Hgia1wYAlb5vO7Oa8kk&locationid=${crowdsaleData.locationSelectedId}`);
+    //             if(result.ok){
+    //                 data = result.json();
+    //             }else{
+    //                 throw new Error("HERE api failure");
+    //             }
+            
+    //             const locationData = data.Response.View[0].Result[0].Location;
+    //             geoLocationAddress = locationData.Address.Label;
+    //             const lat = locationData.DisplayPosition.Latitude;
+    //             const lon = locationData.DisplayPosition.Longitude;
+
+    //             const payload = {
+    //                 type: "Feature",
+    //                 properties: {
+    //                     address: geoLocationAddress,
+    //                     valid_from: "1900-12-4T09:01:30.516Z",
+    //                     user: localStorage.getItem('member_id'),
+    //                     name: crowdsaleData.bigTitle,
+    //                     entity_type: "CC_CROWDFUNDING",
+    //                     type: "CC_CROWDFUNDING",
+    //                     domain_id: 35,
+    //                     zoom_level: 18,
+    //                     categories: []
+    //                 },
+    //                 geometry: {
+    //                     type: "Point",
+    //                     coordinates: [lon,lat]
+    //                 }
+    //             }
+    //             const flCreateHeader = {
+    //                 headers: {
+    //                     'Authorization' : 'Bearer '+localStorage.getItem("token")
+    //                 }
+    //             };
+            
+    //             axiosFl.post('Things',payload, flCreateHeader).then(response => {
+    //                 logger.info("[crowdsale.js - crowdsaleCreate]", response.data);
+    //                 saveCrowdSaleData(
+    //                     crowdsaleData, 
+    //                     geoLocationAddress, 
+    //                     response.data.id,
+    //                     dispatch,
+    //                     getState
+    //                 );
+    //             });
+    //         }catch(error){
+    //             dispatch(crowdsaleCreateFail(error));
+    //         }
+                    
+    //     }
+    //     else {
+    //         saveCrowdSaleData(
+    //             crowdsaleData, 
+    //             geoLocationAddress,
+    //             null,
+    //             dispatch,
+    //             getState
+    //         );
+    //     }
+    // });
 };
 
 
@@ -354,66 +439,113 @@ export const crowdsaleGetAll = () =>{
         dispatch(crowdsaleGetAllReset());
         dispatch(crowdsaleGetAllStart());
 
-        let response = await axios.get(
-            '/Crowdsales', 
-            { 
-                params: {
-                    filter: 
-                        {
-                            where: {state: "confirmed" } //get only crowdsales already in blockchain and not still pending
-                        },
+        const crowdsaleStatusEnum = config.crowdsaleStatus;
+        const web3 = getState().web3.web3Instance;
+        try{
+            const accountAddress = getState().web3.currentAccount;
+            const CrowdsaleFactoryInstance = new web3.eth.Contract(
+                config.smartContracts.CRWDSL_FCTRY_ABI,
+                config.smartContracts.CRWDSL_FCTRY_ADDR,
+            );
+            let crowdsaleAddresses = [];
+            crowdsaleAddresses = await CrowdsaleFactoryInstance.methods.getAllCrowdsalesAddresses()
+                .call({from: accountAddress, gasPrice: "0"});
+            console.log("CWD ADDR", crowdsaleAddresses);
+
+            if(crowdsaleAddresses == null || crowdsaleAddresses.length === 0){ //no crowdsales found
+                dispatch(crowdsaleGetAllSuccess([]));
+                return;
+            }
+
+            let crowdsalesExtendedData = await Promise.all( crowdsaleAddresses.map( async (crowdsaleAddress) => {
+                const crowdsaleInstance =  new web3.eth.Contract(
+                    config.smartContracts.TKN_CRWDSL_ABI,
+                    crowdsaleAddress,
+                );
+
+                //TODO see if its possible to directly return a struct from the contract instead of making all these calls!
+                const ownerAddress = await crowdsaleInstance.methods.owner().call({from: accountAddress, gasPrice: "0"});
+                const title = await crowdsaleInstance.methods.title().call({from: accountAddress, gasPrice: "0"});
+                const description = await crowdsaleInstance.methods.description().call({from: accountAddress, gasPrice: "0"});
+                const logoHash = await crowdsaleInstance.methods.logoHash().call({from: accountAddress, gasPrice: "0"});
+                let crowdsaleImage = null;
+                const TOSHash = await crowdsaleInstance.methods.TOSHash().call({from: accountAddress, gasPrice: "0"});
+                let TOS = null;
+                const startDateRaw = await crowdsaleInstance.methods.start().call({from: accountAddress, gasPrice: "0"});
+                const endDateRaw = await crowdsaleInstance.methods.end().call({from: accountAddress, gasPrice: "0"});
+                const acceptRatioRaw = await crowdsaleInstance.methods.acceptRatio().call({from: accountAddress, gasPrice: "0"});
+                const giveRatioRaw = await crowdsaleInstance.methods.giveRatio().call({from: accountAddress, gasPrice: "0"});
+                const tokenToGiveAddr = await crowdsaleInstance.methods.tokenToGiveAddr().call({from: accountAddress, gasPrice: "0"});
+                const tokenToGive = await coinGetFullData(
+                    getState().web3.web3Instance,
+                    getState().web3.currentAccount,
+                    tokenToGiveAddr
+                );
+                const tokenToAcceptAddr = await crowdsaleInstance.methods.tokenToAcceptAddr().call({from: accountAddress, gasPrice: "0"});
+                const tokenToAccept = await coinGetFullData(
+                    getState().web3.web3Instance,
+                    getState().web3.currentAccount,
+                    tokenToAcceptAddr
+                );
+                const status = await crowdsaleInstance.methods.status().call({from: accountAddress, gasPrice: "0"});
+                const cap = await crowdsaleInstance.methods.maxCap().call({from: accountAddress, gasPrice: "0"});
+                const totalReservations = await crowdsaleInstance.methods.raised().call({from: accountAddress, gasPrice: "0"});
+
+                const tokenToGiveBalance = await getCrowdsaleWalletBalanceOfTokenToGive(web3, accountAddress, crowdsaleAddress, tokenToGiveAddr);
+
+                //getting files from webserver:
+                // photo contains the hash, replace it with the image
+                const crowdsaleIconCache = getState().crowdsale.iconsCache;
+                const url = '/Resources/get/';
+                const params = {};
+                if(crowdsaleIconCache.has(logoHash)){ //icon already in cache
+                    logger.info(`icon for crowdsale ${title} in cache`);
+                    crowdsaleImage = crowdsaleIconCache.get(logoHash);
+                }else{ //get icon from API
+                    logger.info(`icon for crowdsale ${title} NOT in cache`);
+                    const img = await axios.get(url+logoHash, params);
+                    //save in cache
+                    dispatch(crowdsaleAddIconToCache(logoHash, img.data.file));
+                    crowdsaleImage = img.data.file;
                 }
-            }
-        );
-        logger.debug('[CROWDSALEGETALL response] ', response);
-        let crowdsales = response.data;
-        if(crowdsales.length === 0){
-            //no crowdsales found
-            dispatch(crowdsaleGetAllSuccess([]));
-        }else{
-            //now we have to get the image of each crowdsale
-            const crowdsaleIconCache = getState().crowdsale.iconsCache;
-            let url = '/Resources/get/';
-            const params = {};
 
-            try{
-                crowdsales.forEach( async (crowdsale) =>{
-                    //converting maxCap, acceptRatio and giveRatio based on decimals of related coins
-                    crowdsale.maxCap = assetIntegerToDecimalRepresentation(crowdsale.maxCap, crowdsale.acceptedCoinDecimals);
-                    crowdsale.acceptRatio = assetIntegerToDecimalRepresentation(crowdsale.acceptRatio, crowdsale.acceptedCoinDecimals);
-                    crowdsale.giveRatio = assetIntegerToDecimalRepresentation(crowdsale.giveRatio, crowdsale.coinToGiveDecimals);
-                    
-                    //photo contains the hash, replace it with the image
-                    if(crowdsaleIconCache.has(crowdsale.photo)){ //icon already in cache
-                        logger.info(`icon for crowdsale ${crowdsale.title} in cache`);
-                        crowdsale.photo = crowdsaleIconCache.get(crowdsale.photo)
-                    }else{ //get icon from API
-                        logger.info(`icon for crowdsale ${crowdsale.title} NOT in cache`);
-                        const img = await axios.get(url+crowdsale.photo, params);
-                        //save in cache
-                        dispatch(crowdsaleAddIconToCache(crowdsale.photo, img.data));
-                        crowdsale.photo = img.data;
-                    }
+                //TODO maybe start caching also the TOS file?
+                const TOSraw = await axios.get(url+TOSHash, params);
+                TOS = TOSraw.data.file;
 
-                    let promises = [];
-                    crowdsales.forEach((crowdsale) => {
-                        //photo contains the hash
-                        promises.push(axios.get(`/Crowdsales/${crowdsale.crowdsaleID}/getReservations`, params));
-                    });
+                return {
+                    crowdsaleAddress,
+                    ownerAddress,
+                    title,
+                    description,
+                    logoHash,
+                    photo: crowdsaleImage,
+                    TOS,
+                    contractHash: TOSHash,
+                    startDate: new Date(startDateRaw *1000),
+                    endDate: new Date(endDateRaw * 1000),
+                    acceptRatio: parseFloat( assetIntegerToDecimalRepresentation(acceptRatioRaw, 2)), //accept ratio has always 2 decimals (coins)
+                    giveRatio: parseInt( giveRatioRaw ), //giver ratio has always 0 decimals (coupons)
+                    maxCap: parseFloat( assetIntegerToDecimalRepresentation(cap, 2)), //2 decimals (cap refers amount of coins)
+                    tokenToAcceptAddr,
+                    tokenToAccept,
+                    tokenToGiveAddr,
+                    tokenToGive,
+                    status: crowdsaleStatusEnum[status],
+                    totalReservations: parseFloat(assetIntegerToDecimalRepresentation(totalReservations, 2)),
+                    tokenToGiveBalance,
+                }
+            }));
 
-                    Promise.all(promises).then((resultReservations) => {
-                        crowdsales.forEach( (crowdsale, index) => {
-                            crowdsale.totalReservations = assetIntegerToDecimalRepresentation(resultReservations[index].data.totalReservations, crowdsale.acceptedCoinDecimals);
-                        });
-                        logger.info('[CROWDSALEGETALL after get reservations]', crowdsales);
-                        dispatch(crowdsaleGetAllSuccess(crowdsales));
-                    });
-                    
-                });
-            }catch(error){
-                logger.error('[CROWDSALEGETALL error] ', error);
-                dispatch(crowdsaleGetAllFail(error));
-            }
+            logger.info("crowdsales extended data: ", crowdsalesExtendedData);
+            dispatch(crowdsaleGetAllSuccess(crowdsalesExtendedData));
+        }catch(error){
+            //TODO do something
+            logger.debug("Error =>", error);
+            const errorMessage = error?.message ?
+                error.message :
+                "ERROR -> Something went wrong while retriving crowdsales";
+            dispatch(crowdsaleGetAllFail(errorMessage));
         }
     }
 };
@@ -490,42 +622,55 @@ export const crowdsaleGetParticipantReservation = (crowdsaleId, acceptedCoinDeci
 
 
 
-export const crowdsaleJoin = (crowdsaleId, amount, acceptedCoinDecimals) => {
-    return (dispatch) => {
-        dispatch(crowdsaleJoinReset());
-
-        const url = `/Crowdsales/${crowdsaleId}/join/${assetDecimalRepresentationToInteger(amount, acceptedCoinDecimals)}`;
-
-        return axios.post(url)
-            .then( (response) => {
-                logger.debug('[CROWDSALE JOIN] success', response);
-                dispatch(crowdsaleJoinSuccess());
-                //add this transaction to those waiting for confirmation in profile list
-                dispatch(userAddCrowdsaleToWaitingTransactionConfirmation(crowdsaleId));
-            })
-            .catch( (error) =>{
-                logger.error('[CROWDSALE JOIN] failure', error);
-                dispatch(crowdsaleJoinFail());
-            })
+export const crowdsaleApprovalStart = () => {
+    return{
+        type: actionTypes.CROWDSALE_PLEDGE_APPROVAL_STARTED,
     }
+}
 
+export const crowdsaleApprovalDone = () => {
+    return{
+        type: actionTypes.CROWDSALE_PLEDGE_APPROVAL_DONE,
+    }
+}
+
+export const crowdsaleJoin = (crowdsaleAddress, amount, decimals, tokenToAcceptAddress) => {
+    return async (dispatch, getState) =>{
+        dispatch(crowdsaleJoinReset());
+        const correctAmount = parseInt( assetDecimalRepresentationToInteger(amount, decimals) );
+        const web3Instance = getState().web3.web3Instance;
+        const userWalletAddress = getState().web3.currentAccount;
+
+        dispatch(crowdsaleApprovalStart())
+        const approveCompleted = await approveTransfer(web3Instance, userWalletAddress, crowdsaleAddress, tokenToAcceptAddress, correctAmount);
+        dispatch(crowdsaleApprovalDone());
+        if(!approveCompleted){
+            dispatch(crowdsaleJoinFail());
+        }else {
+            //we are now authorized to join
+            const joinCompleted = await joinCrowdsale(web3Instance, userWalletAddress, crowdsaleAddress, correctAmount);
+            if (joinCompleted) {
+                dispatch(crowdsaleJoinSuccess());
+            } else {
+                dispatch(crowdsaleJoinFail());
+            }
+        }
+    }
 };
 
-export const crowdsaleRefund = (crowdsaleId, amount, acceptedCoinDecimals) => {
-    return (dispatch) => {
+export const crowdsaleRefund = (crowdsaleAddress, amount, decimals) => {
+    return async (dispatch, getState) =>{
         dispatch(crowdsaleRefundReset());
+        const correctAmount = parseInt( assetDecimalRepresentationToInteger(amount, decimals) );
+        const web3Instance = getState().web3.web3Instance;
+        const userWalletAddress = getState().web3.currentAccount;
 
-        const url = `/Crowdsales/${crowdsaleId}/refund_me/${assetDecimalRepresentationToInteger(amount, acceptedCoinDecimals)}`;
-
-        return axios.post(url)
-            .then( (response) => {
-                logger.debug('[CROWDSALE REFUND] success', response);
-                dispatch(crowdsaleRefundSuccess())
-            })
-            .catch( (error) =>{
-                logger.error('[CROWDSALE REFUND] failure', error);
-                dispatch(crowdsaleRefundFail());
-            })
+        const refundCompleted = await refundFromCrowdsale(web3Instance, userWalletAddress, crowdsaleAddress, correctAmount);
+        if(refundCompleted){
+            dispatch(crowdsaleRefundSuccess());
+        }else{
+            dispatch(crowdsaleRefundFail());
+        }
     }
 };
 
@@ -551,8 +696,18 @@ export const crowdsaleGetStatus = (crowdsaleId) => {
 
 
 export const crowdsaleGetCompleteReservations = (crowdsaleId, acceptedCoinDecimals) => {
-    return (dispatch) => {
+    return (dispatch, getState) => {
         dispatch(crowdsaleGetCompleteReservationsReset());
+        const web3 = getState().web3.web3Instance;
+        try {
+            const accountAddress = getState().web3.currentAccount;
+            const CrowdsaleFactoryInstance = new web3.eth.Contract(
+                config.smartContracts.CRWDSL_FCTRY_ABI,
+                config.smartContracts.CRWDSL_FCTRY_ADDR,
+            );
+        }catch(error){
+
+        }
 
         const url = `/Crowdsales/${crowdsaleId}/getReservations`;
         return axios.get(url)

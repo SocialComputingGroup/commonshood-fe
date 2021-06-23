@@ -1,5 +1,4 @@
-import React from 'react';
-import PropTypes from "prop-types";
+import React, {useState} from 'react';
 import { useTranslation } from 'react-i18next';
 
 // Styles
@@ -7,44 +6,54 @@ import { withStyles } from "@material-ui/core/styles";
 import PiggyCardStyle from "./PiggyCardStyle"
 
 //Material UI Components
-import Card from "@material-ui/core/Card";
-import CardActionArea from "@material-ui/core/CardActionArea";
-import CardActions from "@material-ui/core/CardActions";
-import CardContent from "@material-ui/core/CardContent";
-import CardMedia from "@material-ui/core/CardMedia";
-import Typography from "@material-ui/core/Typography";
-import IconButton from "@material-ui/core/IconButton";
-import Icon from "@material-ui/core/Icon";
-import Button from "@material-ui/core/Button";
+import { Button,
+    Card, CardActions, CardActionArea, CardContent, CardMedia,
+    Grid, Icon, IconButton, Typography } from "@material-ui/core";
 
+
+//custom components
 import CoinAvatarLabeled from '../../../../components/UI/CoinAvatarLabeled/CoinAvatarLabeled';
+import {logger} from "../../../../utilities/winstonLogging/winstonInit";
+import PiggyLoad from "./PiggyLoad/PiggyLoad";
 
-
+import config from "../../../../config";
 
 const PiggyCard = (props) => {
 
     const {
-        image,
-        title,
+        classes,
+        crowdsale,
         handleOpen,
-        acceptedCoin,
-        acceptedCoinRatio,
-        coinToGive,
-        coinToGiveRatio,
-        totalReservations,
+    } = props;
+    const {
+        crowdsaleAddress,
+        title,
+        description,
+        isOwnedByCurrentUserWallet,
         startDate,
         endDate,
         maxCap,
-        owned,
-        acceptedCoinLogo,
-        coinToGiveLogo,
-        classes
-    } = props;
-    let ownedButton = null;
-    
+        totalReservations,
+        photo,
+        status,
+        acceptRatio,
+        tokenToAccept,
+        tokenToAcceptAddr,
+        tokenToAcceptLogo,
+        giveRatio,
+        tokenToGive,
+        tokenToGiveAddr,
+        tokenToGiveLogo,
+        tokenToGiveBalance //note that this is the balance of the related token for the crowdsale's wallet!
+    } = crowdsale;
     const { t } = useTranslation('PiggyCard');
 
-    if(owned){
+    // we open a different modal if the crowdsale has not coupons loaded yet
+    const [openPiggyLoad, setOpenPiggyLoad] = useState(false);
+
+    // visually shows if the logged user ownes the crowdsale
+    let ownedButton = null;
+    if(isOwnedByCurrentUserWallet){
         ownedButton = ( 
             <Button variant="contained" component="div" color="default" className={classes.owned}>
                 <Icon>vpn_key</Icon> OWNED
@@ -82,21 +91,114 @@ const PiggyCard = (props) => {
        timeLeft = t("crowdsaleReachedCap");
     }
 
+    //messages reserved to the owner
+    let crowdsaleIsVisibleTypography = null;
+    if(isOwnedByCurrentUserWallet &&
+        status === config.crowdsaleStatus[0] //RUNNING aka the owner already loaded and unlocked it
+        ){
+        crowdsaleIsVisibleTypography = (
+            <Typography color="error" style={{marginTop: "1em"}}>
+                {t("crowdsaleIsVisible")}
+            </Typography>
+        )
+    }
+
+    //default case
+    let iconButtons = (
+        <Grid container direction="column" justify="center" alignItems="center">
+            <Grid item>
+                {crowdsaleIsVisibleTypography}
+            </Grid>
+            <Grid item>
+                <IconButton disabled={true} className={classes.acceptedCoin}>
+                    <CoinAvatarLabeled noName={true} coin={ {symbol: tokenToAccept.symbol, logoFile: tokenToAcceptLogo}} />
+                    <Typography style={{color: "grey"}} variant="caption">{acceptRatio + ' ' + tokenToAccept.symbol}</Typography>
+                </IconButton>
+                <Icon disabled>compare_arrows</Icon>
+                <IconButton disabled={true} className={classes.coinToGive}>
+                    <CoinAvatarLabeled noName={true} coin={ {symbol: tokenToGive.symbol, logoFile: tokenToGiveLogo}} />
+                    <Typography style={{color: "grey"}} variant="caption">{giveRatio + ' ' + tokenToGive.symbol}</Typography>
+                </IconButton>
+            </Grid>
+        </Grid>
+    );
+
+    logger.info(`Crowdsale ${title} has a balance of ${tokenToGiveBalance.balance}`);
+    logger.info("  \--> it requires: ", parseInt(maxCap/acceptRatio));
+
+    if(
+        ( tokenToGiveBalance.balance < parseInt(maxCap/acceptRatio) ) && //this crowdsale has not enough coupons loaded yet
+        ( status === config.crowdsaleStatus[2] ) //and it's in the correct state: LOCKED
+
+    ){
+        iconButtons = (
+                <Grid container direction="column" justify="center" alignItems="center">
+                    <Grid item>
+                        <Typography color="error" variant="caption">
+                            {t('couponsNotLoaded',
+                                {params: {
+                                    total: parseInt(maxCap/acceptRatio) - tokenToGiveBalance.balance,
+                                    symbol: tokenToGive.symbol
+                                }}
+                            )}
+                        </Typography>
+                    </Grid>
+                    <Grid item>
+                        <Button variant="contained" color="primary" onClick={() => setOpenPiggyLoad(true)}>
+                            {t("loadCrowdsaleButton")}
+                        </Button>
+                        <PiggyLoad
+                            open={openPiggyLoad}
+                            handleClose={() => setOpenPiggyLoad(false)}
+                            tokenToGive={tokenToGive}
+                            tokenToGiveAddr={tokenToGiveAddr}
+                            tokenToGiveCrowdsaleBalance={tokenToGiveBalance.balance}
+                            tokenToGiveDecimals={tokenToGiveBalance.decimals}
+                            tokenToGiveTotalNeeded={ parseInt(maxCap/acceptRatio) }
+                            crowdsaleAddress={crowdsaleAddress}
+                        />
+                    </Grid>
+                </Grid>
+            );
+    }else{ //crowdsale has enough coupons loaded
+        if(status === config.crowdsaleStatus[2]){ //crowdsale is still LOCKED
+            iconButtons = (
+                <Grid container direction="column" justify="center" alignItems="center">
+                    <Grid item>
+                        <Typography color="error" variant="caption">
+                            {t('couponsLoaded')}
+                        </Typography>
+                    </Grid>
+                    <Grid item>
+                        <Button variant="contained" color="primary" onClick={() => setOpenPiggyLoad(true)}>
+                            {t("unlockCrowdsaleButton")}
+                        </Button>
+                        <PiggyLoad
+                            open={openPiggyLoad}
+                            handleClose={() => setOpenPiggyLoad(false)}
+                            tokenToGive={tokenToGive}
+                            tokenToGiveAddr={tokenToGiveAddr}
+                            tokenToGiveCrowdsaleBalance={tokenToGiveBalance.balance}
+                            tokenToGiveDecimals={tokenToGiveBalance.decimals}
+                            tokenToGiveTotalNeeded={ parseInt(maxCap/acceptRatio) }
+                            crowdsaleAddress={crowdsaleAddress}
+                        />
+                    </Grid>
+                </Grid>
+            )
+        }
+    }
+
     return (
         <Card className={classes.card}>
             <CardActionArea>
                 <CardMedia
                     className={classes.media}
-                    image={image}
+                    image={photo.body}
                     title={title}
                     onClick={handleOpen}
                 />
-                {/*<Fab size="small" className={classes.favorite}>*/}
-                {/*    <Icon color="error">favorite</Icon>*/}
-                {/*</Fab>*/}
-                { 
-                    ownedButton
-                }
+                { ownedButton }
 
                 <CardContent  onClick={handleOpen}>
                     <Typography component="p" >
@@ -111,7 +213,7 @@ const PiggyCard = (props) => {
                                     {
                                         raised: totalReservations,
                                         cap: maxCap,
-                                        ticker: acceptedCoin
+                                        ticker: tokenToAccept.symbol
                                     }
                             })
                         }
@@ -119,27 +221,11 @@ const PiggyCard = (props) => {
                 </CardContent>
             </CardActionArea>
             <CardActions className={classes.actions}>
-                {/* <Icon>room</Icon> */}
-                {/* <Typography variant="caption">{distance} m</Typography> */}
-                <IconButton disabled={true} className={classes.acceptedCoin}>
-                    {/* <Icon>attach_money</Icon> */}
-                    <CoinAvatarLabeled noName={true} coin={ {symbol: acceptedCoin, logoFile: acceptedCoinLogo}} />
-                    <Typography style={{color: "grey"}} variant="caption">{acceptedCoinRatio + ' ' + acceptedCoin}</Typography>
-                </IconButton>
-                <Icon disabled>compare_arrows</Icon>
-                <IconButton disabled={true} className={classes.coinToGive}>
-                    {/* <Icon>style</Icon> */}
-                    <CoinAvatarLabeled noName={true} coin={ {symbol: coinToGive, logoFile: coinToGiveLogo}} />
-                    <Typography style={{color: "grey"}} variant="caption">{parseInt(coinToGiveRatio) + ' ' + coinToGive}</Typography>
-                </IconButton>
+                {iconButtons}
             </CardActions>
         </Card>
     );
 }
 
-PiggyCard.propTypes = {
-    classes: PropTypes.object.isRequired
-};
-  
 export default withStyles(PiggyCardStyle)(PiggyCard);
   

@@ -1,6 +1,8 @@
 import React, {Component} from 'react';
 import {logger} from '../../../utilities/winstonLogging/winstonInit';
 
+import config from '../../../config';
+
 import Loading from '../../../components/UI/Loading/Loading';
 import Slide from '@material-ui/core/Slide';
 import PiggyCard from './PiggyCard/PiggyCard';
@@ -15,7 +17,7 @@ import Typography from '@material-ui/core/Typography'
 import {geolocated} from 'react-geolocated';
 import {fromLonLat} from 'ol/proj.js';
 
-import changeCase from 'change-case';
+import {capitalCase} from 'change-case';
 
 
 
@@ -33,7 +35,6 @@ class Piggies extends Component {
 
     state = {
         crowdSaleModalOpened: false,
-        selectedCrowdsaleId: null,
         selectedCrowdsale: null,
         mapModalOpened: false,
 
@@ -52,7 +53,7 @@ class Piggies extends Component {
         const {
             onGetAllCrowdsales,
             onGetCoinList,
-            onGetCoinListReset
+            onGetCoinListReset,
         } = this.props;
 
         onGetCoinListReset();
@@ -63,7 +64,6 @@ class Piggies extends Component {
     // Opens CrowdSale Detail
     crowdSaleDetailOpen = (crowdsale) => {
         this.setState({
-            selectedCrowdsaleId: crowdsale.id,
             selectedCrowdsale: crowdsale,
             crowdSaleModalOpened: true
         });
@@ -72,7 +72,6 @@ class Piggies extends Component {
     //Close CrowdSale Detail
     crowdSaleDetailClose = () => {
         this.setState({
-            selectedCrowdsaleId: null,
             selectedCrowdsale: null,
             crowdSaleModalOpened: false
         });
@@ -85,12 +84,12 @@ class Piggies extends Component {
             coinList,
             coinListLoading,
             coords,
-            crowdsalesLoading
+            crowdsalesLoading,
+            userWalletAddress
         }= this.props;
         const currentProfileId = this.props.currentProfile.id;
 
         logger.debug('[PIGGIES.js] crowdsales =>', crowdsales);
-        logger.info('[PIGGIES.js] crowdsales still loading =>', crowdsalesLoading);
 
         //managing case of still loading crowdsales (if any)
         if(crowdsalesLoading){
@@ -100,7 +99,7 @@ class Piggies extends Component {
         }
 
         //managing case of no crowdsales
-        if( !crowdsalesLoading && (crowdsales.length === 0 || crowdsales == null) ){ 
+        if( !crowdsalesLoading && (crowdsales == null || crowdsales.length === 0) ){
             logger.info('No active crowdsales found right now');
             return (
                 <Grid container alignItems="center" justify="center" direction="column">
@@ -112,52 +111,63 @@ class Piggies extends Component {
         }
 
         //standard case:
-        let currentLocation = fromLonLat([7.686856, 45.070312]); //default
+        let currentLocation = fromLonLat([
+            config.defaultGeoCoordinates.longitude,
+            config.defaultGeoCoordinates.latitude
+        ]); //default on Turin
         if(coords) {
             currentLocation = fromLonLat([coords.longitude,coords.latitude]);
         }
         
         
-        const cards = crowdsales.map( crowdsale =>{
-            //check if this crowdsale is owned
-            //FIXME atm checks only the user Id, in the future check currentProfile
-            crowdsale.owned = crowdsale.owner.id === currentProfileId;
-
+        const extendedCrowdsales = crowdsales.map( crowdsale =>{
+            const extendedCrowdsale = {...crowdsale};
             //images
-            let acceptedCoinLogo = null, coinToGiveLogo = null;
+            let tokenToAcceptLogo = null, tokenToGiveLogo = null;
             if( (coinList != null) && (coinList.length !== 0) && (!coinListLoading) ){
-                const completeAcceptedCoin = coinList.find( (elem) => elem.symbol === crowdsale.acceptedCoin );
-                acceptedCoinLogo = completeAcceptedCoin ?  completeAcceptedCoin.logoFile : null;
-                const completeCoinToGive= coinList.find( (elem) => elem.symbol === crowdsale.coinToGive );
-                coinToGiveLogo = completeCoinToGive ? completeCoinToGive.logoFile : null;
+                const completeTokenToAccept = coinList.find( (elem) => elem.address === crowdsale.tokenToAcceptAddr );
+                extendedCrowdsale.tokenToAcceptLogo = completeTokenToAccept ?  completeTokenToAccept.logoFile : null;
+                const completeTokenToGive= coinList.find( (elem) => elem.address === crowdsale.tokenToGiveAddr );
+                extendedCrowdsale.tokenToGiveLogo = completeTokenToGive ? completeTokenToGive.logoFile : null;
             }
+
+            extendedCrowdsale.isOwnedByCurrentUserWallet = crowdsale.ownerAddress === userWalletAddress
             
-            return (
-                <Grid item xs={12} sm={12} md={6} lg={4} key={crowdsale.id} >
-                    <PiggyCard
-                    image={crowdsale.photo.file.body}
-                    title={crowdsale.title}
-                    description={crowdsale.description}
-                    handleOpen = {() => {this.crowdSaleDetailOpen(crowdsale)}}
-                    acceptedCoin={crowdsale.acceptedCoin}
-                    acceptedCoinLogo={acceptedCoinLogo}
-                    coinToGive={crowdsale.coinToGive}
-                    coinToGiveLogo={coinToGiveLogo}
-                    acceptedCoinRatio={crowdsale.acceptRatio}
-                    coinToGiveRatio={crowdsale.giveRatio}
-                    startDate={crowdsale.startDate}
-                    endDate={crowdsale.endDate}
-                    totalReservations={crowdsale.totalReservations}
-                    owned={crowdsale.owned}
-                    owner={crowdsale.owner}
-                    maxCap={crowdsale.maxCap}
-                    key={crowdsale.id}
-                    />
-                </Grid>
-            );
+            return extendedCrowdsale;
         });
-        
+
+        const cards = extendedCrowdsales
+            .filter(extendedCrowdsale => {
+                //show only those which are fully loaded with coupons and unlocked
+                //or of which I am the owner
+
+                const epsilon = 0.001; //for float comparision
+                return (
+                    (extendedCrowdsale.ownerAddress === userWalletAddress) ||
+                    (
+                        //careful: float comparision
+                        ( Math.abs( extendedCrowdsale.tokenToGiveBalance.balance -
+                            extendedCrowdsale.maxCap/extendedCrowdsale.acceptRatio ) <= epsilon ) // coupons loaded
+                        &&
+                        ( extendedCrowdsale.status === config.crowdsaleStatus[0] ) //running
+                    )
+                );
+            })
+            .map(extendedCrowdsale => {
+
+                return (
+                    <Grid item xs={12} sm={12} md={6} lg={4} key={extendedCrowdsale.crowdsaleAddress} >
+                        <PiggyCard
+                            crowdsale={extendedCrowdsale}
+                            handleOpen = {() => {this.crowdSaleDetailOpen(extendedCrowdsale)}}
+                            // contract={extendedCrowdsale.TOS}
+                        />
+                    </Grid>
+                );
+        });
+
         let piggiesDetails = null;
+        console.log("=======> ", this.state.selectedCrowdsale);
         if(this.state.selectedCrowdSale !== null){
             piggiesDetails = <PiggiesDetails
                                 crowdsale={this.state.selectedCrowdsale}
@@ -174,7 +184,7 @@ class Piggies extends Component {
             <>
                  <Grid container>
                     <Grid item xs={12}  align="right">
-                        <Typography>{changeCase.upperCaseFirst(t('openMap'))}
+                        <Typography>{capitalCase(t('openMap'))}
                         <IconButton 
                                 color="primary" 
                                 size="small" 
@@ -223,6 +233,7 @@ const mapStateToProps = state => {
         coinListLoading: state.coin.loadingCoinListForPiggies,
         
         currentProfile: state.user.currentProfile,
+        userWalletAddress: state.web3.currentAccount,
     }
 };
 

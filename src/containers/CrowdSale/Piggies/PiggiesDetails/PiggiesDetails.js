@@ -1,444 +1,390 @@
-import React from "react";
-import PropTypes from "prop-types";
+import React, {useState, useEffect} from "react";
 import { connect } from 'react-redux';
 import * as actions from "../../../../store/actions/index";
 import {logger} from '../../../../utilities/winstonLogging/winstonInit';
-
-import withWidth, { isWidthUp, isWidthDown } from '@material-ui/core/withWidth';
-
 import { base64ToArrayBuffer } from '../../../../utilities/utilities'
+import {assetDecimalRepresentationToInteger, assetIntegerToDecimalRepresentation} from '../../../../utilities/decimalsHandler/decimalsHandler';
 
-import Grid from '@material-ui/core/Grid';
+import config from '../../../../config';
+
+//APIs
+import {coinGetBalance} from '../../../../api/coinAPI';
+import {crowdsaleGetReservationsOfAccount} from '../../../../api/crowdsaleAPI';
+
 //styles
 import { withStyles } from "@material-ui/core/styles";
+import withWidth, { isWidthUp, isWidthDown } from '@material-ui/core/withWidth';
 import piggiesDetailsStyle from './PiggiesDetailsStyle';
 
 //i18n
-import {withTranslation} from "react-i18next";
+import { useTranslation } from "react-i18next";
 
-import Card from "@material-ui/core/Card";
-import CardMedia from "@material-ui/core/CardMedia";
-import CardContent from "@material-ui/core/CardContent";
-import CardActions from "@material-ui/core/CardActions";
-import IconButton from "@material-ui/core/IconButton";
-import Typography from "@material-ui/core/Typography";
-import Icon from "@material-ui/core/Icon";
-import Button from "@material-ui/core/Button";
-import Slide from '@material-ui/core/Slide';
-import asyncComponent from '../../../../hoc/AsyncComponent/AsyncComponent';
+import {Button, Card, CardMedia, CardContent, CardActions, Grid, Icon, IconButton, Slide, Typography} from "@material-ui/core";
 
+import SlideModal from '../../../../components/UI/Modal/SlideModal/SlideModal';
+import PiggyBank from "./PiggyBank/PiggyBank";
 import CoinAvatarLabeled from '../../../../components/UI/CoinAvatarLabeled/CoinAvatarLabeled';
 
-const SlideModal = asyncComponent(()=>import('../../../../components/UI/Modal/SlideModal/SlideModal'));
-const PiggyBank = asyncComponent( () =>import('./PiggyBank/PiggyBank'));
 
+//helper function to easily prepare TOS file for download
+const downloadTOS = (TOSFileData) =>{
+    let arrBuffer = base64ToArrayBuffer(TOSFileData.body);
 
-class PiggiesDetails extends React.Component {
-    state = { 
-        expanded: false,
-        piggyBankOpened: false,
-        isCrowdsaleOwnedByAUser: false,
-        isCrowdsaleOwnedByADao: false,
-    };
+    // It is necessary to create a new blob object with mime-type explicitly set
+    // otherwise only Chrome works like it should
+    let newBlob = new Blob([arrBuffer], { type: "application/pdf" });
 
-    componentDidMount() {
-        const {
-            onGetUserFromId,
-            onGetDaoFromId,
-            onGetCrowdsaleCompleteReservations,
-            onGetAcceptedCoinBalance,
-            onGetProfileReservationInCrowdsale,
-            onGetCrowdsaleStatus,
-            onGetFile,
-            crowdsale,
-        } = this.props;
+    // IE doesn't allow using a blob object directly as link href
+    // instead it is necessary to use msSaveOrOpenBlob
+    if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+        window.navigator.msSaveOrOpenBlob(newBlob);
+    } else {
+        const data = window.URL.createObjectURL(newBlob);
 
-        if(crowdsale.owner.type === 'user'){
-            onGetUserFromId(crowdsale.owner.id);
-            this.setState({isCrowdsaleOwnedByAUser: true});
-        }else{
-            onGetDaoFromId(crowdsale.owner.id);
-            this.setState({isCrowdsaleOwnedByADao: true});
-        }
-
-        onGetFile(crowdsale.contract);
-        if(!crowdsale.owned){
-            onGetCrowdsaleCompleteReservations(crowdsale.crowdsaleID, crowdsale.acceptedCoinDecimals);
-            onGetAcceptedCoinBalance(crowdsale.acceptedCoin, crowdsale.acceptedCoinDecimals);
-            onGetCrowdsaleStatus(crowdsale.crowdsaleID);
-            onGetProfileReservationInCrowdsale(crowdsale.crowdsaleID, crowdsale.acceptedCoinDecimals);
-        }
-
+        const link = document.createElement('a');
+        document.body.appendChild(link); //required in FF, optional for Chrome
+        link.href = data;
+        link.target = '_self';
+        link.download = TOSFileData.name;
+        link.click();
+        window.URL.revokeObjectURL(data);
+        link.remove();
     }
+};
 
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        const {
-            onGetAcceptedCoinBalance,
-            onGetProfileReservationInCrowdsale,
-            onGetCrowdsaleCompleteReservations,
-            onGetCrowdsaleStatus,
-            crowdsale,
-        } = this.props;
+const crowdsaleStatusEnum = config.crowdsaleStatus;
 
-        logger.info("PIGGIES DETAILS just updated");
-        if(
-            (JSON.stringify(prevProps.crowdsales) !== JSON.stringify(this.props.crowdsales)) &&
-            !crowdsale.owned
-        ){
-            onGetCrowdsaleCompleteReservations(crowdsale.crowdsaleID, crowdsale.acceptedCoinDecimals);
-            onGetAcceptedCoinBalance(crowdsale.acceptedCoin, crowdsale.acceptedCoinDecimals);
-            onGetCrowdsaleStatus(crowdsale.crowdsaleID);
-            onGetProfileReservationInCrowdsale(crowdsale.crowdsaleID, crowdsale.acceptedCoinDecimals);
-        }
-    }
-
-    piggyBankOpen = () => {
-        this.setState({
-            piggyBankOpened: true
-        });
-    };
-
-    piggyBankClose = () => {
-        this.setState({
-            piggyBankOpened: false
-        });
-        this.props.closePiggieDetails();
-    };
-
-    transition = props =>  (<Slide direction="up" {...props} />);
-
-    downloadContract = () => {
-        if(!this.props.fileLoading && this.props.fileData){
-            let arrBuffer = base64ToArrayBuffer(this.props.fileData.body);
-
-            // It is necessary to create a new blob object with mime-type explicitly set
-            // otherwise only Chrome works like it should
-            let newBlob = new Blob([arrBuffer], { type: "application/pdf" });
-
-            // IE doesn't allow using a blob object directly as link href
-            // instead it is necessary to use msSaveOrOpenBlob
-            if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-                window.navigator.msSaveOrOpenBlob(newBlob);
-            } else {
-                const data = window.URL.createObjectURL(newBlob);
-
-                const link = document.createElement('a');
-                document.body.appendChild(link); //required in FF, optional for Chrome
-                link.href = data;
-                link.target = '_self';
-                link.download = this.props.fileData.name;
-                link.click();
-                window.URL.revokeObjectURL(data);
-                link.remove();
+//helper function to compute time left before ending of the crowdsale
+const TimeStatusEnum = Object.freeze({
+    started: "started",
+    ended: "ended",
+    notStarted: "notStarted"
+});
+const computeTimeLeft = (startDate, endDate) => {
+    const today = new Date();
+    if(startDate < today) { // start date already passed
+        if(endDate > today){ // and end date not reached
+            const timeLeft = (endDate - today) / (1000 * 60 * 60 * 24); //days left from end
+            logger.debug('PiggiesDetails -> TIMELEFT', timeLeft);
+            return {
+                timeStatus: TimeStatusEnum.started,
+                timeLeft
+            };
+        }else{ //endDate already reached
+            logger.debug('PiggiesDetails -> endDate not reached yet');
+            return {
+                timeStatus: TimeStatusEnum.ended,
+                timeLeft: -1
             }
         }
-    };
+    }else{ //startDate not reached yet
+        logger.debug('PiggiesDetails -> startDate not reached yet');
+        return {
+            timeStatus: TimeStatusEnum.notStarted,
+            timeLeft: -1,
+        };
+    }
+}
 
+const PiggiesDetails = (props) => {
+    logger.debug('[crowdsale for this piggiedetail =>', crowdsale);
+    const {
+        closePiggieDetails,
+        crowdsale,
+        web3Instance,
+        userWalletAddress,
+        classes
+    } = props;
 
-    render() {
-        const {
-            classes,
-            t,
-            crowdsale,
-            completeReservations,
-            user,
-            dao,
-            profile,
-            coinToJoinLoaded,
-            coinToJoinBalance,
-            reservationLoaded,
-            reservationValue,
-            crowdsaleStatus,
-            coinList,
-            fileLoading,
-            fileData,
-        } = this.props;
-        logger.debug('COMPLETERES =>', completeReservations);
-        //const totalReservations = crowdsale ? crowdsale.totalReservations : null;
+    logger.info("crowdsale of this piggie =>", crowdsale);
 
-        logger.debug('[crowdsale for this piggiedetail =>', crowdsale);
+    const {t} = useTranslation('PiggiesDetails');
 
-        if(
-            crowdsale !== null && (
-                ( this.state.isCrowdsaleOwnedByAUser && user !== null) ||
-                ( this.state.isCrowdsaleOwnedByADao && dao !== null)
-            )
-        ){
+    const [isPiggyBankOpen, setPiggyBankOpen] = useState(false);
+    const [tokenToAcceptUserBalance, setTokenToAcceptUserBalance] = useState(0);
+    const [userBalanceIsReady, setUserBalanceReady] = useState(false);
+    const [userWalletReservations, setUserWalletReservations] = useState(0);
+    const [areUserWalletReservationsLoaded, setUserWalletReservationsLoaded] = useState(false);
 
-            const startDate = new Date(crowdsale.startDate);
-            const endDate = new Date(crowdsale.endDate);
-            const today = new Date();
+    useEffect( () => {
+        async function getBalance(){
+            let response = await coinGetBalance( web3Instance, userWalletAddress, crowdsale.tokenToAcceptAddr);
+            setTokenToAcceptUserBalance(response.balance);
+            setUserBalanceReady(true);
+        }
+        async function getReservations(){
+            let reservations = await crowdsaleGetReservationsOfAccount(web3Instance, userWalletAddress, crowdsale.crowdsaleAddress);
+            setUserWalletReservations(reservations);
+            setUserWalletReservationsLoaded(true);
+        }
 
-            //COMPUTE TIME
-            let timeleftElement = null;
-            let timeLeft = 0,  startingDateReached = true, crowdsaleEnded = false;
-            if(completeReservations !== crowdsale.maxCap) { //it makes sense to show time left only if crowdsale has not already reached maxCap
-                if (startDate <= today) { // crowdsale has already started
-                    timeLeft = (endDate - today) / (1000 * 60 * 60 * 24);
-                    logger.debug('PiggiesDetails -> TIMELEFT', timeLeft);
-                    if (timeLeft <= 0) { // crowdsale has ended
-                        timeleftElement = (
-                            <CardActions className={classes.actions}>
-                                <Grid container alignContent="space-between" direction="row">
-                                    <Grid item align={isWidthUp('sm', this.props.width) ? "right" : "center"} xs={12}>
-                                        <Icon className={classes.end}>alarm_on</Icon>
-                                        <Typography variant="caption">{t('crowdsaleEnded')}</Typography>
-                                    </Grid>
-                                </Grid>
-                            </CardActions>
-                        );
-                        crowdsaleEnded = true;
-                    } else if (timeLeft < 1) {
-                        timeleftElement = (
-                            <CardActions className={classes.actions}>
-                                <Grid container alignContent="space-between" direction="row">
-                                    <Grid item align={isWidthUp('sm', this.props.width) ? "right" : "center"} xs={12}>
-                                        <Icon className={classes.end}>alarm_on</Icon>
-                                        <Typography variant="caption">{t('timeLeftLessThanADay')}</Typography>
-                                    </Grid>
-                                </Grid>
-                            </CardActions>
-                        );
-                    } else { //crowdsale not ended yet
-                        timeLeft = Math.round(timeLeft);
-                        timeleftElement = (
-                            <CardActions className={classes.actions}>
-                                <Grid container alignContent="space-between" direction="row">
-                                    <Grid item align={isWidthUp('sm', this.props.width) ? "right" : "center"} xs={12}>
-                                        <Icon className={classes.end}>alarm_on</Icon>
-                                        <Typography variant="caption">{t('timeLeft', {params: {days: timeLeft}})}</Typography>
-                                    </Grid>
-                                </Grid>
-                            </CardActions>
-                        );
-                    }
-                } else {
-                    timeleftElement = (
-                        <CardActions className={classes.actions}>
+        getBalance();
+        getReservations();
+    }, []);
+
+    // This is just to avoid a race condition when closing the modal which removes the crowdsale passed as a
+    // props but sometimes it does it before this component is unmounted causing a reference error
+    if(!crowdsale){
+        return null;
+    }
+
+    let timeLeftComponent = null;
+    const crowdsaleTime = computeTimeLeft(crowdsale.startDate, crowdsale.endDate);
+    //let's show the time left only if the crowdsale has not already reached cap:
+    if(crowdsale.totalReservations >= crowdsale.maxCap){
+        if(crowdsaleTime.timeStatus === TimeStatusEnum.ended){
+            timeLeftComponent = (
+                <CardActions className={classes.actions}>
+                    <Grid container alignContent="space-between" direction="row">
+                        <Grid item align={isWidthUp('sm', props.width) ? "right" : "center"} xs={12}>
                             <Icon className={classes.end}>alarm_on</Icon>
-                            <Typography variant="caption">{t('startingDateNotReachedYet')}</Typography>
-                        </CardActions>
-                    );
-                    startingDateReached = false;
-                }
-            }
+                            <Typography variant="caption">{t('crowdsaleEnded')}</Typography>
+                        </Grid>
+                    </Grid>
+                </CardActions>
+            )
+        }else if(
+            crowdsaleTime.timeStatus === TimeStatusEnum.started &&
+            crowdsaleTime.timeLeft < 1 //less than a day
+        ){
+            timeLeftComponent = (
+                <CardActions className={classes.actions}>
+                    <Grid container alignContent="space-between" direction="row">
+                        <Grid item align={isWidthUp('sm', props.width) ? "right" : "center"} xs={12}>
+                            <Icon className={classes.end}>alarm_on</Icon>
+                            <Typography variant="caption">{t('timeLeftLessThanADay')}</Typography>
+                        </Grid>
+                    </Grid>
+                </CardActions>
+            );
+        }else if(crowdsaleTime.timeStatus === TimeStatusEnum.started){
+            timeLeftComponent = (
+                <CardActions className={classes.actions}>
+                    <Grid container alignContent="space-between" direction="row">
+                        <Grid item align={isWidthUp('sm', props.width) ? "right" : "center"} xs={12}>
+                            <Icon className={classes.end}>alarm_on</Icon>
+                            <Typography variant="caption">{t('timeLeft', {params: {days: Math.round(crowdsaleTime.timeLeft)}})}</Typography>
+                        </Grid>
+                    </Grid>
+                </CardActions>
+            );
+        }else{ //crowdsale already ended
+            timeLeftComponent = (
+                <CardActions className={classes.actions}>
+                    <Icon className={classes.end}>alarm_on</Icon>
+                    <Typography variant="caption">{t('startingDateNotReachedYet')}</Typography>
+                </CardActions>
+            );
+        }
+    }
 
-
-            //images
-            let acceptedCoinLogo = null, coinToGiveLogo = null;;
-            if(coinList != null && coinList.length !== 0){
-                const accCoin = coinList.find( (elem) => elem.symbol === crowdsale.acceptedCoin );
-                acceptedCoinLogo = accCoin == null ? null : accCoin.logoFile;
-                const coinGiv =  coinList.find( (elem) => elem.symbol === crowdsale.coinToGive );
-                coinToGiveLogo = coinGiv == null ? null : coinGiv.logoFile;
-            }
-
-            const owned = crowdsale.owned;
-
-            //check if we have a pending transaction (not yet received notification)
-            let crowdsaleHasPendingTransaction = false;
-            if(
-                profile.hasOwnProperty('crowdsalesWithPendingTransaction') &&
-                profile.crowdsalesWithPendingTransaction.has(crowdsale.crowdsaleID)
-            ){
-                logger.debug('PiggiesDetails -> CHECKING crowdsaleId=', crowdsale.crowdsaleID);
-                crowdsaleHasPendingTransaction = true;
-            }
-            logger.info('PiggiesDetails -> CROWDSALE has pending transaction?', crowdsaleHasPendingTransaction);
-
-            let warningText = "";
-            let warningTypographyClass = classes.doNotShowWarningText;
-            //logic to change text (order is important), the lower the highest priority
-            if(!owned && coinToJoinLoaded && (parseFloat(coinToJoinBalance) < parseFloat(crowdsale.acceptRatio)) && reservationLoaded && (parseFloat(reservationValue) <= 0)){// I have to check if I have some reservation even without coin in the wallet (I can ask a refund)
-                warningText = t('notEnoughCoinToJoin', {params: {ticker: crowdsale.acceptedCoin}});
-                warningTypographyClass = classes.showWarningText;
-            }
-            if(!owned && reservationLoaded && (parseFloat(reservationValue) < 0)){ //if value is < 0 we got a problem loading it
-                warningText = t('reservationLoadingFailure');
-                warningTypographyClass = classes.showWarningText;
-            }
-            if(!owned && (crowdsaleStatus === 'stopped' || crowdsaleStatus === 'locked')){
-                warningText = t('crowdsaleNotRunning');
-                warningTypographyClass = classes.showWarningText;
-            }
-            if(!owned && crowdsaleEnded){
-                warningText = t('crowdsaleEnded');
-                warningTypographyClass = classes.showWarningText;
-            }
-            if(!owned && (crowdsaleEnded || crowdsaleStatus !== 'running' ) && reservationLoaded && (parseFloat(reservationValue) > 0)){
-                warningText = t('crowdsaleEndedWithReservationLeft');
-                warningTypographyClass = classes.showWarningText;
-            }
-            if(!owned && !startingDateReached){
+    //managing user-warning text:
+    let warningText = "";
+    let warningTypographyClass = classes.doNotShowWarningText;
+    if(
+        crowdsale.status === crowdsaleStatusEnum[1] || //stopped
+        crowdsale.status === crowdsaleStatusEnum[2] //locked
+    ){
+        warningText = t('crowdsaleNotRunning');
+        warningTypographyClass = classes.showWarningText;
+    }else { //status running
+        if (!crowdsale.isOwnedByCurrentUserWallet) {
+            if (crowdsaleTime.timeStatus === TimeStatusEnum.notStarted) {
                 warningText = t('startingDateNotReachedYet');
                 warningTypographyClass = classes.showWarningText;
-            }
-            if(crowdsaleHasPendingTransaction){
-                warningText = t('hasPendingTransaction');
-                warningTypographyClass = classes.showWarningText;
-            }
-            if(owned){
-                warningText = t('crowdsaleOwned');
-                warningTypographyClass = classes.showWarningText;
-            }
-            if(profile.realm === 'dao'){ //daos cannot join any crowdsale
-                warningText = t('daosCannotParticipate');
-                warningTypographyClass = classes.showWarningText;
-            }
-            if(crowdsaleStatus === 'failed'){
-                warningText = t('crowdsaleFailedToRetriveState');
-                warningTypographyClass = classes.showWarningText;
-            }
-
-
-            const pledgeButton = (
-                <Button
-                    variant="contained"
-                    color="primary"
-                    className={classes.button}
-                    fullWidth
-                    disabled = {
-                        owned || //cannot join crowdsale of which I am the owner
-                        profile.realm === 'dao' || //daos cannot join any crowdsale
-                        (!owned && !startingDateReached) ||
-                        (!owned && crowdsaleEnded && reservationLoaded && (parseFloat(reservationValue) <= 0)) ||
-                        //crowdsaleEnded || //cannot join a crowdsale already expired
-                        !coinToJoinLoaded || //we are still waiting to get the balance of the coin to join for this user_profile
-                        ( coinToJoinLoaded && (parseFloat(coinToJoinBalance) < parseFloat(crowdsale.acceptRatio) ) && reservationLoaded && (parseFloat(reservationValue) <= 0) ) || //the user_profile has not enough acceptedcoin to join nor reservation to refund
-                        (reservationLoaded && (parseFloat(reservationValue) < 0)) ||//we got a problem loading the reservation if its value is < 0
-                        ((crowdsaleStatus !== 'running') && reservationLoaded && (parseFloat(reservationValue) <= 0)) || //allow refunds even after it stopped (business rule)
-                        crowdsaleHasPendingTransaction //wait confirmation before allowing other pledges
+            } else { //cwd started
+                if (crowdsaleTime.timeStatus === TimeStatusEnum.ended) {
+                    if(areUserWalletReservationsLoaded && userWalletReservations > 0){ //reservations left that the user can get back
+                        warningText = t('crowdsaleEndedWithReservationLeft');
+                        warningTypographyClass = classes.showWarningText;
+                    }else { //ended and user didn't joined
+                        warningText = t('crowdsaleEnded');
+                        warningTypographyClass = classes.showWarningText;
                     }
-                    onClick = {() => {this.piggyBankOpen()}}
-                >
-                    {t('pledge')}
-                </Button>
-            );
-
-            let localeStartingDate = `${startDate.toLocaleString()}` ;
-            let localeEndingDate =  `${endDate.toLocaleString()}`;
-
-            let goalReached = null;
-            if(
-                completeReservations !== undefined &&
-                completeReservations !== -1 &&
-                parseFloat(completeReservations) <= parseFloat(crowdsale.maxCap)
-            ){
-                goalReached = (
-                    <>
-                        <Icon className={classes.end}>trending_up</Icon>
-                        {t('goalReached', {params:
-                            {
-                                currentReservation: completeReservations, //getRandomNumberInRange(10,90)+'%'
-                                threshold: crowdsale.maxCap,
-                                ticker: crowdsale.acceptedCoin,
-                            }
-                        })}
-                    </>
-                );
-            }
-
-            // if we are over maxCap the remaining coin are not convertible in coupons anymore (coupons are over)
-            // we use this value to allow the user to refund even at crowdsale over
-            let maxJoinLeft = parseFloat(completeReservations) >= parseFloat(crowdsale.maxCap) ? 0 : parseFloat(crowdsale.maxCap) - parseFloat(completeReservations);
-
-            //contract file
-            let contractButton = null;
-            if( !fileLoading && fileData){
-                contractButton = (
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        className={classes.button}
-                        onClick = {() => {this.downloadContract()}}
-                    >
-                        {t('downloadContract')}
-                    </Button>
-                );
-            }
-
-            let yourReservationMessage = null;
-            if(!owned && reservationLoaded ){
-                if(parseFloat(reservationValue) > 0) {
-                    const params = {params: { reservation: parseFloat(reservationValue), ticker: crowdsale.acceptedCoin}};
-                    yourReservationMessage =
-                        <Typography variant="overline" align="center" style={{display: 'block'}} >{t('youAlreadyJoined', params )}</Typography>
-                }else{
-                    yourReservationMessage = <Typography variant="overline" align="center" style={{display: 'block'}}>{t('youHaveNotJoinedYet')}</Typography>
+                } else if (userBalanceIsReady && tokenToAcceptUserBalance < crowdsale.acceptRatio) { //not enough coin to join
+                    warningText = t('notEnoughCoinToJoin', {params: {ticker: crowdsale.tokenToAccept.symbol}});
+                    warningTypographyClass = classes.showWarningText;
                 }
             }
+        } else { // crowdsale is owned by the logged user
+            warningText = t('crowdsaleOwned');
+            warningTypographyClass = classes.showWarningText;
+        }
+    }
 
-            let ownerName = '';
-            if(this.state.isCrowdsaleOwnedByAUser && user){
-                ownerName = user.name;
-            }else if(this.state.isCrowdsaleOwnedByADao && dao){
-                ownerName = dao.name;
+    //pledge button DEactivation conditions check
+    // console.log("1  === ", crowdsale.isOwnedByCurrentUserWallet);
+    // console.log("2  === ", !crowdsale.isOwnedByCurrentUserWallet &&
+    //     !crowdsaleTime.timeStatus !== TimeStatusEnum.started);
+    // console.log("3  === ", !crowdsale.isOwnedByCurrentUserWallet &&
+    //     crowdsaleTime.timeStatus === TimeStatusEnum.ended &&
+    //     areUserWalletReservationsLoaded &&
+    //     userWalletReservations <= 0);
+    // console.log("4  === ", !crowdsale.isOwnedByCurrentUserWallet &&
+    //     userBalanceIsReady &&
+    //     tokenToAcceptUserBalance <= crowdsale.acceptRatio &&
+    //     areUserWalletReservationsLoaded &&
+    //     userWalletReservations <= 0);
+    // console.log("5  === ", !crowdsale.isOwnedByCurrentUserWallet &&
+    //     crowdsale.status !== crowdsaleStatusEnum[0] &&
+    //     areUserWalletReservationsLoaded &&
+    //     areUserWalletReservationsLoaded <= 0);
+    //
+    //====
+
+    const pledgeButton = (
+        <Button
+            variant="contained"
+            color="primary"
+            className={classes.button}
+            fullWidth
+            disabled = { //disable this button if:
+                crowdsale.isOwnedByCurrentUserWallet || // user is the owner, so cannot join
+                (
+                    !crowdsale.isOwnedByCurrentUserWallet &&
+                    crowdsaleTime.timeStatus !== TimeStatusEnum.started) || //not started
+                (
+                    !crowdsale.isOwnedByCurrentUserWallet &&
+                    crowdsaleTime.timeStatus === TimeStatusEnum.ended &&
+                    areUserWalletReservationsLoaded &&
+                    userWalletReservations <= 0 //crowdsale ended and user has not still reservations on it
+                ) ||
+                !userBalanceIsReady || //we are still waiting to get the balance of the user for the tokenToAccept
+                (
+                    !crowdsale.isOwnedByCurrentUserWallet &&
+                    userBalanceIsReady &&
+                    tokenToAcceptUserBalance <= crowdsale.acceptRatio &&
+                    areUserWalletReservationsLoaded &&
+                    userWalletReservations <= 0
+                ) || //the user has not enough tokenToAccept to join nor reservation to refund
+                (
+                    !crowdsale.isOwnedByCurrentUserWallet &&
+                    crowdsale.status !== crowdsaleStatusEnum[0] &&
+                    areUserWalletReservationsLoaded &&
+                    areUserWalletReservationsLoaded <= 0
+                ) //allow refunds even after it stopped (business rule)
             }
+            onClick = { () => {
+                setPiggyBankOpen(true);
+            }}
+        >
+            {t('pledge')}
+        </Button>
+    );
 
-            return (
+    let localeStartingDate = `${crowdsale.startDate.toLocaleString()}` ;
+    let localeEndingDate =  `${crowdsale.endDate.toLocaleString()}`;
+
+    let goalReached = null;
+    if( crowdsale.totalReservations <= crowdsale.maxCap){
+        goalReached = (
             <>
-                <Card square className={classes.card}>
-                    <CardMedia
-                        component="img"
-                        className={classes.media}
-                        image={crowdsale.photo.file.body}
-                        title={crowdsale.title}
-                    />
-                    {/*<Fab size="small" className={classes.favorite}>
+                <Icon className={classes.end}>trending_up</Icon>
+                {t('goalReached', {params:
+                        {
+                            currentReservation: crowdsale.totalReservations,
+                            threshold: crowdsale.maxCap,
+                            ticker: crowdsale.tokenToAccept.symbol,
+                        }
+                })}
+            </>
+        );
+    }
+    // if we are over maxCap the remaining coin are not convertible in coupons anymore (coupons are over)
+    // we use this value to allow the user to refund even at crowdsale over
+    const maxJoinLeft = crowdsale.totalReservations >= crowdsale.maxCap ?
+        0 :
+        crowdsale.maxCap - crowdsale.totalReservations;
+
+    //contract file
+    const contractButton = (
+        <Button
+            variant="contained"
+            color="primary"
+            className={classes.button}
+            onClick = {() => {downloadTOS(crowdsale.TOS)}}
+        >
+            {t('downloadContract')}
+        </Button>
+    );
+
+    let yourReservationMessage = null;
+    if(!crowdsale.isOwnedByCurrentUserWallet && areUserWalletReservationsLoaded){
+        if(userWalletReservations > 0) {
+            const params = {params: { reservation: userWalletReservations, ticker: crowdsale.tokenToAccept.symbol}};
+            yourReservationMessage =
+                <Typography variant="overline" align="center" style={{display: 'block'}} >{t('youAlreadyJoined', params )}</Typography>
+        }else{
+            yourReservationMessage = <Typography variant="overline" align="center" style={{display: 'block'}}>{t('youHaveNotJoinedYet')}</Typography>
+        }
+    }
+
+    const ownerName = crowdsale.ownerAddress;
+
+    return (
+        <>
+            <Card square className={classes.card}>
+                <CardMedia
+                    component="img"
+                    className={classes.media}
+                    image={crowdsale.photo.body}
+                    title={crowdsale.title}
+                />
+                {/*<Fab size="small" className={classes.favorite}>
                         <Icon color="error">favorite</Icon>
                         </Fab>*/}
-                    <CardContent>
-                        <Typography paragraph>
-                            {crowdsale.description}
-                        </Typography>
-                    </CardContent>
-                    <CardActions className={classes.actions}>
-                        <Grid container alignContent="space-between" direction="row">
-                            <Grid item align={isWidthUp('sm', this.props.width) ? "left" : "center"} xs={12} sm={6}>
-                                <Icon>calendar_today</Icon>
-                                <Typography variant="caption">{`${t('starting')}: ${localeStartingDate}`}</Typography>
-                            </Grid>
-                            <Grid item align={isWidthUp('sm', this.props.width) ? "right" : "center"} xs={12} sm={6}>
-                                <Icon className={classes.end}>calendar_today</Icon>
-                                <Typography variant="caption">{`${t('ending')}: ${localeEndingDate}`}</Typography>
-                            </Grid>
+                <CardContent>
+                    <Typography paragraph>
+                        {crowdsale.description}
+                    </Typography>
+                </CardContent>
+                <CardActions className={classes.actions}>
+                    <Grid container alignContent="space-between" direction="row">
+                        <Grid item align={isWidthUp('sm', props.width) ? "left" : "center"} xs={12} sm={6}>
+                            <Icon>calendar_today</Icon>
+                            <Typography variant="caption">{`${t('starting')}: ${localeStartingDate}`}</Typography>
                         </Grid>
-                    </CardActions>
-                    {timeleftElement}
-                    <CardActions className={classes.actions}>
-                        <Grid container alignContent="space-between" direction="row">
-                            <Grid item align={isWidthUp('sm', this.props.width) ? "left" : "center"} xs={12} sm={6}>
-                                <Typography>{t('owner')}: {ownerName} </Typography>
-                            </Grid>
-                            <Grid item align={isWidthUp('sm', this.props.width) ? "right" : "center"} xs={12} sm={6}>
-                                <Typography className={classes.end}>
-                                    {goalReached}
-                                </Typography>
-                            </Grid>
+                        <Grid item align={isWidthUp('sm', props.width) ? "right" : "center"} xs={12} sm={6}>
+                            <Icon className={classes.end}>calendar_today</Icon>
+                            <Typography variant="caption">{`${t('ending')}: ${localeEndingDate}`}</Typography>
                         </Grid>
-                    </CardActions>
-                    <CardActions className={classes.center}>
-                        {contractButton}
-                    </CardActions>
-                    <CardActions className={classes.center}>
-                        <Typography>
-                            <IconButton disabled={true}>
-                                <CoinAvatarLabeled noName={true} coin={ {symbol: crowdsale.acceptedCoin, logoFile: acceptedCoinLogo}} />
-                                <Typography variant="caption">{crowdsale.acceptRatio + ' ' + crowdsale.acceptedCoin}</Typography>
-                            </IconButton>
-                            <Icon disabled>compare_arrows</Icon>
-                            <IconButton disabled={true}>
-                                <CoinAvatarLabeled noName={true} coin={ {symbol: crowdsale.coinToGive, logoFile: coinToGiveLogo}} />
-                                <Typography variant="caption">{parseInt(crowdsale.giveRatio) + ' ' + crowdsale.coinToGive}</Typography>
-                            </IconButton>
-                        </Typography>
-                    </CardActions>
-                    {yourReservationMessage}
-                    <Typography variant="caption" align="center" className={warningTypographyClass}>{warningText}</Typography>
-                    <CardActions className={classes.center}>
-                        {pledgeButton}
-                    </CardActions>
-                    {/* <CardActions className={classes.actions} disableActionSpacing>
+                    </Grid>
+                </CardActions>
+                {timeLeftComponent}
+                <CardActions className={classes.actions}>
+                    <Grid container alignContent="space-between" direction="row">
+                        <Grid item align={isWidthUp('sm', props.width) ? "left" : "center"} xs={12} sm={6}>
+                            <Typography>{t('owner')}: {ownerName} </Typography>
+                        </Grid>
+                        <Grid item align={isWidthUp('sm', props.width) ? "right" : "center"} xs={12} sm={6}>
+                            <Typography className={classes.end}>
+                                {goalReached}
+                            </Typography>
+                        </Grid>
+                    </Grid>
+                </CardActions>
+                <CardActions className={classes.center}>
+                    {contractButton}
+                </CardActions>
+                <CardActions className={classes.center}>
+                    <Typography>
+                        <IconButton disabled={true}>
+                            <CoinAvatarLabeled noName={true} coin={ {symbol: crowdsale.tokenToAccept.symbol, logoFile: crowdsale.tokenToAcceptLogo}} />
+                            <Typography variant="caption">{crowdsale.acceptRatio + ' ' + crowdsale.tokenToAccept.symbol}</Typography>
+                        </IconButton>
+                        <Icon disabled>compare_arrows</Icon>
+                        <IconButton disabled={true}>
+                            <CoinAvatarLabeled noName={true} coin={ {symbol: crowdsale.tokenToGive.symbol, logoFile: crowdsale.tokenToGiveLogo}} />
+                            <Typography variant="caption">{parseInt(crowdsale.giveRatio) + ' ' + crowdsale.tokenToGive.symbol}</Typography>
+                        </IconButton>
+                    </Typography>
+                </CardActions>
+                {yourReservationMessage}
+                <Typography variant="caption" align="center" className={warningTypographyClass}>{warningText}</Typography>
+                <CardActions className={classes.center}>
+                    {pledgeButton}
+                </CardActions>
+                {/* <CardActions className={classes.actions} disableActionSpacing>
                         <IconButton aria-label="Add to favorites">
                         <FavoriteIcon color="error" />
                         </IconButton>
@@ -448,35 +394,32 @@ class PiggiesDetails extends React.Component {
                         </IconButton>
                         <Typography variant="caption">{t('share')}</Typography>
                     </CardActions> */}
-                </Card>
+            </Card>
 
-                <SlideModal
-                    open={this.state.piggyBankOpened}
-                    handleClose={this.piggyBankClose}
-                    title={t('partecipate')}
-                    transition={this.transition}
-                >
-                    <PiggyBank
-                        piggyBankClose={this.piggyBankClose}
-                        crowdsale={crowdsale}
-                        crowdsaleEnded={crowdsaleEnded}
-                        coinToJoinBalance={coinToJoinBalance}
-                        startingReservation={parseFloat(reservationValue).toFixed(2)}
-                        maxJoinLeft={maxJoinLeft}
-                    />
-                </SlideModal>
-            </>
-            );
-
-        }else{
-            return null;
-        }
-    }
+            <SlideModal
+                open={isPiggyBankOpen}
+                handleClose={ () => {
+                    setPiggyBankOpen(false);
+                    closePiggieDetails();
+                }}
+                title={t('partecipate')}
+            >
+                <PiggyBank
+                    piggyBankClose={ () => {
+                        setPiggyBankOpen(false);
+                        closePiggieDetails();
+                    }}
+                    crowdsale={crowdsale}
+                    crowdsaleEnded={crowdsaleTime.timeStatus === crowdsaleStatusEnum[0]}
+                    tokenToAcceptUserBalance={tokenToAcceptUserBalance}
+                    startingReservation={ crowdsale.totalReservations }
+                    maxJoinLeft={maxJoinLeft}
+                />
+            </SlideModal>
+        </>
+    );
 }
 
-PiggiesDetails.propTypes = {
-  classes: PropTypes.object.isRequired
-};
 
 const mapStateToProps = state => {
     return {
@@ -484,35 +427,21 @@ const mapStateToProps = state => {
         dao: state.dao.currentDao,
         crowdsales: state.crowdsale.crowdsales,
         profile: state.user.currentProfile,
-        coinToJoinBalance: state.crowdsale.participantCoinToJoinBalance,
-        coinToJoinLoaded: state.crowdsale.participantCoinToJoinLoaded,
-        reservationValue: state.crowdsale.participantReservationValue,
-        reservationLoaded: state.crowdsale.participantReservationLoaded,
-        crowdsaleStatus: state.crowdsale.crowdsaleStatus,
-        completeReservations: state.crowdsale.totalReservation,
-        coinList: state.coin.coinListForPiggies,
-        fileLoading: state.file.loading,
-        fileData: state.file.fileData,
+
+        // coinList: state.coin.coinListForPiggies,
+
+        userWalletAddress: state.web3.currentAccount,
+        web3Instance: state.web3.web3Instance,
     };
 };
 
 const mapDispatchToProps = dispatch => {
     return{
-        onGetUserFromId: (id) => dispatch(actions.userGetDataFromId(id)),
-        onGetDaoFromId: (id) => dispatch(actions.daoGetDataFromId(id)),
-
-        onGetAcceptedCoinBalance: (acceptedCoinTicker, acceptedCoinDecimals) => dispatch(actions.crowdsaleGetParticipantCoinBalance(acceptedCoinTicker, acceptedCoinDecimals)),
-        onGetProfileReservationInCrowdsale : (crowdsaleId, acceptedCoinDecimals) => dispatch(actions.crowdsaleGetParticipantReservation(crowdsaleId, acceptedCoinDecimals)),
-        onGetCrowdsaleStatus: (crowdsaleId) => dispatch(actions.crowdsaleGetStatus(crowdsaleId)),
-        onGetCrowdsaleCompleteReservations: (crowdsaleId, acceptedCoinDecimals) => dispatch(actions.crowdsaleGetCompleteReservations(crowdsaleId, acceptedCoinDecimals)),
-        onGetFile: (fileHash) => dispatch(actions.fileGetData(fileHash)),
     };
 };
 
 export default withStyles(piggiesDetailsStyle, {withTheme: true})(
-        withTranslation('PiggiesDetails') (
-            withWidth()(
-                connect(mapStateToProps, mapDispatchToProps)(PiggiesDetails)
-            )
+        withWidth()(
+            connect(mapStateToProps, mapDispatchToProps)(PiggiesDetails)
         )
-    );
+);

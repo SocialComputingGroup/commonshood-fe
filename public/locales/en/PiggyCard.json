@@ -5,6 +5,11 @@
     "endingIn": "Ending in {{params.days}} days",
     "currentlyRaised": "Already reached {{params.raised}} of {{params.cap}} {{params.ticker}}",
     "crowdsaleOver": "This crowdsale is over",
-    "crowdsaleReachedCap": "Goal already reached"
-    
+    "crowdsaleReachedCap": "Goal already reached",
+
+    "couponsNotLoaded": "You need to load {{params.total}} {{params.symbol}} before unlocking the crowdsale",
+    "loadCrowdsaleButton": "Load Coupons in Crowdsale",
+    "couponsLoaded": "Now you can unlock the Crowdsale",
+    "unlockCrowdsaleButton": "Unlock Crowdsale",
+    "crowdsaleIsVisible": "Your crowdsale is currently visible to other users"
 }
