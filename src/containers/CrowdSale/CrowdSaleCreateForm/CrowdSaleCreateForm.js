@@ -13,7 +13,7 @@ import FeaturedCard from '../../../components/UI/Card/FeaturedCard/FeaturedCard'
 import {Button, Divider, Grid, Typography} from '@material-ui/core';
 
 import { makeStyles, createStyles } from '@material-ui/core/styles';
-import { useFormik, Formik, Field, ErrorMessage } from 'formik';
+import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { formFieldsNames, constraints} from './configForm';
 
