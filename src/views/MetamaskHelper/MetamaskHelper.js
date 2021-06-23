@@ -44,7 +44,7 @@ const MetamaskHelper = (props) => {
                     <img src={metamask2}/>
                 </Typography>
                 <Typography variant="body1" gutterBottom>
-                    6. Now set <span style={{color:"red"}}>{config.blockchain.rpcEndpoint}</span> as "New RPC URL" and put whatever network name you find easier to remember in connection to our app. Here in the screenshoot we used directly "Commonshood" as it is the name of the main app of our network. If you want you can also add the explorer address <span style={{color:"red"}}>https://explorer-dapp.commonshood.eu</span> so that metamask can link directly to the details of your transactions.<br/>
+                    6. Now set <span style={{color:"red"}}>{config.blockchain.rpcEndpoint}</span> as "New RPC URL", <span style={{color:"red"}}>{config.blockchain.networkID}</span> as "networkID", and put whatever network name you find easier to remember in connection to our app. Here in the screenshoot we used directly "Commonshood" as it is the name of the main app of our network. If you want you can also add the explorer address <span style={{color:"red"}}>https://explorer-dapp.commonshood.eu</span> so that metamask can link directly to the details of your transactions.<br/>
                     Click the "Save" Button (not showed in the screenshot, is just below all the fields) and you are ready to go!
                     If the app does not refresh automatically, click the refresh button on your browser!
                 </Typography>
