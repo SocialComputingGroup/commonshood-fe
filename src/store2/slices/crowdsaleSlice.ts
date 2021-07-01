@@ -1,4 +1,9 @@
-import {createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {createSlice, Dispatch, PayloadAction} from '@reduxjs/toolkit';
+import {logger} from "../../utilities/winstonLogging/winstonInit";
+import {assetDecimalRepresentationToInteger} from "../../utilities/decimalsHandler/decimalsHandler";
+import config from "../../config";
+import {uploadResource} from "../../api/resourceApi";
+import {createCrowdsale} from "../../api/crowdsaleAPI";
 
 type CrowdsaleInitialState = {
     error: string | null,
@@ -44,43 +49,43 @@ export const crowdsaleSlice = createSlice({
     name: 'crowdsale',
     initialState,
     reducers: {
-        crowdsaleCreateStart(state, action) {
+        crowdsaleCreateStart(state) {
             state.loading = true;
             state.crowdSaleCreated = false;
             state.crowdSaleUnlocked = false;
             state.error = null;
         },
 
-        crowdsaleCreateReset(state, action) {
+        crowdsaleCreateReset(state) {
             state.loading = false;
             state.crowdSaleCreated = false;
         },
 
-        crowdsaleCreateFail(state, action: PayloadAction<{ error: any }>) { //TODO fixme
+        crowdsaleCreateFail(state, action: PayloadAction<{ error: string }>) { //TODO fixme
             state.loading = false;
             state.crowdSaleCreated = false;
             state.error = action.payload.error;
         },
 
-        crowdsaleCreateSuccess(state, action) {
+        crowdsaleCreateSuccess(state) {
             state.loading = false;
             state.crowdSaleCreated = true;
         },
 
-        crowdsaleUnlockSuccess(state, action) {
+        crowdsaleUnlockSuccess(state) {
             state.crowdSaleUnlocked = true;
         },
 
-        crowdsaleUnlockFail(state, action) {
+        crowdsaleUnlockFail(state) {
             state.crowdSaleUnlocked = false;
         },
 
-        crowdsaleGetAllReset(state, action) {
+        crowdsaleGetAllReset(state) {
             state.loading = false;
             state.crowdsales = [];
         },
 
-        crowdasleGetAllStart(state, action) {
+        crowdasleGetAllStart(state) {
             state.loading = true;
         },
 
@@ -95,7 +100,7 @@ export const crowdsaleSlice = createSlice({
             state.crowdsales = [];
         },
 
-        crowdsaleGetParticipantCoinBalanceStart(state, action) {
+        crowdsaleGetParticipantCoinBalanceStart(state) {
             state.participantCoinToJoinBalance = 0;
             state.participantCoinToJoinLoaded = false;
         },
@@ -115,15 +120,15 @@ export const crowdsaleSlice = createSlice({
             state.participantReservationLoaded = true;
         },
 
-        crowdsaleApprovalStarted(state, action) {
+        crowdsaleApprovalStarted(state) {
             state.approvalPending = true;
         },
 
-        crowdsaleApprovalDone(state, action) {
+        crowdsaleApprovalDone(state) {
             state.approvalPending = false;
         },
 
-        crowdsaleJoinReset(state, action) {
+        crowdsaleJoinReset(state) {
             state.joined = undefined;
             state.pledgePending = true;
             state.approvalPending = false;
@@ -135,7 +140,7 @@ export const crowdsaleSlice = createSlice({
             state.pledgePending = false;
         },
 
-        crowdsaleRefundReset(state, action) {
+        crowdsaleRefundReset(state) {
             state.refunded = undefined;
             state.pledgePending = true;
             state.approvalPending = false;
@@ -145,7 +150,7 @@ export const crowdsaleSlice = createSlice({
             state.refunded = action.payload.refundedSuccessfully;
             state.pledgePending = false;
         },
-        crowdsaleGetStateReset(state, action) {
+        crowdsaleGetStateReset(state) {
             state.crowdsaleStatus = undefined;
         },
 
@@ -153,7 +158,7 @@ export const crowdsaleSlice = createSlice({
             state.crowdsaleStatus = action.payload.status;
         },
 
-        crowdsaleGetCompleteReservationsReset(state, action) {
+        crowdsaleGetCompleteReservationsReset(state) {
             state.totalReservation = undefined;
         },
 
@@ -169,6 +174,74 @@ export const crowdsaleSlice = createSlice({
     }
 })
 
-export const {} = crowdsaleSlice.actions;
+export const {
+    crowdsaleCreateStart, crowdsaleCreateReset, crowdsaleCreateFail, crowdsaleCreateSuccess,
+    crowdsaleUnlockFail, crowdsaleUnlockSuccess, crowdsaleGetAllReset, crowdasleGetAllStart,
+    crowdsaleGetAllSuccess, crowdsaleGetAllFail, crowdsaleGetParticipantReservationStart,
+    crowdsaleGetCompleteReservationsDone, crowdsaleGetParticipantCoinBalanceStart,
+    crowdsaleGetParticipantCoinBalanceDone, crowdsaleApprovalStarted, crowdsaleApprovalDone,
+    crowdsaleJoinDone, crowdsaleJoinReset, crowdsaleRefundDone, crowdsaleRefundReset,
+    crowdsaleGetStateDone, crowdsaleGetStateReset, crowdsaleGetCompleteReservationsReset,
+    crowdsaleGetParticipantReservationDone, crowdsaleAddIcon
+} = crowdsaleSlice.actions;
+
+export type CrowdsaleData = {
+    contractFile: File,
+    iconFile: File,
+    emittedCoin: any,
+    acceptedCoin: any,
+    startDate: Date,
+    endDate: Date,
+    bigTitle: string,
+    details: string,
+    acceptedCoinRatio: number,
+    forEachEmittedCoin: number,
+    totalAcceptedCoin: number
+};
+
+export const crowdsaleCreate = (crowdsaleData: CrowdsaleData) => {
+    logger.info('[CROWDSALE CREATE] called', crowdsaleData);
+
+    return async (dispatch: Dispatch, getState: () => any) => { //TODO fixme, here getState should return the ROOT state from store.ts
+        dispatch(crowdsaleCreateStart());
+
+        let contractHash, iconHash;
+        try {
+            const contractResponse = await uploadResource(crowdsaleData.contractFile);
+            contractHash = contractResponse.fileHash;
+            const iconResponse = await uploadResource(crowdsaleData.iconFile);
+            iconHash = iconResponse.fileHash;
+
+            const web3 = getState().web3.web3Instance;
+            try {
+                const accountAddress = getState().web3.currentAccount;
+                const creationResponse = await createCrowdsale(web3, accountAddress,
+                    {
+                        tokenToGiveAddr: crowdsaleData.emittedCoin.address,
+                        tokenToAccept: crowdsaleData.acceptedCoin.address,
+                        start: Math.floor(new Date(crowdsaleData.startDate).getTime() / 1000),
+                        end: Math.floor(new Date(crowdsaleData.endDate).getTime() / 1000),
+                        acceptRatio: parseInt(assetDecimalRepresentationToInteger(crowdsaleData.acceptedCoinRatio, crowdsaleData.acceptedCoin.decimals)),
+                        giveRatio: parseInt(assetDecimalRepresentationToInteger(crowdsaleData.forEachEmittedCoin, crowdsaleData.emittedCoin.decimals)),
+                        maxCap: parseInt(assetDecimalRepresentationToInteger(crowdsaleData.totalAcceptedCoin, crowdsaleData.acceptedCoin.decimals)),
+                        metadata: [
+                            crowdsaleData.bigTitle,
+                            crowdsaleData.details,
+                            iconHash,
+                            contractHash,
+                        ]
+                    });
+                logger.info('metamask succesfully created res: ', creationResponse);
+                dispatch(crowdsaleCreateSuccess());
+            } catch (error) {
+                console.log("ERROR: ", error);
+                dispatch(crowdsaleCreateFail(error));
+            }
+        } catch (error) {
+            console.log("ERROR: ", error);
+            dispatch(crowdsaleCreateFail(error));
+        }
+    }
+};
 
 export default crowdsaleSlice.reducer;
