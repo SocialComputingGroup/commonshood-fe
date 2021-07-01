@@ -1,4 +1,12 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, Dispatch, PayloadAction } from '@reduxjs/toolkit';
+import {logger} from '../../utilities/winstonLogging/winstonInit';
+
+import {uploadResource} from '../../api/resourceApi';
+import {createCoin, mintCoin} from '../../api/coinAPI';
+
+type Coin = {
+
+}
 
 type CoinInitialState = {
     error: string | null,
@@ -58,22 +66,22 @@ export const coinSlice = createSlice({
     initialState,
     reducers:{
         //coin creation reducers:
-        coinCreateReset(state, action){
+        coinCreateReset(state){
             state.coinCreated = false;
             state.coinMintingAfterCreation = false;
             state.loading = false;
             state.error = null;
         },
-        coinCreateStart(state, action){
+        coinCreateStart(state){
             state.coinCreated = false;
             state.coinMintingAfterCreation = false;
             state.loading = true;
         },
-        coinCreateSuccess(state, action){ 
+        coinCreateSuccess(state){ 
             state.loading = false; 
             state.coinCreated = true
         },
-        coinMintAfterCreation(state, action){
+        coinMintAfterCreation(state){
             state.coinMintingAfterCreation = true;
         },
         coinCreateFail(state, action: PayloadAction<{error: any}>){ 
@@ -186,7 +194,7 @@ export const coinSlice = createSlice({
             state.coinSent = true; 
             state.coinSentMining = false;
         },
-        coinSendFail(state, action: PayloadAction<{error: string}>){
+        coinSendFail(state, action: PayloadAction< {error: string} > ){
             state.loading = false;
             state.coinSent = false;
             state.coinSentMining = false;
@@ -241,7 +249,7 @@ export const coinSlice = createSlice({
         },        
         //===================================================================
         //icons
-        coinAddIcon(state, action: PayloadAction<{symbol: string, icon: string}>){//TODO check icon is really a string
+        coinAddIcon(state, action: PayloadAction<{symbol: string, icon: File}>){//TODO check icon is really a string
             const newIconsCache = new Map(state.iconsCache);
             newIconsCache.set(action.payload.symbol, action.payload.icon);
             state.iconsCache = newIconsCache;
@@ -250,6 +258,81 @@ export const coinSlice = createSlice({
     }
 })
 
-export const {} = coinSlice.actions;
+
+export const {coinCreateReset, coinCreateSuccess, coinCreateStart, coinCreateFail, coinMintAfterCreation, coinAddIcon} = coinSlice.actions;
+
+export type CoinData = {
+    name: string,
+    symbol: string,
+    description: string,
+    decimals: number,
+    initialSupply: number,
+    iconFile: File, //TODO fixme
+    contractFile: File, //TODO fixme
+    type: string,
+};
+
+export const coinCreate = (coinData: CoinData ) => {
+
+    return async (dispatch: Dispatch, getState: () => any) => { //TODO fixme, here getState should return the ROOT state from store.ts
+        dispatch(coinCreateStart());
+
+        const {
+            name,
+            symbol,
+            description, //TODO we must still modify the contract to add description
+            decimals,
+            initialSupply,
+            iconFile,
+            contractFile,
+            type
+        } = coinData;
+
+        let iconHash = null;
+        let iconUrl = null;
+        let contractHash = null;
+
+        try{
+            // Upload Icon File
+            const iconResponse = await uploadResource(iconFile);
+            iconHash = iconResponse.fileHash;
+            iconUrl = iconResponse.fileUrl;
+
+            // Upload Contract File
+            const contractResponse = await uploadResource(contractFile);
+            contractHash = contractResponse.fileHash
+
+            //we are using metamask?
+            const web3 = getState().web3.web3Instance;
+            try{
+                const accountAddress = getState().web3.currentAccount;
+                const creationResponse = await createCoin(web3, accountAddress, 
+                    {
+                        name,
+                        symbol,
+                        cap: 0,
+                        decimals,
+                        iconHash,
+                        iconUrl,
+                        contractHash,
+                    });
+
+                dispatch(coinMintAfterCreation());
+
+                const justCreatedTokenAddress = creationResponse.events.TokenAdded.returnValues[2];
+                const mintResponse = await mintCoin(web3, accountAddress, justCreatedTokenAddress, initialSupply, decimals);
+
+                dispatch(coinCreateSuccess());
+                dispatch(coinAddIcon( {symbol, icon: iconFile} ));
+            }catch(error){
+                logger.debug('Something went bad while creating coin via metamask:', error);
+                dispatch(coinCreateFail(error));
+            }
+        }catch(error){
+            dispatch(coinCreateFail(error));
+        }
+    }
+};
+
 
 export default coinSlice.reducer;
