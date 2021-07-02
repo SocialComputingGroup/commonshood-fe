@@ -1,4 +1,5 @@
 import { createSlice, Dispatch, PayloadAction } from '@reduxjs/toolkit';
+import {RootState} from '../store';
 import {logger} from '../../utilities/winstonLogging/winstonInit';
 
 import {uploadResource} from '../../api/resourceApi';
@@ -274,9 +275,8 @@ export type CoinData = {
 
 export const coinCreate = (coinData: CoinData ) => {
 
-    return async (dispatch: Dispatch, getState: () => any) => { //TODO fixme, here getState should return the ROOT state from store.ts
+    return async (dispatch: Dispatch, getState: () => RootState) => { //TODO fixme, here getState should return the ROOT state from store.ts
         dispatch(coinCreateStart());
-
         const {
             name,
             symbol,

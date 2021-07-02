@@ -1,7 +1,7 @@
 import {createSlice, Dispatch, PayloadAction} from '@reduxjs/toolkit';
+import {RootState} from '../store';
 import {logger} from "../../utilities/winstonLogging/winstonInit";
 import {assetDecimalRepresentationToInteger} from "../../utilities/decimalsHandler/decimalsHandler";
-import config from "../../config";
 import {uploadResource} from "../../api/resourceApi";
 import {createCrowdsale} from "../../api/crowdsaleAPI";
 
@@ -202,7 +202,7 @@ export type CrowdsaleData = {
 export const crowdsaleCreate = (crowdsaleData: CrowdsaleData) => {
     logger.info('[CROWDSALE CREATE] called', crowdsaleData);
 
-    return async (dispatch: Dispatch, getState: () => any) => { //TODO fixme, here getState should return the ROOT state from store.ts
+    return async (dispatch: Dispatch, getState: () => RootState) => { //TODO fixme, here getState should return the ROOT state from store.ts
         dispatch(crowdsaleCreateStart());
 
         let contractHash, iconHash;
