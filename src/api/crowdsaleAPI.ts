@@ -5,6 +5,7 @@ import {
 } from '../utilities/decimalsHandler/decimalsHandler';
 import Web3 from "web3";
 import {AbiItem} from "web3-utils";
+import {coinGetFullData} from "./coinAPI";
 
 
 /**
@@ -212,5 +213,204 @@ export const createCrowdsale = async (web3: Web3, accountAddress: string, crowds
         return true;
     } catch (error) {
         return false;
+    }
+}
+
+export const getAllCrowdsales = async (web3: Web3, accountAddress: string): Promise<string[]> => {
+    try {
+        const CrowdsaleFactoryInstance = new web3.eth.Contract(
+            config.smartContracts.CRWDSL_FCTRY_ABI as unknown as AbiItem,
+            config.smartContracts.CRWDSL_FCTRY_ADDR,
+        );
+        let crowdsaleAddresses = [];
+        crowdsaleAddresses = await CrowdsaleFactoryInstance.methods.getAllCrowdsalesAddresses()
+            .call({from: accountAddress, gasPrice: "0"});
+        return crowdsaleAddresses;
+    }
+    catch (error){
+        return [];
+    }
+}
+
+export const getOwner = async (web3: Web3, accountAddress: string, crowdsaleAddress: string): Promise<string> => {
+    try {
+        const crowdsaleInstance =  new web3.eth.Contract(
+            config.smartContracts.TKN_CRWDSL_ABI as unknown as AbiItem,
+            crowdsaleAddress,
+        );
+
+        return await crowdsaleInstance.methods.owner().call({from: accountAddress, gasPrice: "0"});
+
+    }catch (error){
+        return ''; //TODO what should I return?
+    }
+}
+export const getTitle= async (web3: Web3, accountAddress: string, crowdsaleAddress: string): Promise<string> => {
+    try {
+        const crowdsaleInstance =  new web3.eth.Contract(
+            config.smartContracts.TKN_CRWDSL_ABI as unknown as AbiItem,
+            crowdsaleAddress,
+        );
+
+        return await crowdsaleInstance.methods.title().call({from: accountAddress, gasPrice: "0"});
+
+    }catch (error){
+        return ''; //TODO what should I return?
+    }
+}
+export const getDescription = async (web3: Web3, accountAddress: string, crowdsaleAddress: string): Promise<string> => {
+    try {
+        const crowdsaleInstance =  new web3.eth.Contract(
+            config.smartContracts.TKN_CRWDSL_ABI as unknown as AbiItem,
+            crowdsaleAddress,
+        );
+
+        return await crowdsaleInstance.methods.description().call({from: accountAddress, gasPrice: "0"});
+
+    }catch (error){
+        return ''; //TODO what should I return?
+    }
+}
+export const getLogoHash = async (web3: Web3, accountAddress: string, crowdsaleAddress: string): Promise<string> => {
+    try {
+        const crowdsaleInstance =  new web3.eth.Contract(
+            config.smartContracts.TKN_CRWDSL_ABI as unknown as AbiItem,
+            crowdsaleAddress,
+        );
+
+        return await crowdsaleInstance.methods.logoHash().call({from: accountAddress, gasPrice: "0"});
+
+    }catch (error){
+        return ''; //TODO what should I return?
+    }
+}
+export const getTosHash= async (web3: Web3, accountAddress: string, crowdsaleAddress: string): Promise<string> => {
+    try {
+        const crowdsaleInstance =  new web3.eth.Contract(
+            config.smartContracts.TKN_CRWDSL_ABI as unknown as AbiItem,
+            crowdsaleAddress,
+        );
+
+        return await crowdsaleInstance.methods.TOSHash().call({from: accountAddress, gasPrice: "0"});
+
+    }catch (error){
+        return ''; //TODO what should I return?
+    }
+}
+export const getStartDateRaw = async (web3: Web3, accountAddress: string, crowdsaleAddress: string): Promise<number> => {
+    try {
+        const crowdsaleInstance =  new web3.eth.Contract(
+            config.smartContracts.TKN_CRWDSL_ABI as unknown as AbiItem,
+            crowdsaleAddress,
+        );
+
+        return await crowdsaleInstance.methods.start().call({from: accountAddress, gasPrice: "0"});
+
+    }catch (error){
+        return -1; //TODO what should I return?
+    }
+}
+export const getEndDateRaw = async (web3: Web3, accountAddress: string, crowdsaleAddress: string): Promise<number> => {
+    try {
+        const crowdsaleInstance =  new web3.eth.Contract(
+            config.smartContracts.TKN_CRWDSL_ABI as unknown as AbiItem,
+            crowdsaleAddress,
+        );
+
+        return await crowdsaleInstance.methods.end().call({from: accountAddress, gasPrice: "0"});
+
+    }catch (error){
+        return -1; //TODO what should I return?
+    }
+}
+export const getAcceptRatioRaw= async (web3: Web3, accountAddress: string, crowdsaleAddress: string): Promise<number> => {
+    try {
+        const crowdsaleInstance =  new web3.eth.Contract(
+            config.smartContracts.TKN_CRWDSL_ABI as unknown as AbiItem,
+            crowdsaleAddress,
+        );
+
+        return await crowdsaleInstance.methods.acceptRatio().call({from: accountAddress, gasPrice: "0"});
+
+    }catch (error){
+        return -1; //TODO what should I return?
+    }
+}
+export const getGiveRatioRaw= async (web3: Web3, accountAddress: string, crowdsaleAddress: string): Promise<number> => {
+    try {
+        const crowdsaleInstance =  new web3.eth.Contract(
+            config.smartContracts.TKN_CRWDSL_ABI as unknown as AbiItem,
+            crowdsaleAddress,
+        );
+
+        return await crowdsaleInstance.methods.giveRatio().call({from: accountAddress, gasPrice: "0"});
+
+    }catch (error){
+        return -1; //TODO what should I return?
+    }
+}
+export const getTokenToGiveAddr = async (web3: Web3, accountAddress: string, crowdsaleAddress: string): Promise<string> => {
+    try {
+        const crowdsaleInstance =  new web3.eth.Contract(
+            config.smartContracts.TKN_CRWDSL_ABI as unknown as AbiItem,
+            crowdsaleAddress,
+        );
+
+        return await crowdsaleInstance.methods.tokenToGiveAddr().call({from: accountAddress, gasPrice: "0"});
+
+    }catch (error){
+        return ''; //TODO what should I return?
+    }
+}
+export const getTokenToAcceptAddr= async (web3: Web3, accountAddress: string, crowdsaleAddress: string): Promise<string> => {
+    try {
+        const crowdsaleInstance =  new web3.eth.Contract(
+            config.smartContracts.TKN_CRWDSL_ABI as unknown as AbiItem,
+            crowdsaleAddress,
+        );
+
+        return await crowdsaleInstance.methods.tokenToAcceptAddr().call({from: accountAddress, gasPrice: "0"});
+
+    }catch (error){
+        return ''; //TODO what should I return?
+    }
+}
+export const getStatus = async (web3: Web3, accountAddress: string, crowdsaleAddress: string): Promise<any> => { //TODO fixme
+    try {
+        const crowdsaleInstance =  new web3.eth.Contract(
+            config.smartContracts.TKN_CRWDSL_ABI as unknown as AbiItem,
+            crowdsaleAddress,
+        );
+
+        return await crowdsaleInstance.methods.status().call({from: accountAddress, gasPrice: "0"});
+
+    }catch (error){
+        return null; //TODO what should I return?
+    }
+}
+export const getCap= async (web3: Web3, accountAddress: string, crowdsaleAddress: string): Promise<number> => {
+    try {
+        const crowdsaleInstance =  new web3.eth.Contract(
+            config.smartContracts.TKN_CRWDSL_ABI as unknown as AbiItem,
+            crowdsaleAddress,
+        );
+
+        return await crowdsaleInstance.methods.maxCap().call({from: accountAddress, gasPrice: "0"});
+
+    }catch (error){
+        return -1; //TODO what should I return?
+    }
+}
+export const getTotalReservations= async (web3: Web3, accountAddress: string, crowdsaleAddress: string): Promise<number> => {
+    try {
+        const crowdsaleInstance =  new web3.eth.Contract(
+            config.smartContracts.TKN_CRWDSL_ABI as unknown as AbiItem,
+            crowdsaleAddress,
+        );
+
+        return await crowdsaleInstance.methods.raised().call({from: accountAddress, gasPrice: "0"});
+
+    }catch (error){
+        return -1; //TODO what should I return?
     }
 }

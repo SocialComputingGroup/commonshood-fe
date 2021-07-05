@@ -1,9 +1,35 @@
 import {createSlice, Dispatch, PayloadAction} from '@reduxjs/toolkit';
 import {RootState} from '../store';
 import {logger} from "../../utilities/winstonLogging/winstonInit";
-import {assetDecimalRepresentationToInteger} from "../../utilities/decimalsHandler/decimalsHandler";
-import {uploadResource} from "../../api/resourceApi";
-import {createCrowdsale} from "../../api/crowdsaleAPI";
+import {
+    assetDecimalRepresentationToInteger,
+    assetIntegerToDecimalRepresentation
+} from "../../utilities/decimalsHandler/decimalsHandler";
+import {
+    getCoinBalanceURL,
+    getCrowdsaleStatus,
+    getImg, getMyReservations, getTos,
+    postCrowdsaleUnlock,
+    uploadResource
+} from "../../api/resourceApi";
+import {
+    approveTransfer,
+    createCrowdsale,
+    getAcceptRatioRaw,
+    getAllCrowdsales, getCap,
+    getCrowdsaleWalletBalanceOfTokenToGive, getDescription,
+    getEndDateRaw,
+    getGiveRatioRaw, getLogoHash,
+    getOwner,
+    getStartDateRaw, getStatus,
+    getTitle, getTokenToAcceptAddr,
+    getTokenToGiveAddr, getTosHash, getTotalReservations,
+    joinCrowdsale,
+    refundFromCrowdsale
+} from "../../api/crowdsaleAPI";
+import config from "../../config";
+import {coinGetFullData} from "../../api/coinAPI";
+import {crowdsaleAddIconToCache, crowdsaleGetAllStart} from "../../store/actions/crowdsale";
 
 type CrowdsaleInitialState = {
     error: string | null,
@@ -110,7 +136,7 @@ export const crowdsaleSlice = createSlice({
             state.participantCoinToJoinLoaded = true;
         },
 
-        crowdsaleGetParticipantReservationStart(state, action) {
+        crowdsaleGetParticipantReservationStart(state) {
             state.participantReservationValue = 0;
             state.participantReservationLoaded = false;
         },
@@ -146,12 +172,16 @@ export const crowdsaleSlice = createSlice({
             state.approvalPending = false;
         },
 
-        crowdsaleRefundDone(state, action: PayloadAction<{ refundedSuccessfully: any }>) { //TODO fixme
+        crowdsaleRefundDone(state, action: PayloadAction<{ refundedSuccessfully: number }>) { //TODO fixme
             state.refunded = action.payload.refundedSuccessfully;
             state.pledgePending = false;
         },
         crowdsaleGetStateReset(state) {
             state.crowdsaleStatus = undefined;
+        },
+
+        crowdsaleGetStateFail(state, action: PayloadAction<{ error: any }>) { //TODO fixme
+            state.error = action.payload.error;
         },
 
         crowdsaleGetStateDone(state, action: PayloadAction<{ status: any }>) { //TODO fixme
@@ -182,7 +212,7 @@ export const {
     crowdsaleGetParticipantCoinBalanceDone, crowdsaleApprovalStarted, crowdsaleApprovalDone,
     crowdsaleJoinDone, crowdsaleJoinReset, crowdsaleRefundDone, crowdsaleRefundReset,
     crowdsaleGetStateDone, crowdsaleGetStateReset, crowdsaleGetCompleteReservationsReset,
-    crowdsaleGetParticipantReservationDone, crowdsaleAddIcon
+    crowdsaleGetParticipantReservationDone, crowdsaleAddIcon, crowdsaleGetStateFail
 } = crowdsaleSlice.actions;
 
 export type CrowdsaleData = {
@@ -241,6 +271,247 @@ export const crowdsaleCreate = (crowdsaleData: CrowdsaleData) => {
             console.log("ERROR: ", error);
             dispatch(crowdsaleCreateFail(error));
         }
+    }
+};
+
+export const crowdsaleGetAll = () => {
+    logger.info('[IN CROWDSALEGETALL action]');
+    return async (dispatch: Dispatch, getState: () => RootState) => {
+        dispatch(crowdsaleGetAllReset());
+
+        const crowdsaleStatusEnum = config.crowdsaleStatus;
+        const web3 = getState().web3.web3Instance;
+        try {
+            const accountAddress = getState().web3.currentAccount;
+            let crowdsaleAddresses = [];
+            crowdsaleAddresses = await getAllCrowdsales(web3, accountAddress);
+
+            if (crowdsaleAddresses == null || crowdsaleAddresses.length === 0) { //no crowdsales found
+                dispatch(crowdsaleGetAllSuccess({crowdsalesArray: crowdsaleAddresses}));
+                return;
+            }
+            let crowdsalesExtendedData = await Promise.all(crowdsaleAddresses.map(async (crowdsaleAddress) => {
+                //TODO see if its possible to directly return a struct from the contract instead of making all these calls!
+                const ownerAddress = await getOwner(web3, accountAddress, crowdsaleAddress);
+                const title = await getTitle(web3, accountAddress, crowdsaleAddress);
+                const description = await getDescription(web3, accountAddress, crowdsaleAddress)
+                const logoHash = await getLogoHash(web3, accountAddress, crowdsaleAddress)
+
+                const TOSHash = await getTosHash(web3, accountAddress, crowdsaleAddress)
+                let TOS = null;
+                const startDateRaw = await getStartDateRaw(web3, accountAddress, crowdsaleAddress);
+                const endDateRaw = await getEndDateRaw(web3, accountAddress, crowdsaleAddress);
+                const acceptRatioRaw = await getAcceptRatioRaw(web3, accountAddress, crowdsaleAddress);
+                const giveRatioRaw = await getGiveRatioRaw(web3, accountAddress, crowdsaleAddress);
+                const tokenToGiveAddr = await getTokenToGiveAddr(web3, accountAddress, crowdsaleAddress);
+                const tokenToGive = await coinGetFullData(
+                    getState().web3.web3Instance,
+                    getState().web3.currentAccount,
+                    tokenToGiveAddr
+                );
+                const tokenToAcceptAddr = await getTokenToAcceptAddr(web3, accountAddress, crowdsaleAddress);
+                const tokenToAccept = await coinGetFullData(
+                    getState().web3.web3Instance,
+                    getState().web3.currentAccount,
+                    tokenToAcceptAddr
+                );
+                const status = await getStatus(web3, accountAddress, crowdsaleAddress);
+                const cap = await getCap(web3, accountAddress, crowdsaleAddress);
+                const totalReservations = await getTotalReservations(web3, accountAddress, crowdsaleAddress);
+
+                const tokenToGiveBalance = await getCrowdsaleWalletBalanceOfTokenToGive(web3, accountAddress, crowdsaleAddress, tokenToGiveAddr);
+
+                //getting files from webserver:
+                // photo contains the hash, replace it with the image
+                const crowdsaleIconCache = getState().crowdsale.iconsCache;
+                let crowdsaleImage = null;
+
+                if (crowdsaleIconCache.has(logoHash)) { //icon already in cache
+                    logger.info(`icon for crowdsale ${title} in cache`);
+                    crowdsaleImage = crowdsaleIconCache.get(logoHash);
+                } else { //get icon from API
+                    logger.info(`icon for crowdsale ${title} NOT in cache`);
+                    const img = await getImg(logoHash);
+                    //save in cache
+                    dispatch(crowdsaleAddIconToCache(logoHash, img.data.file));
+                    crowdsaleImage = img.data.file;
+                }
+
+                //TODO maybe start caching also the TOS file?
+                const TOSraw =  await getTos(TOSHash);
+                TOS = TOSraw.data.file;
+
+                return {
+                    crowdsaleAddress,
+                    ownerAddress,
+                    title,
+                    description,
+                    logoHash,
+                    photo: crowdsaleImage,
+                    TOS,
+                    contractHash: TOSHash,
+                    startDate: new Date(startDateRaw * 1000),
+                    endDate: new Date(endDateRaw * 1000),
+                    acceptRatio: parseFloat(assetIntegerToDecimalRepresentation(acceptRatioRaw, 2)), //accept ratio has always 2 decimals (coins)
+                    giveRatio: giveRatioRaw, //giver ratio has always 0 decimals (coupons)
+                    maxCap: parseFloat(assetIntegerToDecimalRepresentation(cap, 2)), //2 decimals (cap refers amount of coins)
+                    tokenToAcceptAddr,
+                    tokenToAccept,
+                    tokenToGiveAddr,
+                    tokenToGive,
+                    status: crowdsaleStatusEnum[status], // TODO fix problem
+                    totalReservations: parseFloat(assetIntegerToDecimalRepresentation(totalReservations, 2)),
+                    tokenToGiveBalance,
+                }
+            }));
+
+            logger.info("crowdsales extended data: ", crowdsalesExtendedData);
+            dispatch(crowdsaleGetAllSuccess({crowdsalesArray: crowdsalesExtendedData}));
+        } catch (error) {
+            //TODO do something
+            logger.debug("Error =>", error);
+            const errorMessage = error?.message ?
+                error.message :
+                "ERROR -> Something went wrong while retriving crowdsales";
+            dispatch(crowdsaleGetAllFail(errorMessage));
+        }
+    }
+};
+
+export const crowdsaleUnlock = (crowdsaleID: number) => {
+    return (dispatch: Dispatch) => {
+        postCrowdsaleUnlock(crowdsaleID)
+            .then((response) => {
+                logger.debug('CROWDSALE CORRECTLY UNLOCKED', response);
+                dispatch(crowdsaleUnlockSuccess());
+            })
+            .catch((error) => {
+                logger.error('CROWDSALE UNLOCK FAILURE', error);
+                dispatch(crowdsaleUnlockFail());
+            });
+    }
+};
+
+export const crowdsaleGetParticipantCoinBalance = (coinTicker: any, coinDecimals: number) => {
+    return (dispatch: Dispatch, getState: () => RootState) => {
+        dispatch(crowdsaleGetParticipantCoinBalanceStart());
+
+        const currentProfile = getState().user.currentProfile; //TODO fix problem
+        const realm = currentProfile.realm;
+
+        return getCoinBalanceURL(coinTicker, realm, currentProfile)
+            .then((response) => {
+                logger.debug('[IN CrowdsaleGetCoinBalanceOfProfile] response: ', response);
+                // @ts-ignore
+                dispatch(crowdsaleGetParticipantCoinBalanceDone(assetIntegerToDecimalRepresentation(response.data.amount, coinDecimals)));
+            })
+            .catch((error) => {
+                logger.error('[IN CrowdsaleGetCoinBalanceOfProfile] error: ', error);
+                dispatch(crowdsaleGetParticipantCoinBalanceDone(error));
+            });
+    }
+};
+
+export const crowdsaleGetParticipantReservation = (crowdsaleId: number, acceptedCoinDecimals: number) => {
+    return async (dispatch: Dispatch) => {
+        dispatch(crowdsaleGetParticipantReservationStart());
+
+        return getMyReservations(crowdsaleId)
+            .then((response) => {
+                logger.debug('[IN crowdsaleGetParticipantReservation] response => ', response);
+                const value = Number(assetIntegerToDecimalRepresentation(response.data.reservation, acceptedCoinDecimals));
+                dispatch(crowdsaleGetParticipantReservationDone({reservationValue: value}));
+            })
+            .catch(error => {
+                logger.error('[IN crowdsaleGetParticipantReservation] error => ', error);
+                dispatch(crowdsaleGetParticipantReservationDone({reservationValue: -1})); //negative value indicates we had some problem
+            });
+    }
+};
+
+export const crowdsaleJoin = (crowdsaleAddress: string, amount: number, decimals: number, tokenToAcceptAddress: string) => {
+    return async (dispatch: Dispatch, getState: () => RootState) => {
+        dispatch(crowdsaleJoinReset());
+        const correctAmount = parseInt(assetDecimalRepresentationToInteger(amount, decimals));
+        const web3Instance = getState().web3.web3Instance;
+        const userWalletAddress = getState().web3.currentAccount;
+
+        dispatch(crowdsaleApprovalStarted())
+        const approveCompleted = await approveTransfer(web3Instance, userWalletAddress, crowdsaleAddress, tokenToAcceptAddress, correctAmount);
+        dispatch(crowdsaleApprovalDone());
+        if (!approveCompleted) {
+            dispatch(crowdsaleJoinReset());
+        } else {
+            //we are now authorized to join
+            const joinCompleted = await joinCrowdsale(web3Instance, userWalletAddress, crowdsaleAddress, correctAmount);
+            if (joinCompleted) {
+                dispatch(crowdsaleJoinDone({joinedSuccessfully: crowdsaleAddress}));
+            } else {
+                dispatch(crowdsaleJoinReset());
+            }
+        }
+    }
+};
+
+export const crowdsaleRefund = (crowdsaleAddress: string, amount: number, decimals: number) => {
+    return async (dispatch: Dispatch, getState: () => RootState) => {
+        dispatch(crowdsaleRefundReset());
+        const correctAmount = parseInt(assetDecimalRepresentationToInteger(amount, decimals));
+        const web3Instance = getState().web3.web3Instance;
+        const userWalletAddress = getState().web3.currentAccount;
+
+        const refundCompleted = await refundFromCrowdsale(web3Instance, userWalletAddress, crowdsaleAddress, correctAmount);
+        if (refundCompleted) {
+            dispatch(crowdsaleRefundDone({refundedSuccessfully: amount}));
+        } else {
+            dispatch(crowdsaleRefundReset());
+        }
+    }
+};
+//NOTE: state is the state inside the blockchain not the "state" inside our instance in mongodb!!!
+export const crowdsaleGetStatus = (crowdsaleId: number) => {
+    return async (dispatch: Dispatch) => {
+        dispatch(crowdsaleGetStateReset());
+
+        return getCrowdsaleStatus(crowdsaleId)
+            .then((response) => {
+                logger.debug('CROWDSALE getStatus success', response);
+                dispatch(crowdsaleGetStateDone(response.data.status));
+            })
+            .catch((error) => {
+                logger.error('CROWDSALE getStatus fail', error);
+                dispatch(crowdsaleGetStateFail(error));
+            });
+    }
+};
+
+export const crowdsaleGetCompleteReservations = (crowdsaleId: number, acceptedCoinDecimals: number) => {
+    return async (dispatch: Dispatch) => {
+        dispatch(crowdsaleGetCompleteReservationsReset());
+        // const web3 = getState().web3.web3Instance;
+        // try {
+        //     const accountAddress = getState().web3.currentAccount;
+        //     const CrowdsaleFactoryInstance = new web3.eth.Contract(
+        //         config.smartContracts.CRWDSL_FCTRY_ABI,
+        //         config.smartContracts.CRWDSL_FCTRY_ADDR,
+        //     );
+        // }catch(error){
+        //
+        // }
+
+        return getCrowdsaleStatus(crowdsaleId)
+            .then((response) => {
+                logger.debug('CROWDSALE crowdsaleGetCompleteReservations success', response);
+                dispatch(crowdsaleGetCompleteReservationsDone({
+                    totalReservations: assetIntegerToDecimalRepresentation(response.data.totalReservations, acceptedCoinDecimals)
+                }));
+            })
+            .catch((error) => {
+                logger.error('CROWDSALE crowdsaleGetCompleteReservations fail', error);
+                dispatch(crowdsaleGetCompleteReservationsDone({
+                    totalReservations: -1
+                }));
+            });
     }
 };
 
