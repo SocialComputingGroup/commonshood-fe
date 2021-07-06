@@ -6,10 +6,7 @@ import {
     assetIntegerToDecimalRepresentation
 } from "../../utilities/decimalsHandler/decimalsHandler";
 import {
-    getCoinBalanceURL,
-    getCrowdsaleStatus,
-    getImg, getMyReservations, getTos,
-    postCrowdsaleUnlock,
+    getImg, getTOSFile,
     uploadResource
 } from "../../api/resourceApi";
 import {
@@ -23,9 +20,10 @@ import {
     getOwner,
     getStartDateRaw, getStatus,
     getTitle, getTokenToAcceptAddr,
-    getTokenToGiveAddr, getTosHash, getTotalReservations,
+    getTokenToGiveAddr, getTOSHash, getTotalReservations,
     joinCrowdsale,
-    refundFromCrowdsale
+    refundFromCrowdsale,
+    unlockCrowdsale
 } from "../../api/crowdsaleAPI";
 import config from "../../config";
 import {coinGetFullData} from "../../api/coinAPI";
@@ -278,6 +276,7 @@ export const crowdsaleGetAll = () => {
     logger.info('[IN CROWDSALEGETALL action]');
     return async (dispatch: Dispatch, getState: () => RootState) => {
         dispatch(crowdsaleGetAllReset());
+        dispatch(crowdsaleGetAllStart());
 
         const crowdsaleStatusEnum = config.crowdsaleStatus;
         const web3 = getState().web3.web3Instance;
@@ -285,6 +284,7 @@ export const crowdsaleGetAll = () => {
             const accountAddress = getState().web3.currentAccount;
             let crowdsaleAddresses = [];
             crowdsaleAddresses = await getAllCrowdsales(web3, accountAddress);
+            logger.debug("got crowdsale addresses: ", crowdsaleAddresses);
 
             if (crowdsaleAddresses == null || crowdsaleAddresses.length === 0) { //no crowdsales found
                 dispatch(crowdsaleGetAllSuccess({crowdsalesArray: crowdsaleAddresses}));
@@ -297,34 +297,49 @@ export const crowdsaleGetAll = () => {
                 const description = await getDescription(web3, accountAddress, crowdsaleAddress)
                 const logoHash = await getLogoHash(web3, accountAddress, crowdsaleAddress)
 
-                const TOSHash = await getTosHash(web3, accountAddress, crowdsaleAddress)
+                const TOSHash = await getTOSHash(web3, accountAddress, crowdsaleAddress)
                 let TOS = null;
                 const startDateRaw = await getStartDateRaw(web3, accountAddress, crowdsaleAddress);
                 const endDateRaw = await getEndDateRaw(web3, accountAddress, crowdsaleAddress);
                 const acceptRatioRaw = await getAcceptRatioRaw(web3, accountAddress, crowdsaleAddress);
                 const giveRatioRaw = await getGiveRatioRaw(web3, accountAddress, crowdsaleAddress);
+                
                 const tokenToGiveAddr = await getTokenToGiveAddr(web3, accountAddress, crowdsaleAddress);
+                const tokenToAcceptAddr = await getTokenToAcceptAddr(web3, accountAddress, crowdsaleAddress);
+                if(tokenToGiveAddr === null || tokenToAcceptAddr === null){
+                    throw new Error(`problem getting tokenTogive: ${tokenToGiveAddr} - and/or tokenToAccept: ${tokenToAcceptAddr} addresses
+                                    For crowdsale ${crowdsaleAddress}`);
+                }
                 const tokenToGive = await coinGetFullData(
                     getState().web3.web3Instance,
                     getState().web3.currentAccount,
                     tokenToGiveAddr
                 );
-                const tokenToAcceptAddr = await getTokenToAcceptAddr(web3, accountAddress, crowdsaleAddress);
                 const tokenToAccept = await coinGetFullData(
                     getState().web3.web3Instance,
                     getState().web3.currentAccount,
                     tokenToAcceptAddr
                 );
+
                 const status = await getStatus(web3, accountAddress, crowdsaleAddress);
                 const cap = await getCap(web3, accountAddress, crowdsaleAddress);
                 const totalReservations = await getTotalReservations(web3, accountAddress, crowdsaleAddress);
-
                 const tokenToGiveBalance = await getCrowdsaleWalletBalanceOfTokenToGive(web3, accountAddress, crowdsaleAddress, tokenToGiveAddr);
+
+                if(startDateRaw === null || endDateRaw === null || status === null || 
+                    acceptRatioRaw === null || cap === null || totalReservations === null || tokenToGiveBalance === null
+                    ){
+                        throw new Error(`Some data of crowdsale ${crowdsaleAddress} is null or empty`);
+                    }
 
                 //getting files from webserver:
                 // photo contains the hash, replace it with the image
                 const crowdsaleIconCache = getState().crowdsale.iconsCache;
                 let crowdsaleImage = null;
+
+                if(logoHash === null){
+                    throw new Error(`logoHash is null, can't get crowdsale ${crowdsaleAddress} icon`);
+                }
 
                 if (crowdsaleIconCache.has(logoHash)) { //icon already in cache
                     logger.info(`icon for crowdsale ${title} in cache`);
@@ -338,7 +353,7 @@ export const crowdsaleGetAll = () => {
                 }
 
                 //TODO maybe start caching also the TOS file?
-                const TOSraw =  await getTos(TOSHash);
+                const TOSraw =  await getTOSFile(TOSHash);
                 TOS = TOSraw.data.file;
 
                 return {
@@ -378,55 +393,54 @@ export const crowdsaleGetAll = () => {
     }
 };
 
-export const crowdsaleUnlock = (crowdsaleID: number) => {
-    return (dispatch: Dispatch) => {
-        postCrowdsaleUnlock(crowdsaleID)
-            .then((response) => {
-                logger.debug('CROWDSALE CORRECTLY UNLOCKED', response);
-                dispatch(crowdsaleUnlockSuccess());
-            })
-            .catch((error) => {
-                logger.error('CROWDSALE UNLOCK FAILURE', error);
-                dispatch(crowdsaleUnlockFail());
-            });
-    }
-};
-
-export const crowdsaleGetParticipantCoinBalance = (coinTicker: any, coinDecimals: number) => {
+export const crowdsaleUnlock = (crowdsaleAddress: string) => {
     return (dispatch: Dispatch, getState: () => RootState) => {
-        dispatch(crowdsaleGetParticipantCoinBalanceStart());
-
-        const currentProfile = getState().user.currentProfile; //TODO fix problem
-        const realm = currentProfile.realm;
-
-        return getCoinBalanceURL(coinTicker, realm, currentProfile)
-            .then((response) => {
-                logger.debug('[IN CrowdsaleGetCoinBalanceOfProfile] response: ', response);
-                // @ts-ignore
-                dispatch(crowdsaleGetParticipantCoinBalanceDone(assetIntegerToDecimalRepresentation(response.data.amount, coinDecimals)));
-            })
-            .catch((error) => {
-                logger.error('[IN CrowdsaleGetCoinBalanceOfProfile] error: ', error);
-                dispatch(crowdsaleGetParticipantCoinBalanceDone(error));
-            });
+        const web3 = getState().web3.web3Instance;
+        try {
+            const accountAddress = getState().web3.currentAccount;
+            unlockCrowdsale(web3, accountAddress, crowdsaleAddress);
+            dispatch(crowdsaleUnlockSuccess());
+        }catch(error){
+            logger.error('Crowdsale was not unlocked successfully');
+            dispatch(crowdsaleUnlockFail());
+        }
     }
 };
 
-export const crowdsaleGetParticipantReservation = (crowdsaleId: number, acceptedCoinDecimals: number) => {
-    return async (dispatch: Dispatch) => {
-        dispatch(crowdsaleGetParticipantReservationStart());
+export const crowdsaleGetParticipantCoinBalance = () => {//coinTicker: any, coinDecimals: number) => {
+    // return (dispatch: Dispatch, getState: () => RootState) => {
+    //     dispatch(crowdsaleGetParticipantCoinBalanceStart());
 
-        return getMyReservations(crowdsaleId)
-            .then((response) => {
-                logger.debug('[IN crowdsaleGetParticipantReservation] response => ', response);
-                const value = Number(assetIntegerToDecimalRepresentation(response.data.reservation, acceptedCoinDecimals));
-                dispatch(crowdsaleGetParticipantReservationDone({reservationValue: value}));
-            })
-            .catch(error => {
-                logger.error('[IN crowdsaleGetParticipantReservation] error => ', error);
-                dispatch(crowdsaleGetParticipantReservationDone({reservationValue: -1})); //negative value indicates we had some problem
-            });
-    }
+    //     const currentProfile = getState().user.currentProfile; //TODO fix problem
+    //     const realm = currentProfile.realm;s
+
+    //     return getCoinBalanceURL(coinTicker, realm, currentProfile)
+    //         .then((response) => {
+    //             logger.debug('[IN CrowdsaleGetCoinBalanceOfProfile] response: ', response);
+    //             dispatch(crowdsaleGetParticipantCoinBalanceDone(assetIntegerToDecimalRepresentation(response.data.amount, coinDecimals)));
+    //         })
+    //         .catch((error) => {
+    //             logger.error('[IN CrowdsaleGetCoinBalanceOfProfile] error: ', error);
+    //             dispatch(crowdsaleGetParticipantCoinBalanceDone(error));
+    //         });
+    // }
+};
+
+export const crowdsaleGetParticipantReservation = () => { //crowdsaleId: number, acceptedCoinDecimals: number) => {
+    // return async (dispatch: Dispatch) => {
+    //     dispatch(crowdsaleGetParticipantReservationStart());
+
+    //     return getMyReservations(crowdsaleId)
+    //         .then((response) => {
+    //             logger.debug('[IN crowdsaleGetParticipantReservation] response => ', response);
+    //             const value = Number(assetIntegerToDecimalRepresentation(response.data.reservation, acceptedCoinDecimals));
+    //             dispatch(crowdsaleGetParticipantReservationDone({reservationValue: value}));
+    //         })
+    //         .catch(error => {
+    //             logger.error('[IN crowdsaleGetParticipantReservation] error => ', error);
+    //             dispatch(crowdsaleGetParticipantReservationDone({reservationValue: -1})); //negative value indicates we had some problem
+    //         });
+    // }
 };
 
 export const crowdsaleJoin = (crowdsaleAddress: string, amount: number, decimals: number, tokenToAcceptAddress: string) => {
@@ -468,51 +482,53 @@ export const crowdsaleRefund = (crowdsaleAddress: string, amount: number, decima
         }
     }
 };
-//NOTE: state is the state inside the blockchain not the "state" inside our instance in mongodb!!!
-export const crowdsaleGetStatus = (crowdsaleId: number) => {
-    return async (dispatch: Dispatch) => {
-        dispatch(crowdsaleGetStateReset());
 
-        return getCrowdsaleStatus(crowdsaleId)
-            .then((response) => {
-                logger.debug('CROWDSALE getStatus success', response);
-                dispatch(crowdsaleGetStateDone(response.data.status));
-            })
-            .catch((error) => {
-                logger.error('CROWDSALE getStatus fail', error);
-                dispatch(crowdsaleGetStateFail(error));
-            });
-    }
+
+//NOTE: state is the state inside the blockchain not the "state" inside our instance in mongodb!!!
+export const crowdsaleGetStatus = () => {//(crowdsaleId: number) => {
+    // return async (dispatch: Dispatch) => {
+    //     dispatch(crowdsaleGetStateReset());
+
+    //     return getCrowdsaleStatus(crowdsaleId)
+    //         .then((response) => {
+    //             logger.debug('CROWDSALE getStatus success', response);
+    //             dispatch(crowdsaleGetStateDone(response.data.status));
+    //         })
+    //         .catch((error) => {
+    //             logger.error('CROWDSALE getStatus fail', error);
+    //             dispatch(crowdsaleGetStateFail(error));
+    //         });
+    // }
 };
 
-export const crowdsaleGetCompleteReservations = (crowdsaleId: number, acceptedCoinDecimals: number) => {
-    return async (dispatch: Dispatch) => {
-        dispatch(crowdsaleGetCompleteReservationsReset());
-        // const web3 = getState().web3.web3Instance;
-        // try {
-        //     const accountAddress = getState().web3.currentAccount;
-        //     const CrowdsaleFactoryInstance = new web3.eth.Contract(
-        //         config.smartContracts.CRWDSL_FCTRY_ABI,
-        //         config.smartContracts.CRWDSL_FCTRY_ADDR,
-        //     );
-        // }catch(error){
-        //
-        // }
+export const crowdsaleGetCompleteReservations = () => {//(crowdsaleId: number, acceptedCoinDecimals: number) => {
+    // return async (dispatch: Dispatch) => {
+    //     dispatch(crowdsaleGetCompleteReservationsReset());
+    //     // const web3 = getState().web3.web3Instance;
+    //     // try {
+    //     //     const accountAddress = getState().web3.currentAccount;
+    //     //     const CrowdsaleFactoryInstance = new web3.eth.Contract(
+    //     //         config.smartContracts.CRWDSL_FCTRY_ABI,
+    //     //         config.smartContracts.CRWDSL_FCTRY_ADDR,
+    //     //     );
+    //     // }catch(error){
+    //     //
+    //     // }
 
-        return getCrowdsaleStatus(crowdsaleId)
-            .then((response) => {
-                logger.debug('CROWDSALE crowdsaleGetCompleteReservations success', response);
-                dispatch(crowdsaleGetCompleteReservationsDone({
-                    totalReservations: assetIntegerToDecimalRepresentation(response.data.totalReservations, acceptedCoinDecimals)
-                }));
-            })
-            .catch((error) => {
-                logger.error('CROWDSALE crowdsaleGetCompleteReservations fail', error);
-                dispatch(crowdsaleGetCompleteReservationsDone({
-                    totalReservations: -1
-                }));
-            });
-    }
+    //     return getCrowdsaleStatus(crowdsaleId)
+    //         .then((response) => {
+    //             logger.debug('CROWDSALE crowdsaleGetCompleteReservations success', response);
+    //             dispatch(crowdsaleGetCompleteReservationsDone({
+    //                 totalReservations: assetIntegerToDecimalRepresentation(response.data.totalReservations, acceptedCoinDecimals)
+    //             }));
+    //         })
+    //         .catch((error) => {
+    //             logger.error('CROWDSALE crowdsaleGetCompleteReservations fail', error);
+    //             dispatch(crowdsaleGetCompleteReservationsDone({
+    //                 totalReservations: -1
+    //             }));
+    //         });
+    // }
 };
 
 export default crowdsaleSlice.reducer;
