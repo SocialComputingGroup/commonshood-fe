@@ -3,6 +3,7 @@ import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 type UIinitialState = {
     bottomMenuActiveIndex: number
 }
+
 const initialState: UIinitialState = {
     bottomMenuActiveIndex: 0,
 };
@@ -18,3 +19,4 @@ export const uiSlice = createSlice({
 })
 
 export const {handleBottomMenuIndexChange} = uiSlice.actions;
+export default uiSlice.reducer;

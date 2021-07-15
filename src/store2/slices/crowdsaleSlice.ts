@@ -8,7 +8,7 @@ import {
 import {
     getImg, getTOSFile,
     uploadResource
-} from "../../api/resourceApi";
+} from "../../api/resourceAPI";
 import {
     approveTransfer,
     createCrowdsale, crowdsaleGetReservationsOfAccount,

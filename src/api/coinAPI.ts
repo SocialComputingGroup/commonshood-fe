@@ -56,7 +56,7 @@ export const mintCoin = async(web3: Web3, accountAddress: string, coinAddress: s
 };
 
 
-type CoinBalance = {
+export type CoinBalance = {
     balance: number,
     decimals: number
 };

@@ -178,6 +178,8 @@ type CrowdsaleData = {
     maxCap: number,
     metadata: any,
 };
+
+
 export const createCrowdsale = async (web3: Web3, accountAddress: string, crowdsaleData: CrowdsaleData): Promise<boolean> => {
     const {
         tokenToGiveAddr,

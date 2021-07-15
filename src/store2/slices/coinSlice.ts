@@ -2,7 +2,7 @@ import { createSlice, Dispatch, PayloadAction } from '@reduxjs/toolkit';
 import {RootState} from '../store';
 import {logger} from '../../utilities/winstonLogging/winstonInit';
 
-import {uploadResource} from '../../api/resourceApi';
+import {uploadResource} from '../../api/resourceAPI';
 import {createCoin, mintCoin} from '../../api/coinAPI';
 
 type Coin = {
